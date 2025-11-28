@@ -1,0 +1,73 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using evidence_timeline.Models;
+using evidence_timeline.Utilities;
+
+namespace evidence_timeline.Services
+{
+    public class CaseStorageService : ICaseStorageService
+    {
+        public async Task<CaseInfo> CreateCaseAsync(string rootFolder, string name, string caseNumber)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(rootFolder);
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(caseNumber);
+
+            var caseInfo = new CaseInfo
+            {
+                Name = name,
+                CaseNumber = caseNumber,
+                CreatedAt = DateTime.UtcNow,
+                LastOpenedAt = DateTime.UtcNow,
+                NextEvidenceNumber = 1
+            };
+
+            var folderName = PathHelper.GetCaseFolderName(caseInfo);
+            var caseFolder = Path.Combine(rootFolder, folderName);
+            PathHelper.EnsureDirectory(caseFolder);
+
+            caseInfo.RootPath = caseFolder;
+
+            await JsonHelper.SaveAsync(Path.Combine(caseFolder, "case.json"), caseInfo);
+            await JsonHelper.SaveAsync(Path.Combine(caseFolder, "tags.json"), new List<Tag>());
+            await JsonHelper.SaveAsync(Path.Combine(caseFolder, "types.json"), new List<EvidenceType>());
+            await JsonHelper.SaveAsync(Path.Combine(caseFolder, "people.json"), new List<Person>());
+            PathHelper.EnsureDirectory(Path.Combine(caseFolder, "evidence"));
+
+            return caseInfo;
+        }
+
+        public async Task<CaseInfo> LoadCaseAsync(string caseFolderPath)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(caseFolderPath);
+
+            var casePath = Path.Combine(caseFolderPath, "case.json");
+            var caseInfo = await JsonHelper.LoadAsync<CaseInfo>(casePath);
+            if (caseInfo == null)
+            {
+                throw new InvalidOperationException($"Unable to load case from {casePath}");
+            }
+
+            caseInfo.RootPath = caseFolderPath;
+            return caseInfo;
+        }
+
+        public async Task SaveCaseAsync(CaseInfo caseInfo)
+        {
+            var root = GetCaseRoot(caseInfo);
+            await JsonHelper.SaveAsync(Path.Combine(root, "case.json"), caseInfo);
+        }
+
+        private static string GetCaseRoot(CaseInfo caseInfo)
+        {
+            if (string.IsNullOrWhiteSpace(caseInfo.RootPath))
+            {
+                throw new InvalidOperationException("CaseInfo.RootPath must be set before saving.");
+            }
+
+            return caseInfo.RootPath;
+        }
+    }
+}

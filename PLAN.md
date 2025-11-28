@@ -11,25 +11,25 @@ Legend: `[ ]` pending · `[x]` done
 
 ## 1. Create base WPF project (.NET 10)
 - [x] 1.1 Create WPF project — Notes: `evidence_timeline.csproj` targets `net10.0-windows` with WPF.
-- [ ] 1.2 Set basic project options — Notes: `<Nullable>enable</Nullable>` set; warnings-as-errors still pending.
-- [ ] 1.3 Create base folder structure — Notes: needs `Models/`, `Services/`, `ViewModels/`, `Views/`, `Utilities/`.
+- [x] 1.2 Set basic project options — Notes: `<Nullable>enable</Nullable>` and `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` set in `evidence_timeline.csproj`.
+- [x] 1.3 Create base folder structure — Notes: created `Models/`, `Services/`, `ViewModels/`, `Views/`, `Utilities/`.
 
 ## 2. Define domain models and JSON contracts
-- [ ] 2.1 Core enums and supporting types — `EvidenceDateMode`, `EvidenceDateInfo`.
-- [ ] 2.2 Case model — `CaseInfo` backed by `case.json`.
-- [ ] 2.3 Evidence model — `Evidence` backed by `evidence.json`.
-- [ ] 2.4 Attachment model — `AttachmentInfo`.
-- [ ] 2.5 People, tags, types — `Person`, `Tag`, `EvidenceType` stored in arrays.
-- [ ] 2.6 Evidence list view model — `EvidenceSummary` for grid.
+- [x] 2.1 Core enums and supporting types — Notes: `EvidenceDateMode` and `EvidenceDateInfo` in `Models/EvidenceDateInfo.cs`.
+- [x] 2.2 Case model — Notes: `CaseInfo` with `RootPath` ignored for JSON in `Models/CaseInfo.cs`.
+- [x] 2.3 Evidence model — Notes: `Evidence` with defaults for lists, note file, timestamps in `Models/Evidence.cs`.
+- [x] 2.4 Attachment model — Notes: `AttachmentInfo` in `Models/AttachmentInfo.cs`.
+- [x] 2.5 People, tags, types — Notes: `Person`, `Tag`, `EvidenceType` in `Models/Person.cs`, `Models/Tag.cs`, `Models/EvidenceType.cs`.
+- [x] 2.6 Evidence list view model — Notes: `EvidenceSummary` grid DTO in `Models/EvidenceSummary.cs`.
 
 ## 3. Path and JSON utilities
-- [ ] 3.1 Path helper — `Utilities/PathHelper.cs` with slugging and folder naming.
-- [ ] 3.2 JSON helper — `Utilities/JsonHelper.cs` with `DefaultOptions`, `LoadAsync`, `SaveAsync`.
+- [x] 3.1 Path helper — Notes: Slugging, case/evidence folder naming, ensure directory in `Utilities/PathHelper.cs`.
+- [x] 3.2 JSON helper — Notes: CamelCase `DefaultOptions` + async load/save in `Utilities/JsonHelper.cs`.
 
 ## 4. Storage services
-- [ ] 4.1 Case storage service — Interface and implementation; creates/loads/saves case data.
-- [ ] 4.2 Reference data service — Interface and implementation for tags/types/people.
-- [ ] 4.3 Evidence storage service — Interface and implementation for CRUD and folder handling.
+- [x] 4.1 Case storage service — Notes: `ICaseStorageService` and `CaseStorageService` handle create/load/save + initial files in `Services/`.
+- [x] 4.2 Reference data service — Notes: `IReferenceDataService` and `ReferenceDataService` manage tags/types/people JSON in `Services/`.
+- [x] 4.3 Evidence storage service — Notes: `IEvidenceStorageService` and `EvidenceStorageService` for evidence CRUD, folder naming, and evidence.json persistence in `Services/`.
 
 ## 5. MVVM setup and main application shell
 - [ ] 5.1 MVVM base — `BaseViewModel` with `INotifyPropertyChanged`.
