@@ -36,15 +36,18 @@ namespace evidence_timeline.ViewModels
         private bool _isBottomPaneVisible = true;
         private string _notesText = string.Empty;
         private bool _isBusy;
+        private string _linkedEvidenceText = string.Empty;
 
         public MainViewModel()
         {
             CreateCaseCommand = new AsyncRelayCommand(CreateCaseAsync);
             OpenCaseCommand = new AsyncRelayCommand(OpenCaseAsync);
+            SaveCaseCommand = new AsyncRelayCommand(SaveCaseAsync, () => CurrentCase != null);
             NewEvidenceCommand = new AsyncRelayCommand(NewEvidenceAsync, () => CurrentCase != null);
             OpenEvidenceWindowCommand = new RelayCommand(() => { }, () => SelectedSummary != null);
             AddAttachmentCommand = new RelayCommand(() => { }, () => SelectedSummary != null);
             SaveNotesCommand = new AsyncRelayCommand(SaveNotesAsync, () => SelectedEvidenceDetail != null && CurrentCase != null);
+            SaveMetadataCommand = new AsyncRelayCommand(SaveMetadataAsync, () => SelectedEvidenceDetail != null && CurrentCase != null);
         }
 
         public CaseInfo? CurrentCase
@@ -63,6 +66,8 @@ namespace evidence_timeline.ViewModels
         public ObservableCollection<Tag> Tags { get; } = new();
         public ObservableCollection<EvidenceType> EvidenceTypes { get; } = new();
         public ObservableCollection<Person> People { get; } = new();
+        public ObservableCollection<SelectableItem> TagOptions { get; } = new();
+        public ObservableCollection<SelectableItem> PersonOptions { get; } = new();
 
         public EvidenceSummary? SelectedSummary
         {
@@ -86,6 +91,14 @@ namespace evidence_timeline.ViewModels
                 {
                     OnPropertyChanged(nameof(SelectedEvidenceTagNames));
                     OnPropertyChanged(nameof(SelectedEvidencePersonNames));
+                    OnPropertyChanged(nameof(SelectedDateMode));
+                    OnPropertyChanged(nameof(ExactDate));
+                    OnPropertyChanged(nameof(StartDate));
+                    OnPropertyChanged(nameof(EndDate));
+                    OnPropertyChanged(nameof(AroundAmount));
+                    OnPropertyChanged(nameof(AroundUnit));
+                    LinkedEvidenceText = value == null ? string.Empty : string.Join(", ", value.LinkedEvidenceIds ?? Enumerable.Empty<string>());
+                    RaiseCommandStates();
                 }
             }
         }
@@ -178,12 +191,113 @@ namespace evidence_timeline.ViewModels
             private set => SetProperty(ref _isBusy, value);
         }
 
+        public EvidenceDateMode SelectedDateMode
+        {
+            get => SelectedEvidenceDetail?.DateInfo.Mode ?? EvidenceDateMode.Exact;
+            set
+            {
+                if (SelectedEvidenceDetail == null)
+                {
+                    return;
+                }
+
+                if (SelectedEvidenceDetail.DateInfo.Mode != value)
+                {
+                    SelectedEvidenceDetail.DateInfo.Mode = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public DateTime? ExactDate
+        {
+            get => SelectedEvidenceDetail?.DateInfo.ExactDate?.ToDateTime(TimeOnly.MinValue);
+            set
+            {
+                if (SelectedEvidenceDetail == null)
+                {
+                    return;
+                }
+
+                SelectedEvidenceDetail.DateInfo.ExactDate = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+                OnPropertyChanged();
+            }
+        }
+
+        public DateTime? StartDate
+        {
+            get => SelectedEvidenceDetail?.DateInfo.StartDate?.ToDateTime(TimeOnly.MinValue);
+            set
+            {
+                if (SelectedEvidenceDetail == null)
+                {
+                    return;
+                }
+
+                SelectedEvidenceDetail.DateInfo.StartDate = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+                OnPropertyChanged();
+            }
+        }
+
+        public DateTime? EndDate
+        {
+            get => SelectedEvidenceDetail?.DateInfo.EndDate?.ToDateTime(TimeOnly.MinValue);
+            set
+            {
+                if (SelectedEvidenceDetail == null)
+                {
+                    return;
+                }
+
+                SelectedEvidenceDetail.DateInfo.EndDate = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+                OnPropertyChanged();
+            }
+        }
+
+        public int? AroundAmount
+        {
+            get => SelectedEvidenceDetail?.DateInfo.AroundAmount;
+            set
+            {
+                if (SelectedEvidenceDetail == null)
+                {
+                    return;
+                }
+
+                SelectedEvidenceDetail.DateInfo.AroundAmount = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string? AroundUnit
+        {
+            get => SelectedEvidenceDetail?.DateInfo.AroundUnit;
+            set
+            {
+                if (SelectedEvidenceDetail == null)
+                {
+                    return;
+                }
+
+                SelectedEvidenceDetail.DateInfo.AroundUnit = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string LinkedEvidenceText
+        {
+            get => _linkedEvidenceText;
+            set => SetProperty(ref _linkedEvidenceText, value);
+        }
+
         public ICommand CreateCaseCommand { get; }
         public ICommand OpenCaseCommand { get; }
+        public ICommand SaveCaseCommand { get; }
         public ICommand NewEvidenceCommand { get; }
         public ICommand OpenEvidenceWindowCommand { get; }
         public ICommand AddAttachmentCommand { get; }
         public ICommand SaveNotesCommand { get; }
+        public ICommand SaveMetadataCommand { get; }
 
         private async Task CreateCaseAsync()
         {
@@ -263,12 +377,15 @@ namespace evidence_timeline.ViewModels
             _peopleLookup.Clear();
             _allEvidenceSummaries.Clear();
             _evidenceById.Clear();
+            TagOptions.Clear();
+            PersonOptions.Clear();
 
             var tags = await _referenceData.LoadTagsAsync(caseInfo);
             foreach (var tag in tags)
             {
                 Tags.Add(tag);
                 _tagLookup[tag.Id] = tag;
+                TagOptions.Add(new SelectableItem(tag.Id, tag.Name));
             }
 
             var types = await _referenceData.LoadTypesAsync(caseInfo);
@@ -283,6 +400,7 @@ namespace evidence_timeline.ViewModels
             {
                 People.Add(person);
                 _peopleLookup[person.Id] = person;
+                PersonOptions.Add(new SelectableItem(person.Id, person.Name));
             }
 
             var evidence = await _evidenceStorage.LoadAllEvidenceAsync(caseInfo);
@@ -295,6 +413,7 @@ namespace evidence_timeline.ViewModels
             ApplyFilters();
             SelectedSummary = EvidenceList.FirstOrDefault();
             NotesText = string.Empty;
+            SyncSelectionOptions(null);
         }
 
         private EvidenceSummary BuildSummary(Evidence evidence)
@@ -443,12 +562,14 @@ namespace evidence_timeline.ViewModels
             if (_evidenceById.TryGetValue(summary.Id, out var evidence))
             {
                 SelectedEvidenceDetail = evidence;
+                SyncSelectionOptions(evidence);
                 await LoadNotesAsync(evidence);
             }
             else
             {
                 SelectedEvidenceDetail = null;
                 NotesText = string.Empty;
+                SyncSelectionOptions(null);
             }
         }
 
@@ -495,6 +616,103 @@ namespace evidence_timeline.ViewModels
             }
         }
 
+        private async Task SaveCaseAsync()
+        {
+            if (CurrentCase == null)
+            {
+                return;
+            }
+
+            try
+            {
+                await _caseStorage.SaveCaseAsync(CurrentCase);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unable to save case: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SyncSelectionOptions(Evidence? evidence)
+        {
+            foreach (var option in TagOptions)
+            {
+                option.IsSelected = evidence != null && evidence.TagIds.Any(id => string.Equals(id, option.Id, StringComparison.OrdinalIgnoreCase));
+            }
+
+            foreach (var option in PersonOptions)
+            {
+                option.IsSelected = evidence != null && evidence.PersonIds.Any(id => string.Equals(id, option.Id, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        private async Task SaveMetadataAsync()
+        {
+            if (CurrentCase == null || SelectedEvidenceDetail == null)
+            {
+                return;
+            }
+
+            try
+            {
+                SelectedEvidenceDetail.TagIds = TagOptions.Where(o => o.IsSelected).Select(o => o.Id).ToList();
+                SelectedEvidenceDetail.PersonIds = PersonOptions.Where(o => o.IsSelected).Select(o => o.Id).ToList();
+                SelectedEvidenceDetail.LinkedEvidenceIds = ParseLinkedEvidenceIds(LinkedEvidenceText);
+
+                UpdateSortDate(SelectedEvidenceDetail);
+
+                await _evidenceStorage.SaveEvidenceAsync(CurrentCase, SelectedEvidenceDetail);
+
+                var updatedSummary = BuildSummary(SelectedEvidenceDetail);
+                UpdateSummaryLists(updatedSummary);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unable to save metadata: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void UpdateSummaryLists(EvidenceSummary updated)
+        {
+            var idx = _allEvidenceSummaries.FindIndex(s => string.Equals(s.Id, updated.Id, StringComparison.OrdinalIgnoreCase));
+            if (idx >= 0)
+            {
+                _allEvidenceSummaries[idx] = updated;
+            }
+            else
+            {
+                _allEvidenceSummaries.Add(updated);
+            }
+
+            ApplyFilters();
+            SelectedSummary = EvidenceList.FirstOrDefault(s => string.Equals(s.Id, updated.Id, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static List<string> ParseLinkedEvidenceIds(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return new List<string>();
+            }
+
+            return input
+                .Split(new[] { ',', ';', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Trim())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        private static void UpdateSortDate(Evidence evidence)
+        {
+            if (evidence.DateInfo == null)
+            {
+                evidence.DateInfo = new EvidenceDateInfo();
+            }
+
+            evidence.DateInfo.SortDate = ResolveSortDate(evidence.DateInfo);
+        }
+
         private void RaiseCommandStates()
         {
             if (NewEvidenceCommand is AsyncRelayCommand asyncNewEvidence)
@@ -515,6 +733,16 @@ namespace evidence_timeline.ViewModels
             if (SaveNotesCommand is AsyncRelayCommand asyncSaveNotes)
             {
                 asyncSaveNotes.RaiseCanExecuteChanged();
+            }
+
+            if (SaveMetadataCommand is AsyncRelayCommand asyncSaveMetadata)
+            {
+                asyncSaveMetadata.RaiseCanExecuteChanged();
+            }
+
+            if (SaveCaseCommand is AsyncRelayCommand asyncSaveCase)
+            {
+                asyncSaveCase.RaiseCanExecuteChanged();
             }
         }
     }

@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="clr-namespace:evidence_timeline.Models"
         mc:Ignorable="d"
         Title="Evidence Timeline"
         Height="600"
@@ -71,6 +72,10 @@
                     <Button Content="Open"
                             Padding="8 4"
                             Command="{Binding OpenCaseCommand}" />
+                    <Button Content="Save"
+                            Padding="8 4"
+                            Command="{Binding SaveCaseCommand}"
+                            Margin="8 0 0 0" />
                 </StackPanel>
                 <Separator Margin="0 12 0 12" />
                 <TextBlock Text="Filters"
@@ -258,10 +263,17 @@
                         Visibility="{Binding IsRightPaneVisible, Converter={StaticResource BoolToVis}}">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel>
-                            <TextBlock Text="Metadata"
-                                       FontSize="16"
-                                       FontWeight="Bold"
-                                       Margin="0 0 0 12" />
+                            <StackPanel Orientation="Horizontal" Margin="0 0 0 12">
+                                <TextBlock Text="Metadata"
+                                           FontSize="16"
+                                           FontWeight="Bold"
+                                           VerticalAlignment="Center" />
+                                <Button Content="Save"
+                                        Padding="8 4"
+                                        Margin="12 0 0 0"
+                                        Command="{Binding SaveMetadataCommand}"
+                                        HorizontalAlignment="Right" />
+                            </StackPanel>
                             <TextBlock Text="Title" FontSize="12" />
                             <TextBox Text="{Binding SelectedEvidenceDetail.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Margin="0 2 0 8" />
@@ -274,44 +286,59 @@
                                       SelectedValuePath="Id"
                                       SelectedValue="{Binding SelectedEvidenceDetail.TypeId, Mode=TwoWay}"
                                       Margin="0 2 0 8" />
+                            <TextBlock Text="Date mode" FontSize="12" />
+                            <ComboBox SelectedValue="{Binding SelectedDateMode, Mode=TwoWay}"
+                                      SelectedValuePath="Tag"
+                                      Margin="0 2 0 8">
+                                <ComboBoxItem Content="Exact" Tag="{x:Static models:EvidenceDateMode.Exact}" />
+                                <ComboBoxItem Content="Around" Tag="{x:Static models:EvidenceDateMode.Around}" />
+                                <ComboBoxItem Content="Broad" Tag="{x:Static models:EvidenceDateMode.Broad}" />
+                            </ComboBox>
+                            <TextBlock Text="Exact date" FontSize="12" />
+                            <DatePicker SelectedDate="{Binding ExactDate, Mode=TwoWay}"
+                                        Margin="0 2 0 8" />
+                            <TextBlock Text="Start date" FontSize="12" />
+                            <DatePicker SelectedDate="{Binding StartDate, Mode=TwoWay}"
+                                        Margin="0 2 0 8" />
+                            <TextBlock Text="End date" FontSize="12" />
+                            <DatePicker SelectedDate="{Binding EndDate, Mode=TwoWay}"
+                                        Margin="0 2 0 8" />
+                            <TextBlock Text="Around amount/unit" FontSize="12" />
+                            <StackPanel Orientation="Horizontal" Margin="0 2 0 8">
+                                <TextBox Width="60"
+                                         Text="{Binding AroundAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Margin="0 0 8 0" />
+                                <ComboBox Width="120"
+                                          SelectedValue="{Binding AroundUnit, Mode=TwoWay}"
+                                          Margin="0 0 0 0">
+                                    <ComboBoxItem Content="days" />
+                                    <ComboBoxItem Content="weeks" />
+                                    <ComboBoxItem Content="months" />
+                                </ComboBox>
+                            </StackPanel>
                             <TextBlock Text="Tags" FontSize="12" />
-                            <ItemsControl ItemsSource="{Binding SelectedEvidenceTagNames}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapPanel />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
+                            <ItemsControl ItemsSource="{Binding TagOptions}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="#e5e7eb" Padding="6 3" Margin="0 0 6 6" CornerRadius="4">
-                                            <TextBlock Text="{Binding}" />
-                                        </Border>
+                                        <CheckBox Content="{Binding Name}"
+                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                             <TextBlock Text="People" FontSize="12" Margin="0 8 0 0" />
-                            <ItemsControl ItemsSource="{Binding SelectedEvidencePersonNames}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapPanel />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
+                            <ItemsControl ItemsSource="{Binding PersonOptions}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="#e5e7eb" Padding="6 3" Margin="0 0 6 6" CornerRadius="4">
-                                            <TextBlock Text="{Binding}" />
-                                        </Border>
+                                        <CheckBox Content="{Binding Name}"
+                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <TextBlock Text="Linked Evidence" FontSize="12" Margin="0 8 0 0" />
-                            <ItemsControl ItemsSource="{Binding SelectedEvidenceDetail.LinkedEvidenceIds}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding}" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                            <TextBlock Text="Linked Evidence (IDs, comma/line separated)" FontSize="12" Margin="0 8 0 0" />
+                            <TextBox Text="{Binding LinkedEvidenceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"
+                                     Height="60" />
                             <Button Content="Add attachment"
                                     Command="{Binding AddAttachmentCommand}"
                                     Margin="0 12 0 0"

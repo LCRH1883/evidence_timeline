@@ -47,8 +47,8 @@ Legend: `[ ]` pending · `[x]` done
 
 ## 8. Metadata pane (right side)
 - [x] 8.1 Metadata view model — Notes: `SelectedEvidenceDetail` bound with lookup-backed tag/person display.
-- [ ] 8.2 Metadata view — Notes: Title/Court/Type bound; tags/people shown; dates/links editing not wired.
-- [ ] 8.3 Save metadata — Notes: persistence for metadata edits still pending.
+- [x] 8.2 Metadata view — Notes: Title/Court/Type bound; tags/people selectable; dates (mode + fields), and linked evidence text editable.
+- [x] 8.3 Save metadata — Notes: Save button persists metadata (title/court/type/tags/people/dates/links) and refreshes summaries.
 
 ## 9. Notes pane (bottom)
 - [x] 9.1 Notes loading — Notes: loads `note.md` per evidence selection in `MainViewModel`.
