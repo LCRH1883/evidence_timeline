@@ -32,8 +32,8 @@ Legend: `[ ]` pending · `[x]` done
 - [x] 4.3 Evidence storage service — Notes: `IEvidenceStorageService` and `EvidenceStorageService` for evidence CRUD, folder naming, and evidence.json persistence in `Services/`.
 
 ## 5. MVVM setup and main application shell
-- [ ] 5.1 MVVM base — `BaseViewModel` with `INotifyPropertyChanged`.
-- [ ] 5.2 Main window layout — DockPanel/Grid with nav, list, metadata, notes panes; `MainViewModel` with properties/commands.
+- [x] 5.1 MVVM base — Notes: `ViewModels/BaseViewModel` with `SetProperty`; `RelayCommand` helper added.
+- [x] 5.2 Main window layout — Notes: `MainWindow.xaml` scaffolds nav/filters, list grid, metadata pane, notes pane; `MainViewModel` provides bindings and stub commands.
 
 ## 6. Case creation/opening flow
 - [ ] 6.1 Start dialog/view — Create/open case options (recent list optional).
