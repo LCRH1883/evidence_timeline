@@ -56,6 +56,27 @@ namespace evidence_timeline.Services
         public async Task SaveCaseAsync(CaseInfo caseInfo)
         {
             var root = GetCaseRoot(caseInfo);
+            var parent = Directory.GetParent(root)?.FullName;
+            if (string.IsNullOrWhiteSpace(parent))
+            {
+                throw new InvalidOperationException("Cannot determine parent folder for case rename.");
+            }
+
+            var desiredFolderName = PathHelper.GetCaseFolderName(caseInfo);
+            var desiredPath = Path.Combine(parent, desiredFolderName);
+
+            if (!string.Equals(root, desiredPath, StringComparison.OrdinalIgnoreCase))
+            {
+                if (Directory.Exists(desiredPath))
+                {
+                    throw new InvalidOperationException($"Cannot rename case folder to '{desiredFolderName}' because it already exists.");
+                }
+
+                Directory.Move(root, desiredPath);
+                caseInfo.RootPath = desiredPath;
+                root = desiredPath;
+            }
+
             await JsonHelper.SaveAsync(Path.Combine(root, "case.json"), caseInfo);
         }
 
