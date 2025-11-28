@@ -13,12 +13,11 @@ namespace evidence_timeline.Services
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(rootFolder);
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
-            ArgumentException.ThrowIfNullOrWhiteSpace(caseNumber);
 
             var caseInfo = new CaseInfo
             {
                 Name = name,
-                CaseNumber = caseNumber,
+                CaseNumber = caseNumber ?? string.Empty,
                 CreatedAt = DateTime.UtcNow,
                 LastOpenedAt = DateTime.UtcNow,
                 NextEvidenceNumber = 1

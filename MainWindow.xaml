@@ -11,201 +11,314 @@
         MinWidth="800">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <Style x:Key="ResizableColumnStyle" TargetType="ColumnDefinition">
+            <Setter Property="Width" Value="240" />
+            <Setter Property="MinWidth" Value="120" />
+        </Style>
+        <Style x:Key="ResizableRowStyle" TargetType="RowDefinition">
+            <Setter Property="Height" Value="200" />
+            <Setter Property="MinHeight" Value="120" />
+        </Style>
     </Window.Resources>
-    <DockPanel>
-        <Border DockPanel.Dock="Left"
-                Width="240"
-                Background="#f3f4f6"
-                Padding="12"
-                Visibility="{Binding IsLeftPaneVisible, Converter={StaticResource BoolToVis}}">
-            <StackPanel>
-                <TextBlock Text="Case"
-                           FontSize="16"
-                           FontWeight="Bold"
-                           Margin="0 0 0 8" />
-                <TextBlock Text="{Binding CurrentCase.Name, TargetNullValue='No case loaded'}"
-                           FontWeight="SemiBold"
-                           TextTrimming="CharacterEllipsis"
-                           Margin="0 0 0 6" />
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="Create"
-                            Padding="8 4"
-                            Command="{Binding CreateCaseCommand}"
-                            Margin="0 0 8 0" />
-                    <Button Content="Open"
-                            Padding="8 4"
-                            Command="{Binding OpenCaseCommand}" />
-                </StackPanel>
-                <Separator Margin="0 12 0 12" />
-                <TextBlock Text="Filters"
-                           FontWeight="SemiBold"
-                           Margin="0 0 0 8" />
-                <TextBlock Text="Tag" FontSize="12" />
-                <ComboBox ItemsSource="{Binding Tags}"
-                          DisplayMemberPath="Name"
-                          SelectedItem="{Binding SelectedTag}"
-                          Margin="0 2 0 8" />
-                <TextBlock Text="Type" FontSize="12" />
-                <ComboBox ItemsSource="{Binding EvidenceTypes}"
-                          DisplayMemberPath="Name"
-                          SelectedItem="{Binding SelectedType}"
-                          Margin="0 2 0 8" />
-                <TextBlock Text="Person" FontSize="12" />
-                <ComboBox ItemsSource="{Binding People}"
-                          DisplayMemberPath="Name"
-                          SelectedItem="{Binding SelectedPerson}"
-                          Margin="0 2 0 8" />
-                <CheckBox Content="Show metadata pane"
-                          IsChecked="{Binding IsRightPaneVisible}"
-                          Margin="0 12 0 4" />
-                <CheckBox Content="Show notes pane"
-                          IsChecked="{Binding IsBottomPaneVisible}" />
-            </StackPanel>
-        </Border>
 
-        <Border DockPanel.Dock="Right"
-                Width="320"
-                Background="#f9fafb"
-                Padding="12"
-                Visibility="{Binding IsRightPaneVisible, Converter={StaticResource BoolToVis}}">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition>
+                <RowDefinition.Style>
+                    <Style TargetType="RowDefinition">
+                        <Setter Property="Height" Value="5" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsBottomPaneVisible}" Value="False">
+                                <Setter Property="Height" Value="0" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </RowDefinition.Style>
+            </RowDefinition>
+            <RowDefinition>
+                <RowDefinition.Style>
+                    <Style TargetType="RowDefinition" BasedOn="{StaticResource ResizableRowStyle}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsBottomPaneVisible}" Value="False">
+                                <Setter Property="Height" Value="0" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </RowDefinition.Style>
+            </RowDefinition>
+        </Grid.RowDefinitions>
+
+        <!-- Main area with left/nav, center, right/metadata -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftColumn">
+                    <ColumnDefinition.Style>
+                        <Style TargetType="ColumnDefinition" BasedOn="{StaticResource ResizableColumnStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsLeftPaneVisible}" Value="False">
+                                    <Setter Property="Width" Value="0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ColumnDefinition.Style>
+                </ColumnDefinition>
+                <ColumnDefinition Width="5">
+                    <ColumnDefinition.Style>
+                        <Style TargetType="ColumnDefinition">
+                            <Setter Property="Width" Value="5" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsLeftPaneVisible}" Value="False">
+                                    <Setter Property="Width" Value="0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ColumnDefinition.Style>
+                </ColumnDefinition>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="5">
+                    <ColumnDefinition.Style>
+                        <Style TargetType="ColumnDefinition">
+                            <Setter Property="Width" Value="5" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsRightPaneVisible}" Value="False">
+                                    <Setter Property="Width" Value="0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ColumnDefinition.Style>
+                </ColumnDefinition>
+                <ColumnDefinition x:Name="RightColumn">
+                    <ColumnDefinition.Style>
+                        <Style TargetType="ColumnDefinition" BasedOn="{StaticResource ResizableColumnStyle}">
+                            <Setter Property="Width" Value="320" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsRightPaneVisible}" Value="False">
+                                    <Setter Property="Width" Value="0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ColumnDefinition.Style>
+                </ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Background="#f3f4f6"
+                    Padding="12"
+                    Visibility="{Binding IsLeftPaneVisible, Converter={StaticResource BoolToVis}}">
                 <StackPanel>
-                    <TextBlock Text="Metadata"
+                    <TextBlock Text="Case"
                                FontSize="16"
                                FontWeight="Bold"
-                               Margin="0 0 0 12" />
-                    <TextBlock Text="Title" FontSize="12" />
-                    <TextBox Text="{Binding SelectedEvidence.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             Margin="0 2 0 8" />
-                    <TextBlock Text="Court #" FontSize="12" />
-                    <TextBox Text="{Binding SelectedEvidence.CourtNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             Margin="0 2 0 8" />
+                               Margin="0 0 0 8" />
+                    <TextBlock Text="{Binding CurrentCase.Name, TargetNullValue='No case loaded'}"
+                               FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis"
+                               Margin="0 0 0 6" />
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Create"
+                                Padding="8 4"
+                                Command="{Binding CreateCaseCommand}"
+                                Margin="0 0 8 0" />
+                        <Button Content="Open"
+                                Padding="8 4"
+                                Command="{Binding OpenCaseCommand}" />
+                    </StackPanel>
+                    <Separator Margin="0 12 0 12" />
+                    <TextBlock Text="Filters"
+                               FontWeight="SemiBold"
+                               Margin="0 0 0 8" />
+                    <TextBlock Text="Tag" FontSize="12" />
+                    <ComboBox ItemsSource="{Binding Tags}"
+                              DisplayMemberPath="Name"
+                              SelectedItem="{Binding SelectedTag}"
+                              Margin="0 2 0 8" />
                     <TextBlock Text="Type" FontSize="12" />
                     <ComboBox ItemsSource="{Binding EvidenceTypes}"
                               DisplayMemberPath="Name"
-                              SelectedValuePath="Name"
-                              SelectedValue="{Binding SelectedEvidence.TypeName, Mode=TwoWay}"
+                              SelectedItem="{Binding SelectedType}"
                               Margin="0 2 0 8" />
-                    <TextBlock Text="Tags" FontSize="12" />
-                    <ItemsControl ItemsSource="{Binding SelectedEvidence.TagNames}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="#e5e7eb" Padding="6 3" Margin="0 0 6 6" CornerRadius="4">
-                                    <TextBlock Text="{Binding}" />
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <TextBlock Text="People" FontSize="12" Margin="0 8 0 0" />
-                    <ItemsControl ItemsSource="{Binding SelectedEvidence.PersonNames}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="#e5e7eb" Padding="6 3" Margin="0 0 6 6" CornerRadius="4">
-                                    <TextBlock Text="{Binding}" />
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <TextBlock Text="Linked Evidence" FontSize="12" Margin="0 8 0 0" />
-                    <ItemsControl ItemsSource="{Binding SelectedEvidence.LinkedEvidenceIds}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <Button Content="Add attachment"
-                            Command="{Binding AddAttachmentCommand}"
-                            Margin="0 12 0 0"
-                            Padding="8 4" />
-                </StackPanel>
-            </ScrollViewer>
-        </Border>
-
-        <DockPanel DockPanel.Dock="Bottom"
-                   LastChildFill="True"
-                   Visibility="{Binding IsBottomPaneVisible, Converter={StaticResource BoolToVis}}">
-            <Border Background="#f3f4f6" Padding="12">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0 0 0 8">
-                        <TextBlock Text="Notes"
-                                   FontSize="16"
-                                   FontWeight="Bold"
-                                   VerticalAlignment="Center" />
-                        <Button Content="Save"
-                                Command="{Binding SaveNotesCommand}"
-                                Padding="8 4"
-                                Margin="12 0 0 0"
-                                HorizontalAlignment="Right" />
-                    </StackPanel>
-                    <TextBox Text="{Binding NotesText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             AcceptsReturn="True"
-                             VerticalScrollBarVisibility="Auto"
-                             Height="120" />
+                    <TextBlock Text="Person" FontSize="12" />
+                    <ComboBox ItemsSource="{Binding People}"
+                              DisplayMemberPath="Name"
+                              SelectedItem="{Binding SelectedPerson}"
+                              Margin="0 2 0 8" />
+                    <CheckBox Content="Show metadata pane"
+                              IsChecked="{Binding IsRightPaneVisible}"
+                              Margin="0 12 0 4" />
+                    <CheckBox Content="Show notes pane"
+                              IsChecked="{Binding IsBottomPaneVisible}" />
                 </StackPanel>
             </Border>
-        </DockPanel>
 
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <StackPanel Orientation="Horizontal" Padding="12" HorizontalAlignment="Left" Spacing="8">
-                <TextBox Width="240"
-                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                    <TextBox.Style>
-                        <Style TargetType="TextBox">
-                            <Setter Property="Padding" Value="6" />
-                            <Setter Property="VerticalContentAlignment" Value="Center" />
-                        </Style>
-                    </TextBox.Style>
-                </TextBox>
-                <Button Content="New Evidence"
-                        Padding="10 4"
-                        Command="{Binding NewEvidenceCommand}" />
-                <Button Content="Open Evidence"
-                        Padding="10 4"
-                        Command="{Binding OpenEvidenceWindowCommand}" />
-            </StackPanel>
-            <DataGrid Grid.Row="1"
-                      ItemsSource="{Binding EvidenceList}"
-                      SelectedItem="{Binding SelectedEvidence, Mode=TwoWay}"
-                      AutoGenerateColumns="False"
-                      CanUserAddRows="False"
-                      Margin="12"
-                      SelectionMode="Single">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="#"
-                                        Width="60"
-                                        Binding="{Binding EvidenceNumber}" />
-                    <DataGridTextColumn Header="Title"
-                                        Width="*"
-                                        Binding="{Binding Title}" />
-                    <DataGridTextColumn Header="Date"
-                                        Width="140"
-                                        Binding="{Binding DateDisplay}" />
-                    <DataGridTextColumn Header="Type"
-                                        Width="140"
-                                        Binding="{Binding TypeName}" />
-                    <DataGridTextColumn Header="Tags"
-                                        Width="160"
-                                        Binding="{Binding TagNamesDisplay}" />
-                    <DataGridTextColumn Header="Court #"
-                                        Width="100"
-                                        Binding="{Binding CourtNumber}" />
-                </DataGrid.Columns>
-            </DataGrid>
+            <GridSplitter Grid.Column="1"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Background="#d1d5db"
+                          ResizeDirection="Columns"
+                          ResizeBehavior="PreviousAndNext"
+                          ShowsPreview="True"
+                          Visibility="{Binding IsLeftPaneVisible, Converter={StaticResource BoolToVis}}" />
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Margin="12" HorizontalAlignment="Left">
+                    <TextBox Width="240"
+                             Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0 0 8 0"
+                             VerticalContentAlignment="Center"
+                             Padding="6" />
+                    <Button Content="New Evidence"
+                            Padding="10 4"
+                            Margin="0 0 8 0"
+                            Command="{Binding NewEvidenceCommand}" />
+                    <Button Content="Open Evidence"
+                            Padding="10 4"
+                            Command="{Binding OpenEvidenceWindowCommand}" />
+                </StackPanel>
+                <DataGrid Grid.Row="1"
+                          ItemsSource="{Binding EvidenceList}"
+                          SelectedItem="{Binding SelectedSummary, Mode=TwoWay}"
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          Margin="12"
+                          SelectionMode="Single">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="#"
+                                            Width="60"
+                                            Binding="{Binding EvidenceNumber}" />
+                        <DataGridTextColumn Header="Title"
+                                            Width="*"
+                                            Binding="{Binding Title}" />
+                        <DataGridTextColumn Header="Date"
+                                            Width="140"
+                                            Binding="{Binding DateDisplay}" />
+                        <DataGridTextColumn Header="Type"
+                                            Width="140"
+                                            Binding="{Binding TypeName}" />
+                        <DataGridTextColumn Header="Tags"
+                                            Width="160"
+                                            Binding="{Binding TagNamesDisplay}" />
+                        <DataGridTextColumn Header="Court #"
+                                            Width="100"
+                                            Binding="{Binding CourtNumber}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+
+            <GridSplitter Grid.Column="3"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Background="#d1d5db"
+                          ResizeDirection="Columns"
+                          ResizeBehavior="PreviousAndNext"
+                          ShowsPreview="True"
+                          Visibility="{Binding IsRightPaneVisible, Converter={StaticResource BoolToVis}}" />
+
+            <Border Grid.Column="4"
+                    Background="#f9fafb"
+                    Padding="12"
+                    Visibility="{Binding IsRightPaneVisible, Converter={StaticResource BoolToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Metadata"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Margin="0 0 0 12" />
+                        <TextBlock Text="Title" FontSize="12" />
+                        <TextBox Text="{Binding SelectedEvidenceDetail.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0 2 0 8" />
+                        <TextBlock Text="Court #" FontSize="12" />
+                        <TextBox Text="{Binding SelectedEvidenceDetail.CourtNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0 2 0 8" />
+                        <TextBlock Text="Type" FontSize="12" />
+                        <ComboBox ItemsSource="{Binding EvidenceTypes}"
+                                  DisplayMemberPath="Name"
+                                  SelectedValuePath="Id"
+                                  SelectedValue="{Binding SelectedEvidenceDetail.TypeId, Mode=TwoWay}"
+                                  Margin="0 2 0 8" />
+                        <TextBlock Text="Tags" FontSize="12" />
+                        <ItemsControl ItemsSource="{Binding SelectedEvidenceTagNames}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#e5e7eb" Padding="6 3" Margin="0 0 6 6" CornerRadius="4">
+                                        <TextBlock Text="{Binding}" />
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="People" FontSize="12" Margin="0 8 0 0" />
+                        <ItemsControl ItemsSource="{Binding SelectedEvidencePersonNames}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#e5e7eb" Padding="6 3" Margin="0 0 6 6" CornerRadius="4">
+                                        <TextBlock Text="{Binding}" />
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="Linked Evidence" FontSize="12" Margin="0 8 0 0" />
+                        <ItemsControl ItemsSource="{Binding SelectedEvidenceDetail.LinkedEvidenceIds}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="Add attachment"
+                                Command="{Binding AddAttachmentCommand}"
+                                Margin="0 12 0 0"
+                                Padding="8 4" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
         </Grid>
-    </DockPanel>
+
+        <!-- Horizontal splitter for notes pane -->
+        <GridSplitter Grid.Row="1"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      Background="#d1d5db"
+                      ResizeDirection="Rows"
+                      ResizeBehavior="PreviousAndNext"
+                      ShowsPreview="True"
+                      Visibility="{Binding IsBottomPaneVisible, Converter={StaticResource BoolToVis}}" />
+
+        <!-- Notes pane -->
+        <Border Grid.Row="2"
+                Background="#f3f4f6"
+                Padding="12"
+                Visibility="{Binding IsBottomPaneVisible, Converter={StaticResource BoolToVis}}">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 0 0 8">
+                    <TextBlock Text="Notes"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center" />
+                    <Button Content="Save"
+                            Command="{Binding SaveNotesCommand}"
+                            Padding="8 4"
+                            Margin="12 0 0 0"
+                            HorizontalAlignment="Right" />
+                </StackPanel>
+                <TextBox Text="{Binding NotesText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         AcceptsReturn="True"
+                         VerticalScrollBarVisibility="Auto"
+                         Height="120" />
+            </StackPanel>
+        </Border>
+    </Grid>
 </Window>

@@ -37,22 +37,22 @@ Legend: `[ ]` pending · `[x]` done
 
 ## 6. Case creation/opening flow
 - [ ] 6.1 Start dialog/view — Create/open case options (recent list optional).
-- [ ] 6.2 Create case flow — Prompt name/number, folder picker, load empty refs.
-- [ ] 6.3 Open case flow — Folder picker, load case + refs + evidence summaries.
+- [x] 6.2 Create case flow — Notes: folder picker + prompts wired in `MainViewModel` using storage services.
+- [x] 6.3 Open case flow — Notes: folder picker loads case, refs, evidence summaries in `MainViewModel`.
 
 ## 7. Evidence list and search/filter
-- [ ] 7.1 Build `EvidenceSummary` list — Map evidence with resolved names and search key.
-- [ ] 7.2 Evidence list view — Search box, filter dropdowns, DataGrid bindings.
-- [ ] 7.3 Search/filter logic — Apply text + tag/type/person filters.
+- [x] 7.1 Build `EvidenceSummary` list — Notes: summaries built with resolved names/search keys in `MainViewModel`.
+- [x] 7.2 Evidence list view — Notes: DataGrid bound to `EvidenceList`, search box/filters active.
+- [x] 7.3 Search/filter logic — Notes: text + tag/type/person filters applied in `MainViewModel.ApplyFilters`.
 
 ## 8. Metadata pane (right side)
-- [ ] 8.1 Metadata view model — Bind selected evidence and lookups.
-- [ ] 8.2 Metadata view — Editable fields for title, court number, type, dates, tags, people, links.
-- [ ] 8.3 Save metadata — Persist changes, recompute derived fields, update summaries.
+- [x] 8.1 Metadata view model — Notes: `SelectedEvidenceDetail` bound with lookup-backed tag/person display.
+- [ ] 8.2 Metadata view — Notes: Title/Court/Type bound; tags/people shown; dates/links editing not wired.
+- [ ] 8.3 Save metadata — Notes: persistence for metadata edits still pending.
 
 ## 9. Notes pane (bottom)
-- [ ] 9.1 Notes loading — Load `note.md` on selection change.
-- [ ] 9.2 Notes saving — Save command (optional autosave on change/timer).
+- [x] 9.1 Notes loading — Notes: loads `note.md` per evidence selection in `MainViewModel`.
+- [x] 9.2 Notes saving — Notes: Save command writes `note.md`; no autosave yet.
 
 ## 10. Attachments support
 - [ ] 10.1 Attach files — Copy to `files/`, add `AttachmentInfo`, save.
