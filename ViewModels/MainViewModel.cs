@@ -713,6 +713,19 @@ namespace evidence_timeline.ViewModels
             evidence.DateInfo.SortDate = ResolveSortDate(evidence.DateInfo);
         }
 
+        private static DateOnly ResolveSortDate(EvidenceDateInfo dateInfo)
+        {
+            if (dateInfo.SortDate != default)
+            {
+                return dateInfo.SortDate;
+            }
+
+            return dateInfo.ExactDate
+                ?? dateInfo.StartDate
+                ?? dateInfo.EndDate
+                ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        }
+
         private void RaiseCommandStates()
         {
             if (NewEvidenceCommand is AsyncRelayCommand asyncNewEvidence)
