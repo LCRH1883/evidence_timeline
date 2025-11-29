@@ -9,7 +9,8 @@
         Height="600"
         Width="1000"
         MinHeight="500"
-        MinWidth="800">
+        MinWidth="800"
+        Loaded="OnLoaded">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <Style x:Key="ResizableColumnStyle" TargetType="ColumnDefinition">
@@ -86,16 +87,64 @@
                           DisplayMemberPath="Name"
                           SelectedItem="{Binding SelectedTag}"
                           Margin="0 2 0 8" />
+                <StackPanel Orientation="Horizontal" Margin="0 0 0 8">
+                    <Button Content="Add"
+                            Padding="6 2"
+                            Width="60"
+                            Command="{Binding AddTagCommand}" />
+                    <Button Content="Rename"
+                            Padding="6 2"
+                            Width="70"
+                            Margin="6 0 0 0"
+                            Command="{Binding RenameTagCommand}" />
+                    <Button Content="Delete"
+                            Padding="6 2"
+                            Width="70"
+                            Margin="6 0 0 0"
+                            Command="{Binding DeleteTagCommand}" />
+                </StackPanel>
                 <TextBlock Text="Type" FontSize="12" />
                 <ComboBox ItemsSource="{Binding EvidenceTypes}"
                           DisplayMemberPath="Name"
                           SelectedItem="{Binding SelectedType}"
                           Margin="0 2 0 8" />
+                <StackPanel Orientation="Horizontal" Margin="0 0 0 8">
+                    <Button Content="Add"
+                            Padding="6 2"
+                            Width="60"
+                            Command="{Binding AddTypeCommand}" />
+                    <Button Content="Rename"
+                            Padding="6 2"
+                            Width="70"
+                            Margin="6 0 0 0"
+                            Command="{Binding RenameTypeCommand}" />
+                    <Button Content="Delete"
+                            Padding="6 2"
+                            Width="70"
+                            Margin="6 0 0 0"
+                            Command="{Binding DeleteTypeCommand}" />
+                </StackPanel>
                 <TextBlock Text="Person" FontSize="12" />
                 <ComboBox ItemsSource="{Binding People}"
                           DisplayMemberPath="Name"
                           SelectedItem="{Binding SelectedPerson}"
                           Margin="0 2 0 8" />
+                <StackPanel Orientation="Horizontal" Margin="0 0 0 12">
+                    <Button Content="Add"
+                            Padding="6 2"
+                            Width="60"
+                            Command="{Binding AddPersonCommand}" />
+                    <Button Content="Rename"
+                            Padding="6 2"
+                            Width="70"
+                            Margin="6 0 0 0"
+                            Command="{Binding RenamePersonCommand}" />
+                    <Button Content="Delete"
+                            Padding="6 2"
+                            Width="70"
+                            Margin="6 0 0 0"
+                            Command="{Binding DeletePersonCommand}" />
+                </StackPanel>
                 <CheckBox Content="Show metadata pane"
                           IsChecked="{Binding IsRightPaneVisible}"
                           Margin="0 12 0 4" />
@@ -203,11 +252,11 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal" Margin="12" HorizontalAlignment="Left">
-                        <TextBox Width="240"
-                                 Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0 0 8 0"
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal" Margin="12" HorizontalAlignment="Left">
+                <TextBox Width="240"
+                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0 0 8 0"
                                  VerticalContentAlignment="Center"
                                  Padding="6" />
                         <Button Content="New Evidence"
@@ -218,13 +267,14 @@
                                 Padding="10 4"
                                 Command="{Binding OpenEvidenceWindowCommand}" />
                     </StackPanel>
-                    <DataGrid Grid.Row="1"
-                              ItemsSource="{Binding EvidenceList}"
-                              SelectedItem="{Binding SelectedSummary, Mode=TwoWay}"
-                              AutoGenerateColumns="False"
-                              CanUserAddRows="False"
-                              Margin="12"
-                              SelectionMode="Single">
+            <DataGrid Grid.Row="1"
+                      ItemsSource="{Binding EvidenceList}"
+                      SelectedItem="{Binding SelectedSummary, Mode=TwoWay}"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      Margin="12"
+                      SelectionMode="Single"
+                      MouseDoubleClick="OnEvidenceRowDoubleClick">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#"
                                                 Width="60"
@@ -276,41 +326,53 @@
                             </StackPanel>
                             <TextBlock Text="Title" FontSize="12" />
                             <TextBox Text="{Binding SelectedEvidenceDetail.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0 2 0 8" />
+                                     Margin="0 2 0 8"
+                                     KeyDown="OnMetadataEnterKey"
+                                     LostFocus="OnMetadataFieldLostFocus" />
                             <TextBlock Text="Court #" FontSize="12" />
                             <TextBox Text="{Binding SelectedEvidenceDetail.CourtNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0 2 0 8" />
+                                     Margin="0 2 0 8"
+                                     KeyDown="OnMetadataEnterKey"
+                                     LostFocus="OnMetadataFieldLostFocus" />
                             <TextBlock Text="Type" FontSize="12" />
                             <ComboBox ItemsSource="{Binding EvidenceTypes}"
                                       DisplayMemberPath="Name"
                                       SelectedValuePath="Id"
                                       SelectedValue="{Binding SelectedEvidenceDetail.TypeId, Mode=TwoWay}"
-                                      Margin="0 2 0 8" />
+                                      Margin="0 2 0 8"
+                                      SelectionChanged="OnMetadataSelectionChanged" />
                             <TextBlock Text="Date mode" FontSize="12" />
                             <ComboBox SelectedValue="{Binding SelectedDateMode, Mode=TwoWay}"
                                       SelectedValuePath="Tag"
-                                      Margin="0 2 0 8">
+                                      Margin="0 2 0 8"
+                                      SelectionChanged="OnMetadataSelectionChanged">
                                 <ComboBoxItem Content="Exact" Tag="{x:Static models:EvidenceDateMode.Exact}" />
                                 <ComboBoxItem Content="Around" Tag="{x:Static models:EvidenceDateMode.Around}" />
                                 <ComboBoxItem Content="Broad" Tag="{x:Static models:EvidenceDateMode.Broad}" />
                             </ComboBox>
                             <TextBlock Text="Exact date" FontSize="12" />
                             <DatePicker SelectedDate="{Binding ExactDate, Mode=TwoWay}"
-                                        Margin="0 2 0 8" />
+                                        Margin="0 2 0 8"
+                                        SelectedDateChanged="OnMetadataSelectionChanged" />
                             <TextBlock Text="Start date" FontSize="12" />
                             <DatePicker SelectedDate="{Binding StartDate, Mode=TwoWay}"
-                                        Margin="0 2 0 8" />
+                                        Margin="0 2 0 8"
+                                        SelectedDateChanged="OnMetadataSelectionChanged" />
                             <TextBlock Text="End date" FontSize="12" />
                             <DatePicker SelectedDate="{Binding EndDate, Mode=TwoWay}"
-                                        Margin="0 2 0 8" />
+                                        Margin="0 2 0 8"
+                                        SelectedDateChanged="OnMetadataSelectionChanged" />
                             <TextBlock Text="Around amount/unit" FontSize="12" />
                             <StackPanel Orientation="Horizontal" Margin="0 2 0 8">
                                 <TextBox Width="60"
                                          Text="{Binding AroundAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         Margin="0 0 8 0" />
+                                         Margin="0 0 8 0"
+                                         KeyDown="OnMetadataEnterKey"
+                                         LostFocus="OnMetadataFieldLostFocus" />
                                 <ComboBox Width="120"
                                           SelectedValue="{Binding AroundUnit, Mode=TwoWay}"
-                                          Margin="0 0 0 0">
+                                          Margin="0 0 0 0"
+                                          SelectionChanged="OnMetadataSelectionChanged">
                                     <ComboBoxItem Content="days" />
                                     <ComboBoxItem Content="weeks" />
                                     <ComboBoxItem Content="months" />
@@ -321,7 +383,9 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <CheckBox Content="{Binding Name}"
-                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                  Checked="OnMetadataCheckboxChanged"
+                                                  Unchecked="OnMetadataCheckboxChanged" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -330,18 +394,52 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <CheckBox Content="{Binding Name}"
-                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                  Checked="OnMetadataCheckboxChanged"
+                                                  Unchecked="OnMetadataCheckboxChanged" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <TextBlock Text="Linked Evidence (IDs, comma/line separated)" FontSize="12" Margin="0 8 0 0" />
+                            <StackPanel Orientation="Horizontal" Margin="0 8 0 8">
+                                <Button Content="Select links"
+                                        Padding="8 4"
+                                        Command="{Binding ManageLinksCommand}"
+                                        Margin="0 0 8 0" />
+                                <TextBlock Text="Linked IDs (manual):"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
                             <TextBox Text="{Binding LinkedEvidenceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto"
                                      Height="60" />
+                            <TextBlock Text="Attachments" FontSize="12" Margin="0 8 0 4" />
+                            <ItemsControl ItemsSource="{Binding SelectedEvidenceDetail.Attachments}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding FileName}" Width="160" />
+                                            <Button Content="Open"
+                                                    Padding="4 2"
+                                                    Margin="4 0 0 0"
+                                                    Command="{Binding DataContext.OpenAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" />
+                                            <Button Content="Folder"
+                                                    Padding="4 2"
+                                                    Margin="4 0 0 0"
+                                                    Command="{Binding DataContext.OpenAttachmentFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" />
+                                            <Button Content="Remove"
+                                                    Padding="4 2"
+                                                    Margin="4 0 0 0"
+                                                    Command="{Binding DataContext.RemoveAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                             <Button Content="Add attachment"
                                     Command="{Binding AddAttachmentCommand}"
-                                    Margin="0 12 0 0"
+                                    Margin="0 8 0 0"
                                     Padding="8 4" />
                         </StackPanel>
                     </ScrollViewer>

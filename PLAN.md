@@ -36,7 +36,7 @@ Legend: `[ ]` pending · `[x]` done
 - [x] 5.2 Main window layout — Notes: `MainWindow.xaml` scaffolds nav/filters, list grid, metadata pane, notes pane; `MainViewModel` provides bindings and stub commands.
 
 ## 6. Case creation/opening flow
-- [ ] 6.1 Start dialog/view — Create/open case options (recent list optional).
+- [x] 6.1 Start dialog/view — Notes: startup dialog prompts to create or open a case.
 - [x] 6.2 Create case flow — Notes: folder picker + prompts wired in `MainViewModel` using storage services.
 - [x] 6.3 Open case flow — Notes: folder picker loads case, refs, evidence summaries in `MainViewModel`.
 
@@ -48,30 +48,30 @@ Legend: `[ ]` pending · `[x]` done
 ## 8. Metadata pane (right side)
 - [x] 8.1 Metadata view model — Notes: `SelectedEvidenceDetail` bound with lookup-backed tag/person display.
 - [x] 8.2 Metadata view — Notes: Title/Court/Type bound; tags/people selectable; dates (mode + fields), and linked evidence text editable.
-- [x] 8.3 Save metadata — Notes: Save button persists metadata (title/court/type/tags/people/dates/links) and refreshes summaries.
+- [x] 8.3 Save metadata — Notes: Save button persists metadata (title/court/type/tags/people/dates/links), refreshes summaries, and auto-saves on Enter/dropdown and tag/person toggles.
 
 ## 9. Notes pane (bottom)
 - [x] 9.1 Notes loading — Notes: loads `note.md` per evidence selection in `MainViewModel`.
-- [x] 9.2 Notes saving — Notes: Save command writes `note.md`; no autosave yet.
+- [x] 9.2 Notes saving — Notes: Save command writes `note.md`; autosaves while typing in main/detail views.
 
 ## 10. Attachments support
-- [ ] 10.1 Attach files — Copy to `files/`, add `AttachmentInfo`, save.
-- [ ] 10.2 Show attachments — List/open/open-folder/remove.
+- [x] 10.1 Attach files — Notes: Add attachment command copies to `files/`, records `AttachmentInfo`, saves evidence.
+- [x] 10.2 Show attachments — Notes: attachments listed with open/folder/remove; per-item controls in metadata pane.
 
 ## 11. People, tags, and types management screens
-- [ ] 11.1 Tags management — Add/rename/delete; update evidence and summaries.
-- [ ] 11.2 Types management — Edit types; update display names.
-- [ ] 11.3 People management — Add/edit/delete; update evidence and summaries.
+- [x] 11.1 Tags management — Notes: add/rename/delete via left-pane buttons; evidence updated and summaries refreshed.
+- [x] 11.2 Types management — Notes: add/rename/delete via left-pane buttons; evidence type cleared on delete and summaries refreshed.
+- [x] 11.3 People management — Notes: add/rename/delete via left-pane buttons; evidence updated and summaries refreshed.
 
 ## 12. Evidence linking UI
-- [ ] 12.1 Model usage — Use `LinkedEvidenceIds`.
-- [ ] 12.2 UI — Add/remove linked evidence via dialog.
-- [ ] 12.3 Logic — Save links and navigate/select linked items.
+- [x] 12.1 Model usage — Notes: `LinkedEvidenceIds` editable and saved via metadata save.
+- [x] 12.2 UI — Notes: Manage links dialog + manual text field.
+- [x] 12.3 Logic — Notes: selections saved, summaries refreshed (navigation still basic).
 
 ## 13. Evidence detail window (multi-window support)
-- [ ] 13.1 New window — `EvidenceWindow.xaml` + view model with metadata/notes/attachments.
-- [ ] 13.2 Open from main view — Double-click or command opens detail window.
-- [ ] 13.3 Synchronization — Refresh main summaries on save.
+- [x] 13.1 New window — Notes: `EvidenceWindow.xaml` + `EvidenceWindowViewModel` with metadata/notes/attachments.
+- [x] 13.2 Open from main view — Notes: double-click and command open detail window for selected evidence.
+- [x] 13.3 Synchronization — Notes: detail window save/notes events now refresh the main view selections and summaries.
 
 ## 14. Case settings and preferences
 - [ ] 14.1 Case settings — Optional `caseSettings.json` (sort order, pane visibility).

@@ -1,0 +1,32 @@
+<Window x:Class="evidence_timeline.Views.StartDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Evidence Timeline"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        MinWidth="320">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel>
+            <TextBlock Text="Welcome"
+                       FontSize="18"
+                       FontWeight="Bold"
+                       Margin="0 0 0 8" />
+            <TextBlock Text="Create a new case or open an existing one."
+                       Margin="0 0 0 16" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button Content="Create new case"
+                        Width="140"
+                        Margin="0 0 8 0"
+                        Click="OnCreateClicked" />
+                <Button Content="Open existing case"
+                        Width="140"
+                        Click="OnOpenClicked" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>

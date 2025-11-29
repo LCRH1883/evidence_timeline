@@ -8,7 +8,21 @@ namespace evidence_timeline.ViewModels
         private bool _isSelected;
 
         public string Id { get; }
-        public string Name { get; }
+        private string _name;
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                if (_name == value)
+                {
+                    return;
+                }
+
+                _name = value;
+                OnPropertyChanged();
+            }
+        }
 
         public bool IsSelected
         {
@@ -28,7 +42,7 @@ namespace evidence_timeline.ViewModels
         public SelectableItem(string id, string name, bool isSelected = false)
         {
             Id = id;
-            Name = name;
+            _name = name;
             _isSelected = isSelected;
         }
 
