@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -74,6 +75,9 @@ namespace evidence_timeline.ViewModels
             AddPersonCommand = new AsyncRelayCommand(AddPersonAsync, () => CurrentCase != null);
             RenamePersonCommand = new AsyncRelayCommand(RenamePersonAsync, () => CurrentCase != null && SelectedPerson != null);
             DeletePersonCommand = new AsyncRelayCommand(DeletePersonAsync, () => CurrentCase != null && SelectedPerson != null);
+
+            TagOptions.CollectionChanged += OnTagOptionsChanged;
+            PersonOptions.CollectionChanged += OnPersonOptionsChanged;
         }
 
         public CaseInfo? CurrentCase
@@ -443,7 +447,7 @@ namespace evidence_timeline.ViewModels
             {
                 Tags.Add(tag);
                 _tagLookup[tag.Id] = tag;
-                TagOptions.Add(new SelectableItem(tag.Id, tag.Name));
+                AddTagOption(tag.Id, tag.Name);
             }
 
             var types = await _referenceData.LoadTypesAsync(caseInfo);
@@ -458,7 +462,7 @@ namespace evidence_timeline.ViewModels
             {
                 People.Add(person);
                 _peopleLookup[person.Id] = person;
-                PersonOptions.Add(new SelectableItem(person.Id, person.Name));
+                AddPersonOption(person.Id, person.Name);
             }
 
             var evidence = await _evidenceStorage.LoadAllEvidenceAsync(caseInfo);
@@ -1181,7 +1185,7 @@ namespace evidence_timeline.ViewModels
 
             var tag = new Tag { Id = Guid.NewGuid().ToString("N"), Name = name.Trim() };
             Tags.Add(tag);
-            TagOptions.Add(new SelectableItem(tag.Id, tag.Name));
+            AddTagOption(tag.Id, tag.Name);
             _tagLookup[tag.Id] = tag;
             await _referenceData.SaveTagsAsync(CurrentCase, Tags.ToList());
             RebuildSummaries();
@@ -1320,7 +1324,7 @@ namespace evidence_timeline.ViewModels
 
             var person = new Person { Id = Guid.NewGuid().ToString("N"), Name = name.Trim() };
             People.Add(person);
-            PersonOptions.Add(new SelectableItem(person.Id, person.Name));
+            AddPersonOption(person.Id, person.Name);
             _peopleLookup[person.Id] = person;
             await _referenceData.SavePeopleAsync(CurrentCase, People.ToList());
             RebuildSummaries();
@@ -1388,6 +1392,52 @@ namespace evidence_timeline.ViewModels
                 _allEvidenceSummaries.Add(BuildSummary(ev));
             }
             ApplyFilters();
+        }
+
+        private void OnTagOptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (var item in e.NewItems.OfType<SelectableItem>())
+                {
+                    item.PropertyChanged += OnOptionPropertyChanged;
+                }
+            }
+
+            if (e.OldItems != null)
+            {
+                foreach (var item in e.OldItems.OfType<SelectableItem>())
+                {
+                    item.PropertyChanged -= OnOptionPropertyChanged;
+                }
+            }
+        }
+
+        private void OnPersonOptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (var item in e.NewItems.OfType<SelectableItem>())
+                {
+                    item.PropertyChanged += OnOptionPropertyChanged;
+                }
+            }
+
+            if (e.OldItems != null)
+            {
+                foreach (var item in e.OldItems.OfType<SelectableItem>())
+                {
+                    item.PropertyChanged -= OnOptionPropertyChanged;
+                }
+            }
+        }
+
+        private void OnOptionPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (string.Equals(e.PropertyName, nameof(SelectableItem.IsSelected), StringComparison.Ordinal))
+            {
+                RequestMetadataAutoSave();
+            }
         }
 
         private static Evidence CloneEvidence(Evidence source)
@@ -1466,6 +1516,20 @@ namespace evidence_timeline.ViewModels
 
             return current.OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
                 .SequenceEqual(snapshot.OrderBy(x => x, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
+        }
+
+        private void AddTagOption(string id, string name)
+        {
+            var option = new SelectableItem(id, name);
+            option.PropertyChanged += OnOptionPropertyChanged;
+            TagOptions.Add(option);
+        }
+
+        private void AddPersonOption(string id, string name)
+        {
+            var option = new SelectableItem(id, name);
+            option.PropertyChanged += OnOptionPropertyChanged;
+            PersonOptions.Add(option);
         }
 
         private void OnExternalEvidenceSaved(object? sender, Evidence updated)

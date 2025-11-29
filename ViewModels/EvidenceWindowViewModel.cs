@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Input;
 using evidence_timeline.Models;
@@ -47,6 +48,9 @@ namespace evidence_timeline.ViewModels
             PersonOptions = new ObservableCollection<SelectableItem>();
             LinkedEvidence = new ObservableCollection<string>(Evidence.LinkedEvidenceIds);
             _loadedEvidenceSnapshot = CloneEvidence(Evidence);
+
+            TagOptions.CollectionChanged += OnTagOptionsChanged;
+            PersonOptions.CollectionChanged += OnPersonOptionsChanged;
         }
 
         public Evidence Evidence { get; }
@@ -336,6 +340,52 @@ namespace evidence_timeline.ViewModels
 
             return current.OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
                 .SequenceEqual(snapshot.OrderBy(x => x, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
+        }
+
+        private void OnTagOptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (var item in e.NewItems.OfType<SelectableItem>())
+                {
+                    item.PropertyChanged += OnOptionPropertyChanged;
+                }
+            }
+
+            if (e.OldItems != null)
+            {
+                foreach (var item in e.OldItems.OfType<SelectableItem>())
+                {
+                    item.PropertyChanged -= OnOptionPropertyChanged;
+                }
+            }
+        }
+
+        private void OnPersonOptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (var item in e.NewItems.OfType<SelectableItem>())
+                {
+                    item.PropertyChanged += OnOptionPropertyChanged;
+                }
+            }
+
+            if (e.OldItems != null)
+            {
+                foreach (var item in e.OldItems.OfType<SelectableItem>())
+                {
+                    item.PropertyChanged -= OnOptionPropertyChanged;
+                }
+            }
+        }
+
+        private void OnOptionPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (string.Equals(e.PropertyName, nameof(SelectableItem.IsSelected), StringComparison.Ordinal))
+            {
+                RequestMetadataAutoSave();
+            }
         }
 
         private static void UpdateSortDate(Evidence evidence)
