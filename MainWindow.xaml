@@ -23,7 +23,35 @@
         </Style>
     </Window.Resources>
 
-    <Grid>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New Case" Command="{Binding CreateCaseCommand}" />
+                <MenuItem Header="_Open Case" Command="{Binding OpenCaseCommand}" />
+                <MenuItem Header="_Save Case" Command="{Binding SaveCaseCommand}" />
+                <Separator />
+                <MenuItem Header="E_xit" IsEnabled="False" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Manage Links" Command="{Binding ManageLinksCommand}" IsEnabled="{Binding SelectedEvidenceDetail}" />
+                <MenuItem Header="Undo (N/A)" IsEnabled="False" />
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="Show Left Pane" IsCheckable="True" IsChecked="{Binding IsLeftPaneVisible, Mode=TwoWay}" />
+                <MenuItem Header="Show Metadata Pane" IsCheckable="True" IsChecked="{Binding IsRightPaneVisible, Mode=TwoWay}" />
+                <MenuItem Header="Show Notes Pane" IsCheckable="True" IsChecked="{Binding IsBottomPaneVisible, Mode=TwoWay}" />
+                <Separator />
+                <MenuItem Header="Sort Newest First" IsCheckable="True" IsChecked="{Binding SortNewestFirst, Mode=TwoWay}" />
+            </MenuItem>
+            <MenuItem Header="_Settings">
+                <MenuItem Header="_Preferences" Command="{Binding OpenPreferencesCommand}" />
+                <MenuItem Header="Case _Settings" Command="{Binding OpenCaseSettingsCommand}" IsEnabled="{Binding CurrentCase}" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="About" IsEnabled="False" />
+            </MenuItem>
+        </Menu>
+        <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="LeftColumn">
                 <ColumnDefinition.Style>
@@ -57,57 +85,32 @@
                 Padding="12"
                 Visibility="{Binding IsLeftPaneVisible, Converter={StaticResource BoolToVis}}">
             <StackPanel>
-                <TextBlock Text="Case"
-                           FontSize="16"
-                           FontWeight="Bold"
-                           Margin="0 0 0 8" />
-                <TextBlock Text="{Binding CurrentCase.Name, TargetNullValue='No case loaded'}"
-                           FontWeight="SemiBold"
-                           TextTrimming="CharacterEllipsis"
-                           Margin="0 0 0 6" />
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="Create"
-                            Padding="8 4"
-                            Command="{Binding CreateCaseCommand}"
-                            Margin="0 0 8 0" />
-                    <Button Content="Open"
-                            Padding="8 4"
-                            Command="{Binding OpenCaseCommand}" />
-                    <Button Content="Save"
-                            Padding="8 4"
-                            Command="{Binding SaveCaseCommand}"
-                            Margin="8 0 0 0" />
-                </StackPanel>
-                <Separator Margin="0 12 0 12" />
                 <TextBlock Text="Filters"
                            FontWeight="SemiBold"
-                           Margin="0 0 0 8" />
-                <TextBlock Text="Tag" FontSize="12" />
-                <ComboBox ItemsSource="{Binding Tags}"
-                          DisplayMemberPath="Name"
-                          SelectedItem="{Binding SelectedTag}"
-                          Margin="0 2 0 8" />
-                <StackPanel Orientation="Horizontal" Margin="0 0 0 8">
-                    <Button Content="Add"
-                            Padding="6 2"
-                            Width="60"
-                            Command="{Binding AddTagCommand}" />
-                    <Button Content="Rename"
-                            Padding="6 2"
-                            Width="70"
-                            Margin="6 0 0 0"
-                            Command="{Binding RenameTagCommand}" />
-                    <Button Content="Delete"
-                            Padding="6 2"
-                            Width="70"
-                            Margin="6 0 0 0"
-                            Command="{Binding DeleteTagCommand}" />
+                           Margin="0 12 0 4" />
+                <StackPanel Margin="0 0 0 8">
+                    <TextBlock Text="Type" FontSize="12" />
+                    <ComboBox ItemsSource="{Binding EvidenceTypes}"
+                              DisplayMemberPath="Name"
+                              SelectedItem="{Binding SelectedType}"
+                              Margin="0 2 0 0" />
                 </StackPanel>
-                <TextBlock Text="Type" FontSize="12" />
-                <ComboBox ItemsSource="{Binding EvidenceTypes}"
-                          DisplayMemberPath="Name"
-                          SelectedItem="{Binding SelectedType}"
-                          Margin="0 2 0 8" />
+                <StackPanel Margin="0 0 0 8">
+                    <TextBlock Text="Person" FontSize="12" />
+                    <ComboBox ItemsSource="{Binding People}"
+                              DisplayMemberPath="Name"
+                              SelectedItem="{Binding SelectedPerson}"
+                              Margin="0 2 0 0" />
+                </StackPanel>
+                <CheckBox Content="Newest first"
+                          IsChecked="{Binding SortNewestFirst}"
+                          Margin="0 0 0 8" />
+                <Button Content="Clear filters"
+                        Padding="8 4"
+                        Command="{Binding ClearFiltersCommand}" />
+                <TextBlock Text="Types"
+                           FontWeight="SemiBold"
+                           Margin="0 0 0 4" />
                 <StackPanel Orientation="Horizontal" Margin="0 0 0 8">
                     <Button Content="Add"
                             Padding="6 2"
@@ -124,11 +127,9 @@
                             Margin="6 0 0 0"
                             Command="{Binding DeleteTypeCommand}" />
                 </StackPanel>
-                <TextBlock Text="Person" FontSize="12" />
-                <ComboBox ItemsSource="{Binding People}"
-                          DisplayMemberPath="Name"
-                          SelectedItem="{Binding SelectedPerson}"
-                          Margin="0 2 0 8" />
+                <TextBlock Text="People"
+                           FontWeight="SemiBold"
+                           Margin="0 0 0 4" />
                 <StackPanel Orientation="Horizontal" Margin="0 0 0 12">
                     <Button Content="Add"
                             Padding="6 2"
@@ -251,30 +252,60 @@
                 <Grid Grid.Column="0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <StackPanel Orientation="Horizontal" Margin="12" HorizontalAlignment="Left">
-                <TextBox Width="240"
-                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         Margin="0 0 8 0"
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{Binding CurrentCase.Name, TargetNullValue='No case loaded'}"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               Margin="12 8" />
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="12" VerticalAlignment="Center">
+                        <TextBox Width="240"
+                                 Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0 0 8 0"
                                  VerticalContentAlignment="Center"
-                                 Padding="6" />
-                        <Button Content="New Evidence"
-                                Padding="10 4"
-                                Margin="0 0 8 0"
-                                Command="{Binding NewEvidenceCommand}" />
-                        <Button Content="Open Evidence"
-                                Padding="10 4"
-                                Command="{Binding OpenEvidenceWindowCommand}" />
+                                 Padding="6"
+                                 ToolTip="Search" />
+                        <StackPanel Orientation="Horizontal" Margin="0 0 8 0">
+                            <Button Width="36"
+                                    Height="32"
+                                    Padding="4"
+                                    Command="{Binding NewEvidenceCommand}"
+                                    ToolTip="New Evidence">
+                                <Path Data="M12 4v8m-4-4h8"
+                                      Stroke="#111827"
+                                      StrokeThickness="2"
+                                      StrokeLineJoin="Round"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      Stretch="Uniform" />
+                            </Button>
+                            <Button Width="36"
+                                    Height="32"
+                                    Padding="4"
+                                    Margin="6 0 0 0"
+                                    Command="{Binding OpenEvidenceWindowCommand}"
+                                    ToolTip="Open Evidence">
+                                <Path Data="M4 4h8l4 4v12H4z M12 4v4h4"
+                                      Stroke="#111827"
+                                      StrokeThickness="2"
+                                      StrokeLineJoin="Round"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      Fill="Transparent"
+                                      Stretch="Uniform" />
+                            </Button>
+                        </StackPanel>
                     </StackPanel>
-            <DataGrid Grid.Row="1"
-                      ItemsSource="{Binding EvidenceList}"
-                      SelectedItem="{Binding SelectedSummary, Mode=TwoWay}"
-                      AutoGenerateColumns="False"
-                      CanUserAddRows="False"
-                      Margin="12"
-                      SelectionMode="Single"
-                      MouseDoubleClick="OnEvidenceRowDoubleClick">
+                    <DataGrid Grid.Row="2"
+                              ItemsSource="{Binding EvidenceList}"
+                              SelectedItem="{Binding SelectedSummary, Mode=TwoWay}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              Margin="12"
+                              SelectionMode="Single"
+                              MouseDoubleClick="OnEvidenceRowDoubleClick">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#"
                                                 Width="60"
@@ -288,9 +319,6 @@
                             <DataGridTextColumn Header="Type"
                                                 Width="140"
                                                 Binding="{Binding TypeName}" />
-                            <DataGridTextColumn Header="Tags"
-                                                Width="160"
-                                                Binding="{Binding TagNamesDisplay}" />
                             <DataGridTextColumn Header="Court #"
                                                 Width="100"
                                                 Binding="{Binding CourtNumber}" />
@@ -378,17 +406,6 @@
                                     <ComboBoxItem Content="months" />
                                 </ComboBox>
                             </StackPanel>
-                            <TextBlock Text="Tags" FontSize="12" />
-                            <ItemsControl ItemsSource="{Binding TagOptions}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <CheckBox Content="{Binding Name}"
-                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                  Checked="OnMetadataCheckboxChanged"
-                                                  Unchecked="OnMetadataCheckboxChanged" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
                             <TextBlock Text="People" FontSize="12" Margin="0 8 0 0" />
                             <ItemsControl ItemsSource="{Binding PersonOptions}">
                                 <ItemsControl.ItemTemplate>
@@ -482,5 +499,6 @@
                 </StackPanel>
             </Border>
         </Grid>
-    </Grid>
+        </Grid>
+    </DockPanel>
 </Window>

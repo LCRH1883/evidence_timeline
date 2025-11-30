@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Collections.Specialized;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Input;
 using evidence_timeline.Models;
@@ -44,18 +44,15 @@ namespace evidence_timeline.ViewModels
             SaveCommand = new AsyncRelayCommand(SaveAsync);
             SaveNotesCommand = new AsyncRelayCommand(SaveNotesAsync);
 
-            TagOptions = new ObservableCollection<SelectableItem>();
             PersonOptions = new ObservableCollection<SelectableItem>();
             LinkedEvidence = new ObservableCollection<string>(Evidence.LinkedEvidenceIds);
             _loadedEvidenceSnapshot = CloneEvidence(Evidence);
 
-            TagOptions.CollectionChanged += OnTagOptionsChanged;
             PersonOptions.CollectionChanged += OnPersonOptionsChanged;
         }
 
         public Evidence Evidence { get; }
         public ObservableCollection<EvidenceType> Types { get; } = new();
-        public ObservableCollection<SelectableItem> TagOptions { get; }
         public ObservableCollection<SelectableItem> PersonOptions { get; }
         public ObservableCollection<string> LinkedEvidence { get; }
 
@@ -84,13 +81,6 @@ namespace evidence_timeline.ViewModels
                 foreach (var type in types)
                 {
                     Types.Add(type);
-                }
-
-                var tags = await _referenceData.LoadTagsAsync(_caseInfo);
-                TagOptions.Clear();
-                foreach (var tag in tags)
-                {
-                    TagOptions.Add(new SelectableItem(tag.Id, tag.Name, Evidence.TagIds.Contains(tag.Id)));
                 }
 
                 var people = await _referenceData.LoadPeopleAsync(_caseInfo);
@@ -130,7 +120,6 @@ namespace evidence_timeline.ViewModels
 
         private async Task SaveAsync()
         {
-            Evidence.TagIds = TagOptions.Where(t => t.IsSelected).Select(t => t.Id).ToList();
             Evidence.PersonIds = PersonOptions.Where(p => p.IsSelected).Select(p => p.Id).ToList();
             Evidence.LinkedEvidenceIds = LinkedEvidence.ToList();
             UpdateSortDate(Evidence);
@@ -273,7 +262,6 @@ namespace evidence_timeline.ViewModels
                 Title = source.Title,
                 CourtNumber = source.CourtNumber,
                 TypeId = source.TypeId,
-                TagIds = new List<string>(source.TagIds),
                 PersonIds = new List<string>(source.PersonIds),
                 LinkedEvidenceIds = new List<string>(source.LinkedEvidenceIds),
                 NoteFile = source.NoteFile,
@@ -311,8 +299,7 @@ namespace evidence_timeline.ViewModels
                 return true;
             }
 
-            if (!ListMatches(current.TagIds, snapshot.TagIds) ||
-                !ListMatches(current.PersonIds, snapshot.PersonIds) ||
+            if (!ListMatches(current.PersonIds, snapshot.PersonIds) ||
                 !ListMatches(current.LinkedEvidenceIds, snapshot.LinkedEvidenceIds))
             {
                 return true;
@@ -340,25 +327,6 @@ namespace evidence_timeline.ViewModels
 
             return current.OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
                 .SequenceEqual(snapshot.OrderBy(x => x, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
-        }
-
-        private void OnTagOptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.NewItems != null)
-            {
-                foreach (var item in e.NewItems.OfType<SelectableItem>())
-                {
-                    item.PropertyChanged += OnOptionPropertyChanged;
-                }
-            }
-
-            if (e.OldItems != null)
-            {
-                foreach (var item in e.OldItems.OfType<SelectableItem>())
-                {
-                    item.PropertyChanged -= OnOptionPropertyChanged;
-                }
-            }
         }
 
         private void OnPersonOptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)

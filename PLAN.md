@@ -19,7 +19,7 @@ Legend: `[ ]` pending · `[x]` done
 - [x] 2.2 Case model — Notes: `CaseInfo` with `RootPath` ignored for JSON in `Models/CaseInfo.cs`.
 - [x] 2.3 Evidence model — Notes: `Evidence` with defaults for lists, note file, timestamps in `Models/Evidence.cs`.
 - [x] 2.4 Attachment model — Notes: `AttachmentInfo` in `Models/AttachmentInfo.cs`.
-- [x] 2.5 People, tags, types — Notes: `Person`, `Tag`, `EvidenceType` in `Models/Person.cs`, `Models/Tag.cs`, `Models/EvidenceType.cs`.
+- [x] 2.5 People and types — Notes: `Person` and `EvidenceType` models (tag model removed).
 - [x] 2.6 Evidence list view model — Notes: `EvidenceSummary` grid DTO in `Models/EvidenceSummary.cs`.
 
 ## 3. Path and JSON utilities
@@ -28,7 +28,7 @@ Legend: `[ ]` pending · `[x]` done
 
 ## 4. Storage services
 - [x] 4.1 Case storage service — Notes: `ICaseStorageService` and `CaseStorageService` handle create/load/save + initial files in `Services/`.
-- [x] 4.2 Reference data service — Notes: `IReferenceDataService` and `ReferenceDataService` manage tags/types/people JSON in `Services/`.
+- [x] 4.2 Reference data service — Notes: `IReferenceDataService` and `ReferenceDataService` manage types/people JSON in `Services/`.
 - [x] 4.3 Evidence storage service — Notes: `IEvidenceStorageService` and `EvidenceStorageService` for evidence CRUD, folder naming, and evidence.json persistence in `Services/`.
 
 ## 5. MVVM setup and main application shell
@@ -43,12 +43,12 @@ Legend: `[ ]` pending · `[x]` done
 ## 7. Evidence list and search/filter
 - [x] 7.1 Build `EvidenceSummary` list — Notes: summaries built with resolved names/search keys in `MainViewModel`.
 - [x] 7.2 Evidence list view — Notes: DataGrid bound to `EvidenceList`, search box/filters active.
-- [x] 7.3 Search/filter logic — Notes: text + tag/type/person filters applied in `MainViewModel.ApplyFilters`.
+- [x] 7.3 Search/filter logic — Notes: text + type/person filters applied in `MainViewModel.ApplyFilters`.
 
 ## 8. Metadata pane (right side)
-- [x] 8.1 Metadata view model — Notes: `SelectedEvidenceDetail` bound with lookup-backed tag/person display.
-- [x] 8.2 Metadata view — Notes: Title/Court/Type bound; tags/people selectable; dates (mode + fields), and linked evidence text editable.
-- [x] 8.3 Save metadata — Notes: Save button persists metadata (title/court/type/tags/people/dates/links), refreshes summaries, and auto-saves on Enter/dropdown and tag/person toggles.
+- [x] 8.1 Metadata view model — Notes: `SelectedEvidenceDetail` bound with lookup-backed person display (tags removed).
+- [x] 8.2 Metadata view — Notes: Title/Court/Type bound; people selectable; dates (mode + fields), and linked evidence text editable.
+- [x] 8.3 Save metadata — Notes: Save button persists metadata (title/court/type/people/dates/links), refreshes summaries, and auto-saves on Enter/dropdown and person toggles.
 
 ## 9. Notes pane (bottom)
 - [x] 9.1 Notes loading — Notes: loads `note.md` per evidence selection in `MainViewModel`.
@@ -58,8 +58,8 @@ Legend: `[ ]` pending · `[x]` done
 - [x] 10.1 Attach files — Notes: Add attachment command copies to `files/`, records `AttachmentInfo`, saves evidence.
 - [x] 10.2 Show attachments — Notes: attachments listed with open/folder/remove; per-item controls in metadata pane.
 
-## 11. People, tags, and types management screens
-- [x] 11.1 Tags management — Notes: add/rename/delete via left-pane buttons; evidence updated and summaries refreshed.
+## 11. People and types management screens (tags removed)
+- [x] 11.1 Tags management — Notes: Tags fully removed (model/storage/UI); no tag filtering/entry in current build.
 - [x] 11.2 Types management — Notes: add/rename/delete via left-pane buttons; evidence type cleared on delete and summaries refreshed.
 - [x] 11.3 People management — Notes: add/rename/delete via left-pane buttons; evidence updated and summaries refreshed.
 
@@ -74,8 +74,8 @@ Legend: `[ ]` pending · `[x]` done
 - [x] 13.3 Synchronization — Notes: detail window save/notes events now refresh the main view selections and summaries.
 
 ## 14. Case settings and preferences
-- [ ] 14.1 Case settings — Optional `caseSettings.json` (sort order, pane visibility).
-- [ ] 14.2 Global settings — `settings.json` in app data (recent cases, theme optional).
+- [x] 14.1 Case settings — Case settings window added (pane visibility + sort) plus type/person management, persists to caseSettings.json and reference data.
+- [x] 14.2 Global settings — Preferences window added (theme placeholder + clear recents), persists to AppData settings.json.
 
 ## 15. Error handling and robustness
 - [ ] 15.1 Basic error handling — Wrap I/O, surface dialogs on failures.

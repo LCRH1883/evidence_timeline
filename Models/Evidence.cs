@@ -11,7 +11,6 @@ namespace evidence_timeline.Models
         public string CourtNumber { get; set; } = string.Empty;
         public EvidenceDateInfo DateInfo { get; set; } = new();
         public string TypeId { get; set; } = string.Empty;
-        public List<string> TagIds { get; set; } = new();
         public List<string> PersonIds { get; set; } = new();
         public List<string> LinkedEvidenceIds { get; set; } = new();
         public string NoteFile { get; set; } = "note.md";

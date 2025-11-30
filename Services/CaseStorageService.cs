@@ -30,7 +30,6 @@ namespace evidence_timeline.Services
             caseInfo.RootPath = caseFolder;
 
             await JsonHelper.SaveAsync(Path.Combine(caseFolder, "case.json"), caseInfo);
-            await JsonHelper.SaveAsync(Path.Combine(caseFolder, "tags.json"), new List<Tag>());
             await JsonHelper.SaveAsync(Path.Combine(caseFolder, "types.json"), new List<EvidenceType>());
             await JsonHelper.SaveAsync(Path.Combine(caseFolder, "people.json"), new List<Person>());
             PathHelper.EnsureDirectory(Path.Combine(caseFolder, "evidence"));

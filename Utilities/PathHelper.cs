@@ -55,14 +55,13 @@ namespace evidence_timeline.Utilities
             return string.Join("_", parts);
         }
 
-        public static string GetEvidenceFolderName(int evidenceNumber, DateOnly sortDate, string title, string primaryTag, string typeName)
+        public static string GetEvidenceFolderName(int evidenceNumber, DateOnly sortDate, string title, string typeName)
         {
             var parts = new List<string>
             {
                 evidenceNumber.ToString("D4"),
                 sortDate.ToString("yyyyMMdd"),
                 Slug(title),
-                Slug(primaryTag),
                 Slug(typeName)
             }.Where(p => !string.IsNullOrWhiteSpace(p));
 

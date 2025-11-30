@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using evidence_timeline.Models;
 using evidence_timeline.Utilities;
@@ -132,7 +131,6 @@ namespace evidence_timeline.Services
                 evidence.EvidenceNumber,
                 evidence.DateInfo.SortDate,
                 evidence.Title,
-                evidence.TagIds.FirstOrDefault() ?? string.Empty,
                 evidence.TypeId);
 
             return Path.Combine(evidenceRoot, folderName);
@@ -171,7 +169,6 @@ namespace evidence_timeline.Services
 
         private static void EnsureEvidenceLists(Evidence evidence)
         {
-            evidence.TagIds ??= new List<string>();
             evidence.PersonIds ??= new List<string>();
             evidence.LinkedEvidenceIds ??= new List<string>();
             evidence.Attachments ??= new List<AttachmentInfo>();

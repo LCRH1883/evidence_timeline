@@ -9,19 +9,6 @@ namespace evidence_timeline.Services
 {
     public class ReferenceDataService : IReferenceDataService
     {
-        public async Task<List<Tag>> LoadTagsAsync(CaseInfo caseInfo)
-        {
-            var path = GetCaseFilePath(caseInfo, "tags.json");
-            var tags = await JsonHelper.LoadAsync<List<Tag>>(path);
-            return tags ?? new List<Tag>();
-        }
-
-        public async Task SaveTagsAsync(CaseInfo caseInfo, List<Tag> tags)
-        {
-            var path = GetCaseFilePath(caseInfo, "tags.json");
-            await JsonHelper.SaveAsync(path, tags);
-        }
-
         public async Task<List<EvidenceType>> LoadTypesAsync(CaseInfo caseInfo)
         {
             var path = GetCaseFilePath(caseInfo, "types.json");

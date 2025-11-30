@@ -26,7 +26,6 @@ namespace evidence_timeline.ViewModels
         private readonly IEvidenceStorageService _evidenceStorage = new EvidenceStorageService();
         private readonly List<EvidenceSummary> _allEvidenceSummaries = new();
         private readonly Dictionary<string, Evidence> _evidenceById = new();
-        private readonly Dictionary<string, Tag> _tagLookup = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, EvidenceType> _typeLookup = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Person> _peopleLookup = new(StringComparer.OrdinalIgnoreCase);
         private Evidence? _loadedEvidenceSnapshot;
@@ -42,7 +41,6 @@ namespace evidence_timeline.ViewModels
         private EvidenceSummary? _selectedSummary;
         private Evidence? _selectedEvidenceDetail;
         private string _searchText = string.Empty;
-        private Tag? _selectedTag;
         private EvidenceType? _selectedType;
         private Person? _selectedPerson;
         private bool _isLeftPaneVisible = true;
@@ -51,6 +49,10 @@ namespace evidence_timeline.ViewModels
         private string _notesText = string.Empty;
         private bool _isBusy;
         private string _linkedEvidenceText = string.Empty;
+        private bool _sortNewestFirst = true;
+        private bool _isLoadingCaseSettings;
+        private AppSettings _appSettings = new();
+        private CaseSettings _caseSettings = new();
 
         public MainViewModel()
         {
@@ -66,18 +68,19 @@ namespace evidence_timeline.ViewModels
             SaveNotesCommand = new AsyncRelayCommand(SaveNotesAsync, () => SelectedEvidenceDetail != null && CurrentCase != null);
             SaveMetadataCommand = new AsyncRelayCommand(SaveMetadataAsync, () => SelectedEvidenceDetail != null && CurrentCase != null);
             ManageLinksCommand = new RelayCommand(ManageLinks, () => SelectedEvidenceDetail != null);
-            AddTagCommand = new AsyncRelayCommand(AddTagAsync, () => CurrentCase != null);
-            RenameTagCommand = new AsyncRelayCommand(RenameTagAsync, () => CurrentCase != null && SelectedTag != null);
-            DeleteTagCommand = new AsyncRelayCommand(DeleteTagAsync, () => CurrentCase != null && SelectedTag != null);
+            ClearFiltersCommand = new RelayCommand(ClearFilters);
             AddTypeCommand = new AsyncRelayCommand(AddTypeAsync, () => CurrentCase != null);
             RenameTypeCommand = new AsyncRelayCommand(RenameTypeAsync, () => CurrentCase != null && SelectedType != null);
             DeleteTypeCommand = new AsyncRelayCommand(DeleteTypeAsync, () => CurrentCase != null && SelectedType != null);
             AddPersonCommand = new AsyncRelayCommand(AddPersonAsync, () => CurrentCase != null);
             RenamePersonCommand = new AsyncRelayCommand(RenamePersonAsync, () => CurrentCase != null && SelectedPerson != null);
             DeletePersonCommand = new AsyncRelayCommand(DeletePersonAsync, () => CurrentCase != null && SelectedPerson != null);
+            OpenPreferencesCommand = new RelayCommand(OpenPreferences);
+            OpenCaseSettingsCommand = new AsyncRelayCommand(OpenCaseSettingsAsync, () => CurrentCase != null);
 
-            TagOptions.CollectionChanged += OnTagOptionsChanged;
             PersonOptions.CollectionChanged += OnPersonOptionsChanged;
+
+            _ = LoadAppSettingsAsync();
         }
 
         public CaseInfo? CurrentCase
@@ -93,11 +96,21 @@ namespace evidence_timeline.ViewModels
         }
 
         public ObservableCollection<EvidenceSummary> EvidenceList { get; } = new();
-        public ObservableCollection<Tag> Tags { get; } = new();
         public ObservableCollection<EvidenceType> EvidenceTypes { get; } = new();
         public ObservableCollection<Person> People { get; } = new();
-        public ObservableCollection<SelectableItem> TagOptions { get; } = new();
         public ObservableCollection<SelectableItem> PersonOptions { get; } = new();
+        public bool SortNewestFirst
+        {
+            get => _sortNewestFirst;
+            set
+            {
+                if (SetProperty(ref _sortNewestFirst, value) && !_isLoadingCaseSettings)
+                {
+                    ApplyFilters();
+                    _ = SaveCaseSettingsAsync();
+                }
+            }
+        }
 
         public EvidenceSummary? SelectedSummary
         {
@@ -122,7 +135,6 @@ namespace evidence_timeline.ViewModels
                     _suppressMetadataAutoSave = true;
                     try
                     {
-                        OnPropertyChanged(nameof(SelectedEvidenceTagNames));
                         OnPropertyChanged(nameof(SelectedEvidencePersonNames));
                         OnPropertyChanged(nameof(SelectedDateMode));
                         OnPropertyChanged(nameof(ExactDate));
@@ -142,11 +154,6 @@ namespace evidence_timeline.ViewModels
             }
         }
 
-        public IEnumerable<string> SelectedEvidenceTagNames =>
-            SelectedEvidenceDetail == null
-                ? Array.Empty<string>()
-                : SelectedEvidenceDetail.TagIds.Select(id => _tagLookup.TryGetValue(id, out var tag) ? tag.Name : id);
-
         public IEnumerable<string> SelectedEvidencePersonNames =>
             SelectedEvidenceDetail == null
                 ? Array.Empty<string>()
@@ -158,18 +165,6 @@ namespace evidence_timeline.ViewModels
             set
             {
                 if (SetProperty(ref _searchText, value))
-                {
-                    ApplyFilters();
-                }
-            }
-        }
-
-        public Tag? SelectedTag
-        {
-            get => _selectedTag;
-            set
-            {
-                if (SetProperty(ref _selectedTag, value))
                 {
                     ApplyFilters();
                 }
@@ -203,19 +198,37 @@ namespace evidence_timeline.ViewModels
         public bool IsLeftPaneVisible
         {
             get => _isLeftPaneVisible;
-            set => SetProperty(ref _isLeftPaneVisible, value);
+            set
+            {
+                if (SetProperty(ref _isLeftPaneVisible, value) && !_isLoadingCaseSettings)
+                {
+                    _ = SaveCaseSettingsAsync();
+                }
+            }
         }
 
         public bool IsRightPaneVisible
         {
             get => _isRightPaneVisible;
-            set => SetProperty(ref _isRightPaneVisible, value);
+            set
+            {
+                if (SetProperty(ref _isRightPaneVisible, value) && !_isLoadingCaseSettings)
+                {
+                    _ = SaveCaseSettingsAsync();
+                }
+            }
         }
 
         public bool IsBottomPaneVisible
         {
             get => _isBottomPaneVisible;
-            set => SetProperty(ref _isBottomPaneVisible, value);
+            set
+            {
+                if (SetProperty(ref _isBottomPaneVisible, value) && !_isLoadingCaseSettings)
+                {
+                    _ = SaveCaseSettingsAsync();
+                }
+            }
         }
 
         public string NotesText
@@ -359,15 +372,15 @@ namespace evidence_timeline.ViewModels
         public ICommand SaveNotesCommand { get; }
         public ICommand SaveMetadataCommand { get; }
         public ICommand ManageLinksCommand { get; }
-        public ICommand AddTagCommand { get; }
-        public ICommand RenameTagCommand { get; }
-        public ICommand DeleteTagCommand { get; }
+        public ICommand ClearFiltersCommand { get; }
         public ICommand AddTypeCommand { get; }
         public ICommand RenameTypeCommand { get; }
         public ICommand DeleteTypeCommand { get; }
         public ICommand AddPersonCommand { get; }
         public ICommand RenamePersonCommand { get; }
         public ICommand DeletePersonCommand { get; }
+        public ICommand OpenPreferencesCommand { get; }
+        public ICommand OpenCaseSettingsCommand { get; }
 
         private async Task CreateCaseAsync()
         {
@@ -387,6 +400,7 @@ namespace evidence_timeline.ViewModels
 
                 var caseInfo = await _caseStorage.CreateCaseAsync(root, name, number ?? string.Empty);
                 await LoadCaseDataAsync(caseInfo);
+                AddRecentCase(caseInfo.RootPath);
             }
             catch (Exception ex)
             {
@@ -416,6 +430,7 @@ namespace evidence_timeline.ViewModels
 
                 var caseInfo = await _caseStorage.LoadCaseAsync(folder);
                 await LoadCaseDataAsync(caseInfo);
+                AddRecentCase(folder);
             }
             catch (Exception ex)
             {
@@ -430,25 +445,16 @@ namespace evidence_timeline.ViewModels
         private async Task LoadCaseDataAsync(CaseInfo caseInfo)
         {
             CurrentCase = caseInfo;
+            _caseSettings = new CaseSettings();
+            _isLoadingCaseSettings = true;
 
-            Tags.Clear();
             EvidenceTypes.Clear();
             People.Clear();
-            _tagLookup.Clear();
             _typeLookup.Clear();
             _peopleLookup.Clear();
             _allEvidenceSummaries.Clear();
             _evidenceById.Clear();
-            TagOptions.Clear();
             PersonOptions.Clear();
-
-            var tags = await _referenceData.LoadTagsAsync(caseInfo);
-            foreach (var tag in tags)
-            {
-                Tags.Add(tag);
-                _tagLookup[tag.Id] = tag;
-                AddTagOption(tag.Id, tag.Name);
-            }
 
             var types = await _referenceData.LoadTypesAsync(caseInfo);
             foreach (var type in types)
@@ -476,6 +482,10 @@ namespace evidence_timeline.ViewModels
             SelectedSummary = EvidenceList.FirstOrDefault();
             NotesText = string.Empty;
             SyncSelectionOptions(null);
+
+            await LoadCaseSettingsAsync(caseInfo);
+            ApplyCaseSettings();
+            _isLoadingCaseSettings = false;
         }
 
         private (string? root, string? name, string? number) PromptForCaseDetails()
@@ -499,8 +509,12 @@ namespace evidence_timeline.ViewModels
         private EvidenceSummary BuildSummary(Evidence evidence)
         {
             var typeName = _typeLookup.TryGetValue(evidence.TypeId, out var type) ? type.Name : string.Empty;
-            var tagNames = evidence.TagIds.Select(id => _tagLookup.TryGetValue(id, out var tag) ? tag.Name : id).ToArray();
             var personNames = evidence.PersonIds.Select(id => _peopleLookup.TryGetValue(id, out var person) ? person.Name : id).ToArray();
+            var personAliases = evidence.PersonIds
+                .SelectMany(id => _peopleLookup.TryGetValue(id, out var person) && person.Aliases != null
+                    ? person.Aliases
+                    : Enumerable.Empty<string>())
+                .ToArray();
 
             return new EvidenceSummary
             {
@@ -509,15 +523,14 @@ namespace evidence_timeline.ViewModels
                 Title = evidence.Title,
                 CourtNumber = evidence.CourtNumber,
                 TypeName = typeName,
-                TagNames = tagNames,
                 PersonNames = personNames,
                 DateDisplay = ResolveDateDisplay(evidence.DateInfo),
                 SortDate = evidence.DateInfo.SortDate.ToDateTime(TimeOnly.MinValue),
-                SearchKey = BuildSearchKey(evidence.Title, evidence.CourtNumber, typeName, tagNames, personNames)
+                SearchKey = BuildSearchKey(evidence.Title, evidence.CourtNumber, typeName, personNames, personAliases)
             };
         }
 
-        private static string BuildSearchKey(string title, string courtNumber, string typeName, IEnumerable<string> tagNames, IEnumerable<string> personNames)
+        private static string BuildSearchKey(string title, string courtNumber, string typeName, IEnumerable<string> personNames, IEnumerable<string> personAliases)
         {
             var parts = new List<string>
             {
@@ -525,8 +538,8 @@ namespace evidence_timeline.ViewModels
                 courtNumber,
                 typeName
             };
-            parts.AddRange(tagNames);
             parts.AddRange(personNames);
+            parts.AddRange(personAliases);
             return string.Join(" ", parts).ToLowerInvariant();
         }
 
@@ -560,7 +573,7 @@ namespace evidence_timeline.ViewModels
             return dateInfo.SortDate != default ? dateInfo.SortDate.ToString("yyyy-MM-dd") : "Unknown";
         }
 
-        private void ApplyFilters()
+        public void ApplyFilters()
         {
             var filtered = _allEvidenceSummaries.AsEnumerable();
 
@@ -568,11 +581,6 @@ namespace evidence_timeline.ViewModels
             {
                 var needle = SearchText.ToLowerInvariant();
                 filtered = filtered.Where(s => s.SearchKey.Contains(needle, StringComparison.OrdinalIgnoreCase));
-            }
-
-            if (SelectedTag != null)
-            {
-                filtered = filtered.Where(s => s.TagNames.Any(t => string.Equals(t, SelectedTag.Name, StringComparison.OrdinalIgnoreCase)));
             }
 
             if (SelectedType != null)
@@ -585,13 +593,23 @@ namespace evidence_timeline.ViewModels
                 filtered = filtered.Where(s => s.PersonNames.Any(p => string.Equals(p, SelectedPerson.Name, StringComparison.OrdinalIgnoreCase)));
             }
 
-            filtered = filtered.OrderByDescending(s => s.SortDate).ThenBy(s => s.EvidenceNumber);
+            filtered = _sortNewestFirst
+                ? filtered.OrderByDescending(s => s.SortDate).ThenBy(s => s.EvidenceNumber)
+                : filtered.OrderBy(s => s.SortDate).ThenBy(s => s.EvidenceNumber);
 
             EvidenceList.Clear();
             foreach (var item in filtered)
             {
                 EvidenceList.Add(item);
             }
+        }
+
+        private void ClearFilters()
+        {
+            SearchText = string.Empty;
+            SelectedType = null;
+            SelectedPerson = null;
+            _ = SaveCaseSettingsAsync();
         }
 
         private async Task NewEvidenceAsync()
@@ -663,7 +681,7 @@ namespace evidence_timeline.ViewModels
                 }
                 finally
                 {
-                    _suppressNotesAutoSave = false;
+                _suppressNotesAutoSave = false;
                 }
                 SyncSelectionOptions(null);
                 _loadedEvidenceSnapshot = null;
@@ -748,16 +766,77 @@ namespace evidence_timeline.ViewModels
             }
         }
 
+        private void OpenPreferences()
+        {
+            _appSettings ??= new AppSettings();
+            var vm = new PreferencesViewModel(_appSettings);
+            var window = new PreferencesWindow
+            {
+                Owner = WpfApp.Current?.MainWindow,
+                DataContext = vm
+            };
+
+            var result = window.ShowDialog();
+            if (result == true)
+            {
+                _appSettings = vm.ToAppSettings();
+                _ = SaveAppSettingsAsync();
+            }
+        }
+
+        private async Task OpenCaseSettingsAsync()
+        {
+            if (CurrentCase == null)
+            {
+                return;
+            }
+
+            var originalTypes = EvidenceTypes.ToList();
+            var originalPeople = People.ToList();
+
+            var vm = new CaseSettingsViewModel(_caseSettings, originalTypes, originalPeople);
+            var window = new CaseSettingsWindow
+            {
+                Owner = WpfApp.Current?.MainWindow,
+                DataContext = vm
+            };
+
+            var result = window.ShowDialog();
+            if (result == true)
+            {
+                _isLoadingCaseSettings = true;
+                try
+                {
+                    IsLeftPaneVisible = vm.ShowLeftPane;
+                    IsRightPaneVisible = vm.ShowRightPane;
+                    IsBottomPaneVisible = vm.ShowBottomPane;
+                    SortNewestFirst = vm.SortNewestFirst;
+                    _caseSettings = vm.ToCaseSettings();
+                }
+                finally
+                {
+                    _isLoadingCaseSettings = false;
+                }
+
+                if (vm.HasTypeChanges)
+                {
+                    await ApplyTypeChangesAsync(vm.EvidenceTypes.ToList(), originalTypes);
+                }
+
+                if (vm.HasPeopleChanges)
+                {
+                    await ApplyPeopleChangesAsync(vm.People.Select(p => p.ToPerson()).ToList(), originalPeople);
+                }
+
+                _ = SaveCaseSettingsAsync();
+            }
+        }
+
         private void SyncSelectionOptions(Evidence? evidence)
         {
             _suppressMetadataAutoSave = true;
             try
             {
-                foreach (var option in TagOptions)
-                {
-                    option.IsSelected = evidence != null && evidence.TagIds.Any(id => string.Equals(id, option.Id, StringComparison.OrdinalIgnoreCase));
-                }
-
                 foreach (var option in PersonOptions)
                 {
                     option.IsSelected = evidence != null && evidence.PersonIds.Any(id => string.Equals(id, option.Id, StringComparison.OrdinalIgnoreCase));
@@ -778,7 +857,6 @@ namespace evidence_timeline.ViewModels
 
             try
             {
-                SelectedEvidenceDetail.TagIds = TagOptions.Where(o => o.IsSelected).Select(o => o.Id).ToList();
                 SelectedEvidenceDetail.PersonIds = PersonOptions.Where(o => o.IsSelected).Select(o => o.Id).ToList();
                 SelectedEvidenceDetail.LinkedEvidenceIds = ParseLinkedEvidenceIds(LinkedEvidenceText);
 
@@ -975,15 +1053,13 @@ namespace evidence_timeline.ViewModels
 
             if (AddAttachmentCommand is AsyncRelayCommand asyncAddAttachment) asyncAddAttachment.RaiseCanExecuteChanged();
             if (RemoveAttachmentCommand is RelayCommand<AttachmentInfo> relayRemoveAttachment) relayRemoveAttachment.RaiseCanExecuteChanged();
-            if (AddTagCommand is AsyncRelayCommand asyncAddTag) asyncAddTag.RaiseCanExecuteChanged();
-            if (RenameTagCommand is AsyncRelayCommand asyncRenameTag) asyncRenameTag.RaiseCanExecuteChanged();
-            if (DeleteTagCommand is AsyncRelayCommand asyncDeleteTag) asyncDeleteTag.RaiseCanExecuteChanged();
             if (AddTypeCommand is AsyncRelayCommand asyncAddType) asyncAddType.RaiseCanExecuteChanged();
             if (RenameTypeCommand is AsyncRelayCommand asyncRenameType) asyncRenameType.RaiseCanExecuteChanged();
             if (DeleteTypeCommand is AsyncRelayCommand asyncDeleteType) asyncDeleteType.RaiseCanExecuteChanged();
             if (AddPersonCommand is AsyncRelayCommand asyncAddPerson) asyncAddPerson.RaiseCanExecuteChanged();
             if (RenamePersonCommand is AsyncRelayCommand asyncRenamePerson) asyncRenamePerson.RaiseCanExecuteChanged();
             if (DeletePersonCommand is AsyncRelayCommand asyncDeletePerson) asyncDeletePerson.RaiseCanExecuteChanged();
+            if (OpenCaseSettingsCommand is AsyncRelayCommand asyncCaseSettings) asyncCaseSettings.RaiseCanExecuteChanged();
         }
 
         private async Task AddAttachmentAsync()
@@ -1170,81 +1246,6 @@ namespace evidence_timeline.ViewModels
             }
         }
 
-        private async Task AddTagAsync()
-        {
-            if (CurrentCase == null)
-            {
-                return;
-            }
-
-            var name = UIHelpers.PromptForText("Add Tag", "Enter tag name:");
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return;
-            }
-
-            var tag = new Tag { Id = Guid.NewGuid().ToString("N"), Name = name.Trim() };
-            Tags.Add(tag);
-            AddTagOption(tag.Id, tag.Name);
-            _tagLookup[tag.Id] = tag;
-            await _referenceData.SaveTagsAsync(CurrentCase, Tags.ToList());
-            RebuildSummaries();
-        }
-
-        private async Task RenameTagAsync()
-        {
-            if (CurrentCase == null || SelectedTag == null)
-            {
-                return;
-            }
-
-            var newName = UIHelpers.PromptForText("Rename Tag", "Enter new tag name:", SelectedTag.Name);
-            if (string.IsNullOrWhiteSpace(newName))
-            {
-                return;
-            }
-
-            SelectedTag.Name = newName.Trim();
-            var option = TagOptions.FirstOrDefault(o => string.Equals(o.Id, SelectedTag.Id, StringComparison.OrdinalIgnoreCase));
-            if (option != null)
-            {
-                option.Name = SelectedTag.Name;
-            }
-
-            _tagLookup[SelectedTag.Id] = SelectedTag;
-            await _referenceData.SaveTagsAsync(CurrentCase, Tags.ToList());
-            RebuildSummaries();
-        }
-
-        private async Task DeleteTagAsync()
-        {
-            if (CurrentCase == null || SelectedTag == null)
-            {
-                return;
-            }
-
-            var tag = SelectedTag;
-            Tags.Remove(tag);
-            var option = TagOptions.FirstOrDefault(o => string.Equals(o.Id, tag.Id, StringComparison.OrdinalIgnoreCase));
-            if (option != null)
-            {
-                TagOptions.Remove(option);
-            }
-            _tagLookup.Remove(tag.Id);
-
-            foreach (var evidence in _evidenceById.Values)
-            {
-                if (evidence.TagIds.Remove(tag.Id))
-                {
-                    await _evidenceStorage.SaveEvidenceAsync(CurrentCase, evidence);
-                }
-            }
-
-            await _referenceData.SaveTagsAsync(CurrentCase, Tags.ToList());
-            RebuildSummaries();
-            SelectedTag = null;
-        }
-
         private async Task AddTypeAsync()
         {
             if (CurrentCase == null)
@@ -1394,22 +1395,97 @@ namespace evidence_timeline.ViewModels
             ApplyFilters();
         }
 
-        private void OnTagOptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private async Task ApplyTypeChangesAsync(List<EvidenceType> updatedTypes, List<EvidenceType> previousTypes)
         {
-            if (e.NewItems != null)
+            if (CurrentCase == null)
             {
-                foreach (var item in e.NewItems.OfType<SelectableItem>())
+                return;
+            }
+
+            var removedIds = new HashSet<string>(previousTypes.Select(t => t.Id), StringComparer.OrdinalIgnoreCase);
+            removedIds.ExceptWith(updatedTypes.Select(t => t.Id));
+
+            var previousSelectedId = SelectedType?.Id;
+
+            EvidenceTypes.Clear();
+            _typeLookup.Clear();
+            foreach (var type in updatedTypes)
+            {
+                EvidenceTypes.Add(type);
+                _typeLookup[type.Id] = type;
+            }
+
+            foreach (var evidence in _evidenceById.Values)
+            {
+                if (removedIds.Contains(evidence.TypeId))
                 {
-                    item.PropertyChanged += OnOptionPropertyChanged;
+                    evidence.TypeId = string.Empty;
+                    await _evidenceStorage.SaveEvidenceAsync(CurrentCase, evidence);
                 }
             }
 
-            if (e.OldItems != null)
+            await _referenceData.SaveTypesAsync(CurrentCase, updatedTypes);
+
+            SelectedType = EvidenceTypes.FirstOrDefault(t => string.Equals(t.Id, previousSelectedId, StringComparison.OrdinalIgnoreCase));
+            RebuildSummaries();
+        }
+
+        private async Task ApplyPeopleChangesAsync(List<Person> updatedPeople, List<Person> previousPeople)
+        {
+            if (CurrentCase == null)
             {
-                foreach (var item in e.OldItems.OfType<SelectableItem>())
+                return;
+            }
+
+            var removedIds = new HashSet<string>(previousPeople.Select(p => p.Id), StringComparer.OrdinalIgnoreCase);
+            removedIds.ExceptWith(updatedPeople.Select(p => p.Id));
+
+            var previousSelectedPersonId = SelectedPerson?.Id;
+
+            People.Clear();
+            _peopleLookup.Clear();
+            foreach (var person in updatedPeople)
+            {
+                People.Add(person);
+                _peopleLookup[person.Id] = person;
+            }
+
+            RebuildPersonOptions();
+
+            foreach (var evidence in _evidenceById.Values)
+            {
+                var beforeCount = evidence.PersonIds.Count;
+                evidence.PersonIds = evidence.PersonIds
+                    .Where(id => !removedIds.Contains(id))
+                    .ToList();
+
+                if (evidence.PersonIds.Count != beforeCount)
                 {
-                    item.PropertyChanged -= OnOptionPropertyChanged;
+                    await _evidenceStorage.SaveEvidenceAsync(CurrentCase, evidence);
                 }
+            }
+
+            await _referenceData.SavePeopleAsync(CurrentCase, updatedPeople);
+
+            SelectedPerson = People.FirstOrDefault(p => string.Equals(p.Id, previousSelectedPersonId, StringComparison.OrdinalIgnoreCase));
+            RebuildSummaries();
+            SyncSelectionOptions(SelectedEvidenceDetail);
+        }
+
+        private void RebuildPersonOptions()
+        {
+            _suppressMetadataAutoSave = true;
+            try
+            {
+                PersonOptions.Clear();
+                foreach (var person in People)
+                {
+                    AddPersonOption(person.Id, person.Name);
+                }
+            }
+            finally
+            {
+                _suppressMetadataAutoSave = false;
             }
         }
 
@@ -1449,7 +1525,6 @@ namespace evidence_timeline.ViewModels
                 Title = source.Title,
                 CourtNumber = source.CourtNumber,
                 TypeId = source.TypeId,
-                TagIds = new List<string>(source.TagIds),
                 PersonIds = new List<string>(source.PersonIds),
                 LinkedEvidenceIds = new List<string>(source.LinkedEvidenceIds),
                 NoteFile = source.NoteFile,
@@ -1487,8 +1562,7 @@ namespace evidence_timeline.ViewModels
                 return true;
             }
 
-            if (!ListMatches(current.TagIds, snapshot.TagIds) ||
-                !ListMatches(current.PersonIds, snapshot.PersonIds) ||
+            if (!ListMatches(current.PersonIds, snapshot.PersonIds) ||
                 !ListMatches(current.LinkedEvidenceIds, snapshot.LinkedEvidenceIds))
             {
                 return true;
@@ -1518,13 +1592,6 @@ namespace evidence_timeline.ViewModels
                 .SequenceEqual(snapshot.OrderBy(x => x, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
         }
 
-        private void AddTagOption(string id, string name)
-        {
-            var option = new SelectableItem(id, name);
-            option.PropertyChanged += OnOptionPropertyChanged;
-            TagOptions.Add(option);
-        }
-
         private void AddPersonOption(string id, string name)
         {
             var option = new SelectableItem(id, name);
@@ -1532,7 +1599,131 @@ namespace evidence_timeline.ViewModels
             PersonOptions.Add(option);
         }
 
-        private void OnExternalEvidenceSaved(object? sender, Evidence updated)
+        private async Task LoadAppSettingsAsync()
+        {
+            try
+            {
+                var path = GetAppSettingsPath();
+                if (File.Exists(path))
+                {
+                    var settings = await JsonHelper.LoadAsync<AppSettings>(path);
+                    _appSettings = settings ?? new AppSettings();
+                }
+            }
+            catch
+            {
+                _appSettings = new AppSettings();
+            }
+        }
+
+        private async Task SaveAppSettingsAsync()
+        {
+            try
+            {
+                var path = GetAppSettingsPath();
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                await JsonHelper.SaveAsync(path, _appSettings);
+            }
+            catch
+            {
+            }
+        }
+
+        private static string GetAppSettingsPath()
+        {
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var folder = Path.Combine(appData, "EvidenceTimeline");
+            Directory.CreateDirectory(folder);
+            return Path.Combine(folder, "settings.json");
+        }
+
+        private void AddRecentCase(string? path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            _appSettings ??= new AppSettings();
+            _appSettings.RecentCases.RemoveAll(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase));
+            _appSettings.RecentCases.Insert(0, path);
+            if (_appSettings.RecentCases.Count > 10)
+            {
+                _appSettings.RecentCases = _appSettings.RecentCases.Take(10).ToList();
+            }
+
+            _ = SaveAppSettingsAsync();
+        }
+
+        private async Task LoadCaseSettingsAsync(CaseInfo caseInfo)
+        {
+            try
+            {
+                var path = GetCaseSettingsPath(caseInfo);
+                if (File.Exists(path))
+                {
+                    var loaded = await JsonHelper.LoadAsync<CaseSettings>(path);
+                    if (loaded != null)
+                    {
+                        _caseSettings = loaded;
+                    }
+                }
+            }
+            catch
+            {
+                _caseSettings = new CaseSettings();
+            }
+        }
+
+        private async Task SaveCaseSettingsAsync()
+        {
+            if (CurrentCase == null || _isLoadingCaseSettings)
+            {
+                return;
+            }
+
+            try
+            {
+                _caseSettings.ShowLeftPane = IsLeftPaneVisible;
+                _caseSettings.ShowRightPane = IsRightPaneVisible;
+                _caseSettings.ShowBottomPane = IsBottomPaneVisible;
+                _caseSettings.SortNewestFirst = SortNewestFirst;
+
+                var path = GetCaseSettingsPath(CurrentCase);
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                await JsonHelper.SaveAsync(path, _caseSettings);
+            }
+            catch
+            {
+            }
+        }
+
+        private void ApplyCaseSettings()
+        {
+            _isLoadingCaseSettings = true;
+            try
+            {
+                IsLeftPaneVisible = _caseSettings.ShowLeftPane;
+                IsRightPaneVisible = _caseSettings.ShowRightPane;
+                IsBottomPaneVisible = _caseSettings.ShowBottomPane;
+                SortNewestFirst = _caseSettings.SortNewestFirst;
+            }
+            finally
+            {
+                _isLoadingCaseSettings = false;
+            }
+        }
+
+        private static string GetCaseSettingsPath(CaseInfo caseInfo)
+        {
+            if (string.IsNullOrWhiteSpace(caseInfo.RootPath))
+            {
+                throw new InvalidOperationException("Case root path is required for settings.");
+            }
+
+            return Path.Combine(caseInfo.RootPath, "caseSettings.json");
+        }
+        private async void OnExternalEvidenceSaved(object? sender, Evidence updated)
         {
             if (CurrentCase == null)
             {

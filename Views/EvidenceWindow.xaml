@@ -52,18 +52,6 @@
                               Margin="0 2 0 8"
                               SelectionChanged="OnMetadataSelectionChanged" />
 
-                    <TextBlock Text="Tags" FontWeight="Bold" />
-                    <ItemsControl ItemsSource="{Binding TagOptions}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <CheckBox Content="{Binding Name}"
-                                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                          Checked="OnMetadataCheckboxChanged"
-                                          Unchecked="OnMetadataCheckboxChanged" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
                     <TextBlock Text="People" FontWeight="Bold" Margin="0 8 0 0" />
                     <ItemsControl ItemsSource="{Binding PersonOptions}">
                         <ItemsControl.ItemTemplate>
