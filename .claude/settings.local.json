@@ -3,7 +3,8 @@
     "allow": [
       "Bash(taskkill:*)",
       "Bash(powershell -Command \"Stop-Process -Id 35084 -Force\")",
-      "Bash(dotnet build:*)"
+      "Bash(dotnet build:*)",
+      "Bash(dotnet run:*)"
     ],
     "deny": [],
     "ask": []

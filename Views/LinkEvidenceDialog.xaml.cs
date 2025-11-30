@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using AdonisUI.Controls;
 using evidence_timeline.Models;
 
 namespace evidence_timeline.Views
 {
-    public partial class LinkEvidenceDialog : Window
+    public partial class LinkEvidenceDialog : AdonisWindow
     {
         private readonly List<EvidenceSummary> _all;
         private List<ListItem> _items = new();

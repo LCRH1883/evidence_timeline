@@ -1,8 +1,9 @@
 using System.Windows;
+using AdonisUI.Controls;
 
 namespace evidence_timeline.Views
 {
-    public partial class StartDialog : Window
+    public partial class StartDialog : AdonisWindow
     {
         public StartDialog()
         {

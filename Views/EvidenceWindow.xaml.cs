@@ -3,11 +3,12 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using AdonisUI.Controls;
 using evidence_timeline.ViewModels;
 
 namespace evidence_timeline.Views
 {
-    public partial class EvidenceWindow : Window
+    public partial class EvidenceWindow : AdonisWindow
     {
         public EvidenceWindow()
         {

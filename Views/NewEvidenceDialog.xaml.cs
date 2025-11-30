@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using AdonisUI.Controls;
 using evidence_timeline.Models;
 using MessageBox = System.Windows.MessageBox;
+using MessageBoxButton = System.Windows.MessageBoxButton;
+using MessageBoxImage = System.Windows.MessageBoxImage;
 
 namespace evidence_timeline.Views
 {
-    public partial class NewEvidenceDialog : Window
+    public partial class NewEvidenceDialog : AdonisWindow
     {
         public NewEvidenceDialog(IEnumerable<EvidenceType> types)
         {

@@ -1,8 +1,9 @@
 using System.Windows;
+using AdonisUI.Controls;
 
 namespace evidence_timeline.Views
 {
-    public partial class InputDialog : Window
+    public partial class InputDialog : AdonisWindow
     {
         public string ResultText { get; private set; } = string.Empty;
 

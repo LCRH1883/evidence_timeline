@@ -1,16 +1,18 @@
-<Window x:Class="evidence_timeline.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:models="clr-namespace:evidence_timeline.Models"
-        mc:Ignorable="d"
-        Title="Evidence Timeline"
-        Height="600"
-        Width="1000"
-        MinHeight="500"
-        MinWidth="800"
-        Loaded="OnLoaded">
+<adonis:AdonisWindow x:Class="evidence_timeline.MainWindow"
+                     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                     xmlns:models="clr-namespace:evidence_timeline.Models"
+                     xmlns:adonis="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+                     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                     mc:Ignorable="d"
+                     Title="Evidence Timeline"
+                     Height="600"
+                     Width="1000"
+                     MinHeight="500"
+                     MinWidth="800"
+                     Loaded="OnLoaded">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <Style x:Key="ResizableColumnStyle" TargetType="ColumnDefinition">
@@ -20,6 +22,39 @@
         <Style x:Key="ResizableRowStyle" TargetType="RowDefinition">
             <Setter Property="Height" Value="200" />
             <Setter Property="MinHeight" Value="120" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="8 3" />
+            <Setter Property="MinHeight" Value="28" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="Button" x:Key="CompactIconButtonStyle">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="TextBlock" x:Key="SectionHeaderTextStyle">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0 6 0 4" />
+        </Style>
+        <Style TargetType="TextBlock" x:Key="LabelTextStyle">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="0 2 0 2" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="6 3" />
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="6 3" />
+        </Style>
+        <Style TargetType="CheckBox">
+            <Setter Property="FontSize" Value="12" />
         </Style>
     </Window.Resources>
 
@@ -36,8 +71,19 @@
                 <MenuItem Header="_Manage Links" Command="{Binding ManageLinksCommand}" IsEnabled="{Binding SelectedEvidenceDetail}" />
                 <MenuItem Header="Undo (N/A)" IsEnabled="False" />
             </MenuItem>
+            <MenuItem Header="_Data">
+                <MenuItem Header="_Types">
+                    <MenuItem Header="_Add Type" Command="{Binding AddTypeCommand}" />
+                    <MenuItem Header="_Rename Type" Command="{Binding RenameTypeCommand}" />
+                    <MenuItem Header="_Delete Type" Command="{Binding DeleteTypeCommand}" />
+                </MenuItem>
+                <MenuItem Header="_People">
+                    <MenuItem Header="_Add Person" Command="{Binding AddPersonCommand}" />
+                    <MenuItem Header="_Rename Person" Command="{Binding RenamePersonCommand}" />
+                    <MenuItem Header="_Delete Person" Command="{Binding DeletePersonCommand}" />
+                </MenuItem>
+            </MenuItem>
             <MenuItem Header="_View">
-                <MenuItem Header="Show Left Pane" IsCheckable="True" IsChecked="{Binding IsLeftPaneVisible, Mode=TwoWay}" />
                 <MenuItem Header="Show Metadata Pane" IsCheckable="True" IsChecked="{Binding IsRightPaneVisible, Mode=TwoWay}" />
                 <MenuItem Header="Show Notes Pane" IsCheckable="True" IsChecked="{Binding IsBottomPaneVisible, Mode=TwoWay}" />
                 <Separator />
@@ -51,147 +97,39 @@
                 <MenuItem Header="About" IsEnabled="False" />
             </MenuItem>
         </Menu>
-        <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="LeftColumn">
-                <ColumnDefinition.Style>
-                    <Style TargetType="ColumnDefinition" BasedOn="{StaticResource ResizableColumnStyle}">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsLeftPaneVisible}" Value="False">
-                                <Setter Property="Width" Value="0" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </ColumnDefinition.Style>
-            </ColumnDefinition>
-            <ColumnDefinition Width="5">
-                <ColumnDefinition.Style>
-                    <Style TargetType="ColumnDefinition">
-                        <Setter Property="Width" Value="5" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsLeftPaneVisible}" Value="False">
-                                <Setter Property="Width" Value="0" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </ColumnDefinition.Style>
-            </ColumnDefinition>
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
 
-        <!-- Left pane spanning full height -->
-        <Border Grid.Column="0"
-                Background="#f3f4f6"
-                Padding="12"
-                Visibility="{Binding IsLeftPaneVisible, Converter={StaticResource BoolToVis}}">
-            <StackPanel>
-                <TextBlock Text="Filters"
-                           FontWeight="SemiBold"
-                           Margin="0 12 0 4" />
-                <StackPanel Margin="0 0 0 8">
-                    <TextBlock Text="Type" FontSize="12" />
-                    <ComboBox ItemsSource="{Binding EvidenceTypes}"
-                              DisplayMemberPath="Name"
-                              SelectedItem="{Binding SelectedType}"
-                              Margin="0 2 0 0" />
-                </StackPanel>
-                <StackPanel Margin="0 0 0 8">
-                    <TextBlock Text="Person" FontSize="12" />
-                    <ComboBox ItemsSource="{Binding People}"
-                              DisplayMemberPath="Name"
-                              SelectedItem="{Binding SelectedPerson}"
-                              Margin="0 2 0 0" />
-                </StackPanel>
-                <CheckBox Content="Newest first"
-                          IsChecked="{Binding SortNewestFirst}"
-                          Margin="0 0 0 8" />
-                <Button Content="Clear filters"
-                        Padding="8 4"
-                        Command="{Binding ClearFiltersCommand}" />
-                <TextBlock Text="Types"
-                           FontWeight="SemiBold"
-                           Margin="0 0 0 4" />
-                <StackPanel Orientation="Horizontal" Margin="0 0 0 8">
-                    <Button Content="Add"
-                            Padding="6 2"
-                            Width="60"
-                            Command="{Binding AddTypeCommand}" />
-                    <Button Content="Rename"
-                            Padding="6 2"
-                            Width="70"
-                            Margin="6 0 0 0"
-                            Command="{Binding RenameTypeCommand}" />
-                    <Button Content="Delete"
-                            Padding="6 2"
-                            Width="70"
-                            Margin="6 0 0 0"
-                            Command="{Binding DeleteTypeCommand}" />
-                </StackPanel>
-                <TextBlock Text="People"
-                           FontWeight="SemiBold"
-                           Margin="0 0 0 4" />
-                <StackPanel Orientation="Horizontal" Margin="0 0 0 12">
-                    <Button Content="Add"
-                            Padding="6 2"
-                            Width="60"
-                            Command="{Binding AddPersonCommand}" />
-                    <Button Content="Rename"
-                            Padding="6 2"
-                            Width="70"
-                            Margin="6 0 0 0"
-                            Command="{Binding RenamePersonCommand}" />
-                    <Button Content="Delete"
-                            Padding="6 2"
-                            Width="70"
-                            Margin="6 0 0 0"
-                            Command="{Binding DeletePersonCommand}" />
-                </StackPanel>
-                <CheckBox Content="Show metadata pane"
-                          IsChecked="{Binding IsRightPaneVisible}"
-                          Margin="0 12 0 4" />
-                <CheckBox Content="Show notes pane"
-                          IsChecked="{Binding IsBottomPaneVisible}" />
-            </StackPanel>
+        <!-- Bottom status bar -->
+        <Border DockPanel.Dock="Bottom"
+                Background="#f8f9fa"
+                BorderBrush="#dee2e6"
+                BorderThickness="0 1 0 0"
+                Padding="8 4">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Left"
+                           VerticalAlignment="Center"
+                           FontSize="11">
+                    <Run Text="Evidence Count: " />
+                    <Run Text="{Binding EvidenceList.Count, Mode=OneWay, FallbackValue=0}" FontWeight="SemiBold" />
+                </TextBlock>
+
+                <TextBlock DockPanel.Dock="Right"
+                           VerticalAlignment="Center"
+                           FontSize="11"
+                           Margin="12 0 0 0">
+                    <Run Text="Selected: " />
+                    <Run Text="{Binding SelectedSummary.EvidenceNumber, Mode=OneWay, FallbackValue='-'}" FontWeight="SemiBold" />
+                </TextBlock>
+
+                <TextBlock DockPanel.Dock="Right"
+                           VerticalAlignment="Center"
+                           FontSize="11"
+                           Margin="12 0 0 0"
+                           Text="{Binding CurrentCase.FilePath, Mode=OneWay, FallbackValue='No case loaded'}" />
+            </DockPanel>
         </Border>
 
-        <GridSplitter Grid.Column="1"
-                      HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch"
-                      Background="#d1d5db"
-                      ResizeDirection="Columns"
-                      ResizeBehavior="PreviousAndNext"
-                      ShowsPreview="True"
-                      Visibility="{Binding IsLeftPaneVisible, Converter={StaticResource BoolToVis}}" />
-
-        <!-- Main/Right + Notes stack -->
-        <Grid Grid.Column="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="5">
-                    <ColumnDefinition.Style>
-                        <Style TargetType="ColumnDefinition">
-                            <Setter Property="Width" Value="5" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsRightPaneVisible}" Value="False">
-                                    <Setter Property="Width" Value="0" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ColumnDefinition.Style>
-                </ColumnDefinition>
-                <ColumnDefinition x:Name="RightColumn">
-                    <ColumnDefinition.Style>
-                        <Style TargetType="ColumnDefinition" BasedOn="{StaticResource ResizableColumnStyle}">
-                            <Setter Property="Width" Value="320" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsRightPaneVisible}" Value="False">
-                                    <Setter Property="Width" Value="0" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ColumnDefinition.Style>
-                </ColumnDefinition>
-            </Grid.ColumnDefinitions>
+        <!-- Main content grid -->
+        <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition>
@@ -219,8 +157,8 @@
                 </RowDefinition>
             </Grid.RowDefinitions>
 
-            <!-- Main area -->
-            <Grid Grid.Row="0" Grid.ColumnSpan="3">
+            <!-- Main area with filters and content -->
+            <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="5">
@@ -255,55 +193,92 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
+                    <!-- Case name header -->
                     <TextBlock Text="{Binding CurrentCase.Name, TargetNullValue='No case loaded'}"
-                               FontSize="16"
+                               FontSize="15"
                                FontWeight="Bold"
                                HorizontalAlignment="Center"
-                               Margin="12 8" />
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="12" VerticalAlignment="Center">
-                        <TextBox Width="240"
-                                 Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0 0 8 0"
-                                 VerticalContentAlignment="Center"
-                                 Padding="6"
-                                 ToolTip="Search" />
-                        <StackPanel Orientation="Horizontal" Margin="0 0 8 0">
-                            <Button Width="36"
-                                    Height="32"
-                                    Padding="4"
+                               Margin="8 8 8 4" />
+
+                    <!-- Compact filter bar -->
+                    <Border Grid.Row="1"
+                            Background="#f8f9fa"
+                            BorderBrush="#dee2e6"
+                            BorderThickness="0 1"
+                            Padding="8 6">
+                        <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- Search -->
+                            <TextBlock Text="Search:"
+                                       VerticalAlignment="Center"
+                                       Margin="0 0 4 0"
+                                       FontWeight="SemiBold" />
+                            <TextBox Width="180"
+                                     Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     VerticalContentAlignment="Center"
+                                     Margin="0 0 12 0"
+                                     ToolTip="Search evidence" />
+
+                            <!-- Type filter -->
+                            <TextBlock Text="Type:"
+                                       VerticalAlignment="Center"
+                                       Margin="0 0 4 0"
+                                       FontWeight="SemiBold" />
+                            <ComboBox Width="140"
+                                      ItemsSource="{Binding EvidenceTypes}"
+                                      DisplayMemberPath="Name"
+                                      SelectedItem="{Binding SelectedType}"
+                                      Margin="0 0 12 0"
+                                      ToolTip="Filter by type" />
+
+                            <!-- Person filter -->
+                            <TextBlock Text="Person:"
+                                       VerticalAlignment="Center"
+                                       Margin="0 0 4 0"
+                                       FontWeight="SemiBold" />
+                            <ComboBox Width="140"
+                                      ItemsSource="{Binding People}"
+                                      DisplayMemberPath="Name"
+                                      SelectedItem="{Binding SelectedPerson}"
+                                      Margin="0 0 12 0"
+                                      ToolTip="Filter by person" />
+
+                            <!-- Clear filters button -->
+                            <Button Content="Clear"
+                                    Command="{Binding ClearFiltersCommand}"
+                                    Padding="10 3"
+                                    Margin="0 0 12 0"
+                                    ToolTip="Clear all filters" />
+
+                            <!-- Separator -->
+                            <Border Width="1"
+                                    Height="24"
+                                    Background="#dee2e6"
+                                    Margin="0 0 12 0" />
+
+                            <!-- Action buttons -->
+                            <Button Style="{StaticResource CompactIconButtonStyle}"
                                     Command="{Binding NewEvidenceCommand}"
-                                    ToolTip="New Evidence">
-                                <Path Data="M12 4v8m-4-4h8"
-                                      Stroke="#111827"
-                                      StrokeThickness="2"
-                                      StrokeLineJoin="Round"
-                                      StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"
-                                      Stretch="Uniform" />
+                                    ToolTip="New Evidence"
+                                    Margin="0 0 6 0">
+                                <iconPacks:PackIconMaterial Kind="PlusBoxMultipleOutline"
+                                                            Width="16"
+                                                            Height="16" />
                             </Button>
-                            <Button Width="36"
-                                    Height="32"
-                                    Padding="4"
-                                    Margin="6 0 0 0"
+                            <Button Style="{StaticResource CompactIconButtonStyle}"
                                     Command="{Binding OpenEvidenceWindowCommand}"
                                     ToolTip="Open Evidence">
-                                <Path Data="M4 4h8l4 4v12H4z M12 4v4h4"
-                                      Stroke="#111827"
-                                      StrokeThickness="2"
-                                      StrokeLineJoin="Round"
-                                      StrokeStartLineCap="Round"
-                                      StrokeEndLineCap="Round"
-                                      Fill="Transparent"
-                                      Stretch="Uniform" />
+                                <iconPacks:PackIconMaterial Kind="FolderOpenOutline"
+                                                            Width="16"
+                                                            Height="16" />
                             </Button>
-                        </StackPanel>
-                    </StackPanel>
+                        </WrapPanel>
+                    </Border>
                     <DataGrid Grid.Row="2"
                               ItemsSource="{Binding EvidenceList}"
                               SelectedItem="{Binding SelectedSummary, Mode=TwoWay}"
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
-                              Margin="12"
+                              Margin="8"
                               SelectionMode="Single"
                               MouseDoubleClick="OnEvidenceRowDoubleClick">
                         <DataGrid.Columns>
@@ -336,77 +311,92 @@
                               Visibility="{Binding IsRightPaneVisible, Converter={StaticResource BoolToVis}}" />
 
                 <Border Grid.Column="2"
-                        Background="#f9fafb"
-                        Padding="12"
+                        Background="White"
+                        BorderBrush="#dee2e6"
+                        BorderThickness="1 0 0 0"
                         Visibility="{Binding IsRightPaneVisible, Converter={StaticResource BoolToVis}}">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0 0 0 12">
+                    <DockPanel>
+                        <!-- Compact header bar -->
+                        <Border DockPanel.Dock="Top"
+                                Background="#f8f9fa"
+                                BorderBrush="#dee2e6"
+                                BorderThickness="0 0 0 1"
+                                Padding="8 4">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="Metadata"
-                                           FontSize="16"
-                                           FontWeight="Bold"
-                                           VerticalAlignment="Center" />
-                                <Button Content="Save"
-                                        Padding="8 4"
-                                        Margin="12 0 0 0"
-                                        Command="{Binding SaveMetadataCommand}"
-                                        HorizontalAlignment="Right" />
+                                           FontWeight="SemiBold"
+                                           FontSize="12"
+                                           VerticalAlignment="Center"
+                                           Margin="0" />
+                                <Button Command="{Binding SaveMetadataCommand}"
+                                        Style="{StaticResource CompactIconButtonStyle}"
+                                        Width="24"
+                                        Height="24"
+                                        Margin="8 0 0 0"
+                                        ToolTip="Save metadata">
+                                    <iconPacks:PackIconMaterial Kind="ContentSaveOutline"
+                                                                Width="14"
+                                                                Height="14" />
+                                </Button>
                             </StackPanel>
-                            <TextBlock Text="Title" FontSize="12" />
+                        </Border>
+
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="8">
+                            <TextBlock Text="Title" Style="{StaticResource LabelTextStyle}" />
                             <TextBox Text="{Binding SelectedEvidenceDetail.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0 2 0 8"
+                                     Margin="0 2 0 6"
                                      KeyDown="OnMetadataEnterKey"
                                      LostFocus="OnMetadataFieldLostFocus" />
-                            <TextBlock Text="Court #" FontSize="12" />
+                            <TextBlock Text="Court #" Style="{StaticResource LabelTextStyle}" />
                             <TextBox Text="{Binding SelectedEvidenceDetail.CourtNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0 2 0 8"
+                                     Margin="0 2 0 6"
                                      KeyDown="OnMetadataEnterKey"
                                      LostFocus="OnMetadataFieldLostFocus" />
-                            <TextBlock Text="Type" FontSize="12" />
+                            <TextBlock Text="Type" Style="{StaticResource LabelTextStyle}" />
                             <ComboBox ItemsSource="{Binding EvidenceTypes}"
                                       DisplayMemberPath="Name"
                                       SelectedValuePath="Id"
                                       SelectedValue="{Binding SelectedEvidenceDetail.TypeId, Mode=TwoWay}"
-                                      Margin="0 2 0 8"
+                                      Margin="0 2 0 6"
                                       SelectionChanged="OnMetadataSelectionChanged" />
-                            <TextBlock Text="Date mode" FontSize="12" />
+                            <TextBlock Text="Date mode" Style="{StaticResource LabelTextStyle}" />
                             <ComboBox SelectedValue="{Binding SelectedDateMode, Mode=TwoWay}"
                                       SelectedValuePath="Tag"
-                                      Margin="0 2 0 8"
+                                      Margin="0 2 0 6"
                                       SelectionChanged="OnMetadataSelectionChanged">
                                 <ComboBoxItem Content="Exact" Tag="{x:Static models:EvidenceDateMode.Exact}" />
                                 <ComboBoxItem Content="Around" Tag="{x:Static models:EvidenceDateMode.Around}" />
                                 <ComboBoxItem Content="Broad" Tag="{x:Static models:EvidenceDateMode.Broad}" />
                             </ComboBox>
-                            <TextBlock Text="Exact date" FontSize="12" />
+                            <TextBlock Text="Exact date" Style="{StaticResource LabelTextStyle}" />
                             <DatePicker SelectedDate="{Binding ExactDate, Mode=TwoWay}"
-                                        Margin="0 2 0 8"
+                                        Margin="0 2 0 6"
                                         SelectedDateChanged="OnMetadataSelectionChanged" />
-                            <TextBlock Text="Start date" FontSize="12" />
+                            <TextBlock Text="Start date" Style="{StaticResource LabelTextStyle}" />
                             <DatePicker SelectedDate="{Binding StartDate, Mode=TwoWay}"
-                                        Margin="0 2 0 8"
+                                        Margin="0 2 0 6"
                                         SelectedDateChanged="OnMetadataSelectionChanged" />
-                            <TextBlock Text="End date" FontSize="12" />
+                            <TextBlock Text="End date" Style="{StaticResource LabelTextStyle}" />
                             <DatePicker SelectedDate="{Binding EndDate, Mode=TwoWay}"
-                                        Margin="0 2 0 8"
+                                        Margin="0 2 0 6"
                                         SelectedDateChanged="OnMetadataSelectionChanged" />
-                            <TextBlock Text="Around amount/unit" FontSize="12" />
-                            <StackPanel Orientation="Horizontal" Margin="0 2 0 8">
+                            <TextBlock Text="Around amount/unit" Style="{StaticResource LabelTextStyle}" />
+                            <StackPanel Orientation="Horizontal" Margin="0 2 0 6">
                                 <TextBox Width="60"
                                          Text="{Binding AroundAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         Margin="0 0 8 0"
                                          KeyDown="OnMetadataEnterKey"
                                          LostFocus="OnMetadataFieldLostFocus" />
                                 <ComboBox Width="120"
                                           SelectedValue="{Binding AroundUnit, Mode=TwoWay}"
-                                          Margin="0 0 0 0"
-                                          SelectionChanged="OnMetadataSelectionChanged">
+                                          SelectionChanged="OnMetadataSelectionChanged"
+                                          Margin="6 0 0 0">
                                     <ComboBoxItem Content="days" />
                                     <ComboBoxItem Content="weeks" />
                                     <ComboBoxItem Content="months" />
                                 </ComboBox>
                             </StackPanel>
-                            <TextBlock Text="People" FontSize="12" Margin="0 8 0 0" />
+                            <TextBlock Text="People" Style="{StaticResource LabelTextStyle}" Margin="0 6 0 0" />
                             <ItemsControl ItemsSource="{Binding PersonOptions}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -417,11 +407,10 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <StackPanel Orientation="Horizontal" Margin="0 8 0 8">
+                            <StackPanel Orientation="Horizontal" Margin="0 6 0 6">
                                 <Button Content="Select links"
-                                        Padding="8 4"
                                         Command="{Binding ManageLinksCommand}"
-                                        Margin="0 0 8 0" />
+                                        Margin="0 0 6 0" />
                                 <TextBlock Text="Linked IDs (manual):"
                                            VerticalAlignment="Center" />
                             </StackPanel>
@@ -429,38 +418,50 @@
                                      AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto"
                                      Height="60" />
-                            <TextBlock Text="Attachments" FontSize="12" Margin="0 8 0 4" />
+                            <TextBlock Text="Attachments" Style="{StaticResource LabelTextStyle}" Margin="0 6 0 4" />
                             <ItemsControl ItemsSource="{Binding SelectedEvidenceDetail.Attachments}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding FileName}" Width="160" />
-                                            <Button Content="Open"
-                                                    Padding="4 2"
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding FileName}" Width="150" />
+                                            <Button Style="{StaticResource CompactIconButtonStyle}"
                                                     Margin="4 0 0 0"
+                                                    ToolTip="Open attachment"
                                                     Command="{Binding DataContext.OpenAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}" />
-                                            <Button Content="Folder"
-                                                    Padding="4 2"
+                                                    CommandParameter="{Binding}">
+                                                <iconPacks:PackIconMaterial Kind="OpenInNew"
+                                                                            Width="14"
+                                                                            Height="14" />
+                                            </Button>
+                                            <Button Style="{StaticResource CompactIconButtonStyle}"
                                                     Margin="4 0 0 0"
+                                                    ToolTip="Show in folder"
                                                     Command="{Binding DataContext.OpenAttachmentFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}" />
-                                            <Button Content="Remove"
-                                                    Padding="4 2"
+                                                    CommandParameter="{Binding}">
+                                                <iconPacks:PackIconMaterial Kind="FolderOpenOutline"
+                                                                            Width="14"
+                                                                            Height="14" />
+                                            </Button>
+                                            <Button Style="{StaticResource CompactIconButtonStyle}"
                                                     Margin="4 0 0 0"
+                                                    ToolTip="Remove attachment"
                                                     Command="{Binding DataContext.RemoveAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}" />
+                                                    CommandParameter="{Binding}">
+                                                <iconPacks:PackIconMaterial Kind="DeleteOutline"
+                                                                            Width="14"
+                                                                            Height="14" />
+                                            </Button>
                                         </StackPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                             <Button Content="Add attachment"
                                     Command="{Binding AddAttachmentCommand}"
-                                    Margin="0 8 0 0"
-                                    Padding="8 4" />
+                                    Margin="0 6 0 0" />
                         </StackPanel>
                     </ScrollViewer>
-                </Border>
+                </DockPanel>
+            </Border>
             </Grid>
 
             <!-- Horizontal splitter for notes -->
@@ -477,28 +478,125 @@
             <!-- Notes pane spanning center/right -->
             <Border Grid.Row="2"
                     Grid.ColumnSpan="3"
-                    Background="#f3f4f6"
-                    Padding="12"
+                    BorderBrush="#dee2e6"
+                    BorderThickness="0 1 0 0"
                     Visibility="{Binding IsBottomPaneVisible, Converter={StaticResource BoolToVis}}">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0 0 0 8">
-                        <TextBlock Text="Notes"
-                                   FontSize="16"
-                                   FontWeight="Bold"
-                                   VerticalAlignment="Center" />
-                        <Button Content="Save"
-                                Command="{Binding SaveNotesCommand}"
-                                Padding="8 4"
-                                Margin="12 0 0 0"
-                                HorizontalAlignment="Right" />
-                    </StackPanel>
-                    <TextBox Text="{Binding NotesText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             AcceptsReturn="True"
-                             VerticalScrollBarVisibility="Auto"
-                             Height="120" />
-                </StackPanel>
+                <DockPanel>
+                    <!-- Compact header bar with formatting toolbar -->
+                    <Border DockPanel.Dock="Top"
+                            Background="#f8f9fa"
+                            BorderBrush="#dee2e6"
+                            BorderThickness="0 0 0 1"
+                            Padding="8 4">
+                        <DockPanel>
+                            <TextBlock Text="Notes"
+                                       FontWeight="SemiBold"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"
+                                       DockPanel.Dock="Left"
+                                       Margin="0 0 12 0" />
+
+                            <!-- Formatting toolbar -->
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center"
+                                        DockPanel.Dock="Left"
+                                        Margin="0 0 8 0">
+                                <!-- Bold -->
+                                <Button x:Name="BoldButton"
+                                        Style="{StaticResource CompactIconButtonStyle}"
+                                        Width="24"
+                                        Height="24"
+                                        Margin="0 0 2 0"
+                                        ToolTip="Bold (Ctrl+B)"
+                                        Click="OnNotesFormatBold">
+                                    <iconPacks:PackIconMaterial Kind="FormatBold"
+                                                                Width="14"
+                                                                Height="14" />
+                                </Button>
+
+                                <!-- Italic -->
+                                <Button x:Name="ItalicButton"
+                                        Style="{StaticResource CompactIconButtonStyle}"
+                                        Width="24"
+                                        Height="24"
+                                        Margin="0 0 2 0"
+                                        ToolTip="Italic (Ctrl+I)"
+                                        Click="OnNotesFormatItalic">
+                                    <iconPacks:PackIconMaterial Kind="FormatItalic"
+                                                                Width="14"
+                                                                Height="14" />
+                                </Button>
+
+                                <!-- Underline -->
+                                <Button x:Name="UnderlineButton"
+                                        Style="{StaticResource CompactIconButtonStyle}"
+                                        Width="24"
+                                        Height="24"
+                                        Margin="0 0 8 0"
+                                        ToolTip="Underline (Ctrl+U)"
+                                        Click="OnNotesFormatUnderline">
+                                    <iconPacks:PackIconMaterial Kind="FormatUnderline"
+                                                                Width="14"
+                                                                Height="14" />
+                                </Button>
+
+                                <!-- Bullet List -->
+                                <Button x:Name="BulletListButton"
+                                        Style="{StaticResource CompactIconButtonStyle}"
+                                        Width="24"
+                                        Height="24"
+                                        Margin="0 0 2 0"
+                                        ToolTip="Bullet List"
+                                        Click="OnNotesFormatBulletList">
+                                    <iconPacks:PackIconMaterial Kind="FormatListBulleted"
+                                                                Width="14"
+                                                                Height="14" />
+                                </Button>
+
+                                <!-- Numbered List -->
+                                <Button x:Name="NumberedListButton"
+                                        Style="{StaticResource CompactIconButtonStyle}"
+                                        Width="24"
+                                        Height="24"
+                                        Margin="0 0 0 0"
+                                        ToolTip="Numbered List"
+                                        Click="OnNotesFormatNumberedList">
+                                    <iconPacks:PackIconMaterial Kind="FormatListNumbered"
+                                                                Width="14"
+                                                                Height="14" />
+                                </Button>
+                            </StackPanel>
+
+                            <!-- Save button on the right -->
+                            <Button Command="{Binding SaveNotesCommand}"
+                                    Style="{StaticResource CompactIconButtonStyle}"
+                                    Width="24"
+                                    Height="24"
+                                    DockPanel.Dock="Right"
+                                    ToolTip="Save notes">
+                                <iconPacks:PackIconMaterial Kind="ContentSaveOutline"
+                                                            Width="14"
+                                                            Height="14" />
+                            </Button>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- Rich text box fills remaining space with border -->
+                    <Border Margin="8"
+                            BorderBrush="#adb5bd"
+                            BorderThickness="1"
+                            Background="White">
+                        <RichTextBox x:Name="NotesRichTextBox"
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"
+                                     BorderThickness="0"
+                                     Padding="8"
+                                     Background="White"
+                                     Loaded="OnNotesRichTextBoxLoaded"
+                                     TextChanged="OnNotesTextChanged" />
+                    </Border>
+                </DockPanel>
             </Border>
         </Grid>
-        </Grid>
     </DockPanel>
-</Window>
+</adonis:AdonisWindow>

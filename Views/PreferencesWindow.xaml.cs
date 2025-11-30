@@ -1,8 +1,9 @@
 using System.Windows;
+using AdonisUI.Controls;
 
 namespace evidence_timeline.Views
 {
-    public partial class PreferencesWindow : Window
+    public partial class PreferencesWindow : AdonisWindow
     {
         public PreferencesWindow()
         {
