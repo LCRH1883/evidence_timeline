@@ -82,6 +82,8 @@
                 <MenuItem Header="Case _Settings" Command="{Binding OpenCaseSettingsCommand}" IsEnabled="{Binding CurrentCase}" />
             </MenuItem>
             <MenuItem Header="_Help">
+                <MenuItem Header="_Check for Updates..." Click="OnCheckForUpdatesClicked" />
+                <Separator />
                 <MenuItem Header="_About Evidence Timeline" Click="OnAboutClicked" />
             </MenuItem>
         </Menu>
