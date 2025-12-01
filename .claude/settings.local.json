@@ -9,7 +9,11 @@
       "WebSearch",
       "WebFetch(domain:icons.getbootstrap.com)",
       "Bash(timeout /t 5)",
-      "Bash(dotnet add:*)"
+      "Bash(dotnet add:*)",
+      "Bash(dotnet publish:*)",
+      "Bash(\"C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe\" installer.iss)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []
