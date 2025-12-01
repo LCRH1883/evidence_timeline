@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -9,38 +7,30 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using AdonisUI.Controls;
 using evidence_timeline.ViewModels;
-using evidence_timeline.Views;
-using MessageBox = System.Windows.MessageBox;
-using MessageBoxButton = System.Windows.MessageBoxButton;
-using MessageBoxImage = System.Windows.MessageBoxImage;
 
-namespace evidence_timeline
+namespace evidence_timeline.Views
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : AdonisWindow
+    public partial class EvidenceWindow : AdonisWindow
     {
-        private DispatcherTimer? _metadataAutoSaveTimer;
         private DispatcherTimer? _notesAutoSaveTimer;
-        private DateTime? _lastMetadataSaveTime;
+        private DispatcherTimer? _mainSaveTimer;
         private DateTime? _lastNotesSaveTime;
+        private DateTime? _lastMainSaveTime;
 
-        public MainWindow()
+        public EvidenceWindow()
         {
             InitializeComponent();
-            DataContext = new MainViewModel();
             InitializeAutoSaveTimers();
         }
 
         private void InitializeAutoSaveTimers()
         {
-            // Metadata autosave timer (2 second delay)
-            _metadataAutoSaveTimer = new DispatcherTimer
+            // Main save autosave timer (2 second delay)
+            _mainSaveTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(2)
             };
-            _metadataAutoSaveTimer.Tick += OnMetadataAutoSaveTick;
+            _mainSaveTimer.Tick += OnMainAutoSaveTick;
 
             // Notes autosave timer (2 second delay)
             _notesAutoSaveTimer = new DispatcherTimer
@@ -50,60 +40,6 @@ namespace evidence_timeline
             _notesAutoSaveTimer.Tick += OnNotesAutoSaveTick;
         }
 
-        private async void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (DataContext is not MainViewModel vm)
-                {
-                    return;
-                }
-
-                if (vm.CurrentCase != null)
-                {
-                    return;
-                }
-
-                var start = new StartDialog
-                {
-                    Owner = this
-                };
-                start.LoadRecentCases(vm.RecentCasePaths);
-
-                var result = start.ShowDialog();
-                if (result == true)
-                {
-                    if (start.IsCreate)
-                    {
-                        vm.CreateCaseCommand.Execute(null);
-                    }
-                    else if (!string.IsNullOrWhiteSpace(start.SelectedCasePath))
-                    {
-                        await vm.OpenCaseFromPathAsync(start.SelectedCasePath);
-                    }
-                    else
-                    {
-                        vm.OpenCaseCommand.Execute(null);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Unable to start application: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void OnEvidenceRowDoubleClick(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is not MainViewModel vm || vm.SelectedSummary == null || vm.CurrentCase == null)
-            {
-                return;
-            }
-
-            var evidenceId = vm.SelectedSummary.Id;
-            vm.TryOpenEvidenceWindow(evidenceId, this);
-        }
-
         private void OnMetadataEnterKey(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key != Key.Enter)
@@ -111,18 +47,18 @@ namespace evidence_timeline
                 return;
             }
 
-            TriggerMetadataAutoSave();
+            TriggerMainAutoSave();
             e.Handled = true;
         }
 
         private void OnMetadataSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            TriggerMetadataAutoSave();
+            TriggerMainAutoSave();
         }
 
         private void OnMetadataFieldLostFocus(object sender, RoutedEventArgs e)
         {
-            TriggerMetadataAutoSave();
+            TriggerMainAutoSave();
         }
 
         private void OnMetadataCheckboxChanged(object sender, RoutedEventArgs e)
@@ -132,12 +68,25 @@ namespace evidence_timeline
                 return;
             }
 
-            TriggerMetadataAutoSave();
+            TriggerMainAutoSave();
+        }
+
+        private void OnTitleBarMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                DragMove();
+            }
+        }
+
+        private void OnCloseClicked(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
 
         private void OnNotesRichTextBoxLoaded(object sender, RoutedEventArgs e)
         {
-            if (sender is not System.Windows.Controls.RichTextBox rtb || DataContext is not MainViewModel vm)
+            if (sender is not System.Windows.Controls.RichTextBox rtb || DataContext is not EvidenceWindowViewModel vm)
             {
                 return;
             }
@@ -151,7 +100,7 @@ namespace evidence_timeline
 
         private void OnNotesTextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            if (sender is not System.Windows.Controls.RichTextBox rtb || DataContext is not MainViewModel vm)
+            if (sender is not System.Windows.Controls.RichTextBox rtb || DataContext is not EvidenceWindowViewModel vm)
             {
                 return;
             }
@@ -227,11 +176,11 @@ namespace evidence_timeline
             return textRange.Text;
         }
 
-        private void TriggerMetadataAutoSave()
+        private void TriggerMainAutoSave()
         {
-            _metadataAutoSaveTimer?.Stop();
-            _metadataAutoSaveTimer?.Start();
-            UpdateMetadataSaveStatus("Saving...", System.Windows.Media.Brushes.Orange);
+            _mainSaveTimer?.Stop();
+            _mainSaveTimer?.Start();
+            UpdateMainSaveStatus("Saving...", System.Windows.Media.Brushes.Orange);
         }
 
         private void TriggerNotesAutoSave()
@@ -241,22 +190,22 @@ namespace evidence_timeline
             UpdateNotesSaveStatus("Saving...", System.Windows.Media.Brushes.Orange);
         }
 
-        private void OnMetadataAutoSaveTick(object? sender, EventArgs e)
+        private void OnMainAutoSaveTick(object? sender, EventArgs e)
         {
-            _metadataAutoSaveTimer?.Stop();
+            _mainSaveTimer?.Stop();
 
-            if (DataContext is MainViewModel vm && vm.SaveMetadataCommand != null)
+            if (DataContext is EvidenceWindowViewModel vm && vm.SaveCommand != null)
             {
                 try
                 {
-                    vm.SaveMetadataCommand.Execute(null);
-                    _lastMetadataSaveTime = DateTime.Now;
-                    UpdateMetadataSaveStatus($"Saved at {_lastMetadataSaveTime:HH:mm:ss}", System.Windows.Media.Brushes.Gray);
+                    vm.SaveCommand.Execute(null);
+                    _lastMainSaveTime = DateTime.Now;
+                    UpdateMainSaveStatus($"Saved at {_lastMainSaveTime:HH:mm:ss}", System.Windows.Media.Brushes.Gray);
                 }
                 catch (Exception ex)
                 {
-                    UpdateMetadataSaveStatus("Save failed", System.Windows.Media.Brushes.Red);
-                    System.Diagnostics.Debug.WriteLine($"Metadata save error: {ex.Message}");
+                    UpdateMainSaveStatus("Save failed", System.Windows.Media.Brushes.Red);
+                    System.Diagnostics.Debug.WriteLine($"Main save error: {ex.Message}");
                 }
             }
         }
@@ -265,7 +214,7 @@ namespace evidence_timeline
         {
             _notesAutoSaveTimer?.Stop();
 
-            if (DataContext is MainViewModel vm && vm.SaveNotesCommand != null)
+            if (DataContext is EvidenceWindowViewModel vm && vm.SaveNotesCommand != null)
             {
                 try
                 {
@@ -281,12 +230,12 @@ namespace evidence_timeline
             }
         }
 
-        private void UpdateMetadataSaveStatus(string text, System.Windows.Media.Brush foreground)
+        private void UpdateMainSaveStatus(string text, System.Windows.Media.Brush foreground)
         {
-            if (MetadataSaveStatusText != null)
+            if (SaveStatusText != null)
             {
-                MetadataSaveStatusText.Text = text;
-                MetadataSaveStatusText.Foreground = foreground;
+                SaveStatusText.Text = text;
+                SaveStatusText.Foreground = foreground;
             }
         }
 

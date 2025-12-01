@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(taskkill:*)",
+      "Bash(powershell -Command \"Stop-Process -Id 35084 -Force\")",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet run:*)",
+      "Bash(powershell:*)",
+      "WebSearch",
+      "WebFetch(domain:icons.getbootstrap.com)",
+      "Bash(timeout /t 5)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

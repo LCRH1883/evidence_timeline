@@ -1,0 +1,428 @@
+<adonis:AdonisWindow x:Class="evidence_timeline.Views.EvidenceWindow"
+                     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                     xmlns:adonis="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+                     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                     Title="Evidence Details"
+                     Height="600"
+                     Width="900"
+                     MinHeight="500"
+                     MinWidth="700"
+                     WindowStartupLocation="CenterOwner"
+                     ResizeMode="CanResizeWithGrip">
+    <!-- All styles inherited from App.xaml -->
+
+    <DockPanel>
+        <!-- Custom title bar -->
+        <Border DockPanel.Dock="Top"
+                Background="{StaticResource BackgroundLight}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0 0 0 1"
+                Padding="4 2"
+                MouseLeftButtonDown="OnTitleBarMouseDown">
+            <DockPanel>
+                <Button DockPanel.Dock="Right"
+                        Style="{StaticResource IconButton}"
+                        Click="OnCloseClicked"
+                        ToolTip="Close">
+                    <iconPacks:PackIconBootstrapIcons Kind="X"
+                                                      Width="12"
+                                                      Height="12" />
+                </Button>
+                <TextBlock Text="{Binding Evidence.Title, FallbackValue='Evidence Details'}"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center" />
+            </DockPanel>
+        </Border>
+
+        <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Margin="12">
+            <TextBlock Text="Title:" VerticalAlignment="Center" />
+            <TextBox Width="280"
+                     Margin="6 0 12 0"
+                     Text="{Binding Evidence.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     KeyDown="OnMetadataEnterKey"
+                     LostFocus="OnMetadataFieldLostFocus" />
+            <TextBlock Text="Court #:" VerticalAlignment="Center" />
+            <TextBox Width="160"
+                     Margin="6 0 12 0"
+                     Text="{Binding Evidence.CourtNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     KeyDown="OnMetadataEnterKey"
+                     LostFocus="OnMetadataFieldLostFocus" />
+            <Button Width="30"
+                    Height="30"
+                    Padding="4"
+                    Command="{Binding SaveCommand}"
+                    ToolTip="Save evidence">
+                <iconPacks:PackIconBootstrapIcons Kind="Floppy"
+                                                  Width="16"
+                                                  Height="16" />
+            </Button>
+            <TextBlock x:Name="SaveStatusText"
+                       Text="All changes saved"
+                       FontSize="11"
+                       Foreground="Gray"
+                       VerticalAlignment="Center"
+                       Margin="8 0 0 0" />
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="200" />
+            </Grid.RowDefinitions>
+
+            <!-- Metadata -->
+            <Border Grid.Column="1"
+                    BorderBrush="#dee2e6"
+                    BorderThickness="1"
+                    Margin="8"
+                    Background="White">
+                <DockPanel>
+                    <!-- Metadata header -->
+                    <Border DockPanel.Dock="Top"
+                            Background="#f8f9fa"
+                            BorderBrush="#dee2e6"
+                            BorderThickness="0 0 0 1"
+                            Padding="8 4">
+                        <TextBlock Text="Metadata"
+                                   FontWeight="SemiBold"
+                                   FontSize="12"
+                                   VerticalAlignment="Center" />
+                    </Border>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="8">
+                            <TextBlock Text="Type"
+                                       FontWeight="SemiBold"
+                                       FontSize="11"
+                                       Margin="0 0 0 4" />
+                            <ComboBox ItemsSource="{Binding Types}"
+                                      DisplayMemberPath="Name"
+                                      SelectedValuePath="Id"
+                                      SelectedValue="{Binding Evidence.TypeId, Mode=TwoWay}"
+                                      Margin="0 0 0 8"
+                                      SelectionChanged="OnMetadataSelectionChanged" />
+
+                            <TextBlock Text="Date mode"
+                                       FontWeight="SemiBold"
+                                       FontSize="11"
+                                       Margin="0 0 0 4" />
+                            <ComboBox SelectedValue="{Binding SelectedDateMode, Mode=TwoWay}"
+                                      SelectedValuePath="Tag"
+                                      Margin="0 0 0 8"
+                                      SelectionChanged="OnMetadataSelectionChanged">
+                                <ComboBoxItem Content="Exact" Tag="Exact" />
+                                <ComboBoxItem Content="Around" Tag="Around" />
+                                <ComboBoxItem Content="Broad" Tag="Broad" />
+                            </ComboBox>
+
+                            <TextBlock Text="Exact date"
+                                       FontWeight="SemiBold"
+                                       FontSize="11"
+                                       Margin="0 0 0 4" />
+                            <DatePicker SelectedDate="{Binding ExactDate, Mode=TwoWay}"
+                                        Margin="0 0 0 8"
+                                        SelectedDateChanged="OnMetadataSelectionChanged" />
+
+                            <TextBlock Text="Start date"
+                                       FontWeight="SemiBold"
+                                       FontSize="11"
+                                       Margin="0 0 0 4" />
+                            <DatePicker SelectedDate="{Binding StartDate, Mode=TwoWay}"
+                                        Margin="0 0 0 8"
+                                        SelectedDateChanged="OnMetadataSelectionChanged" />
+
+                            <TextBlock Text="End date"
+                                       FontWeight="SemiBold"
+                                       FontSize="11"
+                                       Margin="0 0 0 4" />
+                            <DatePicker SelectedDate="{Binding EndDate, Mode=TwoWay}"
+                                        Margin="0 0 0 8"
+                                        SelectedDateChanged="OnMetadataSelectionChanged" />
+
+                            <TextBlock Text="Around amount/unit"
+                                       FontWeight="SemiBold"
+                                       FontSize="11"
+                                       Margin="0 0 0 4" />
+                            <StackPanel Orientation="Horizontal" Margin="0 0 0 8">
+                                <TextBox Width="60"
+                                         Text="{Binding AroundAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         KeyDown="OnMetadataEnterKey"
+                                         LostFocus="OnMetadataFieldLostFocus" />
+                                <ComboBox Width="120"
+                                          SelectedValue="{Binding AroundUnit, Mode=TwoWay}"
+                                          SelectionChanged="OnMetadataSelectionChanged"
+                                          Margin="6 0 0 0">
+                                    <ComboBoxItem Content="days" />
+                                    <ComboBoxItem Content="weeks" />
+                                    <ComboBoxItem Content="months" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <TextBlock Text="People"
+                                       FontWeight="SemiBold"
+                                       FontSize="11"
+                                       Margin="0 0 0 4" />
+                            <ItemsControl ItemsSource="{Binding PersonOptions}"
+                                          Margin="0 0 0 8">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Content="{Binding Name}"
+                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                  Checked="OnMetadataCheckboxChanged"
+                                                  Unchecked="OnMetadataCheckboxChanged"
+                                                  Margin="0 0 0 2" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <StackPanel Orientation="Horizontal" Margin="0 0 0 4">
+                                <Button Content="Select links"
+                                        Command="{Binding ManageLinksCommand}"
+                                        Padding="6 3"
+                                        Margin="0 0 6 0" />
+                                <TextBlock Text="Linked IDs (manual):"
+                                           VerticalAlignment="Center"
+                                           FontSize="10" />
+                            </StackPanel>
+                            <TextBox Text="{Binding LinkedEvidenceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"
+                                     Height="60"
+                                     KeyDown="OnMetadataEnterKey"
+                                     LostFocus="OnMetadataFieldLostFocus" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <!-- Notes -->
+            <Border Grid.Column="0" Grid.RowSpan="2"
+                    BorderBrush="#dee2e6"
+                    BorderThickness="1"
+                    Margin="8"
+                    Background="White">
+                <DockPanel>
+                    <!-- Notes header with formatting toolbar -->
+                    <Border DockPanel.Dock="Top"
+                            Background="#f8f9fa"
+                            BorderBrush="#dee2e6"
+                            BorderThickness="0 0 0 1"
+                            Padding="8 4">
+                        <DockPanel>
+                            <TextBlock Text="Notes"
+                                       FontWeight="SemiBold"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"
+                                       DockPanel.Dock="Left"
+                                       Margin="0 0 12 0" />
+
+                            <!-- Formatting toolbar -->
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center"
+                                        DockPanel.Dock="Left"
+                                        Margin="0 0 8 0">
+                                <!-- Bold -->
+                                <Button x:Name="BoldButton"
+                                        Width="24"
+                                        Height="24"
+                                        Padding="4"
+                                        Margin="0 0 2 0"
+                                        ToolTip="Bold (Ctrl+B)"
+                                        Click="OnNotesFormatBold">
+                                    <iconPacks:PackIconBootstrapIcons Kind="TypeBold"
+                                                                      Width="14"
+                                                                      Height="14" />
+                                </Button>
+
+                                <!-- Italic -->
+                                <Button x:Name="ItalicButton"
+                                        Width="24"
+                                        Height="24"
+                                        Padding="4"
+                                        Margin="0 0 2 0"
+                                        ToolTip="Italic (Ctrl+I)"
+                                        Click="OnNotesFormatItalic">
+                                    <iconPacks:PackIconBootstrapIcons Kind="TypeItalic"
+                                                                      Width="14"
+                                                                      Height="14" />
+                                </Button>
+
+                                <!-- Underline -->
+                                <Button x:Name="UnderlineButton"
+                                        Width="24"
+                                        Height="24"
+                                        Padding="4"
+                                        Margin="0 0 8 0"
+                                        ToolTip="Underline (Ctrl+U)"
+                                        Click="OnNotesFormatUnderline">
+                                    <iconPacks:PackIconBootstrapIcons Kind="TypeUnderline"
+                                                                      Width="14"
+                                                                      Height="14" />
+                                </Button>
+
+                                <!-- Bullet List -->
+                                <Button x:Name="BulletListButton"
+                                        Width="24"
+                                        Height="24"
+                                        Padding="4"
+                                        Margin="0 0 2 0"
+                                        ToolTip="Bullet List"
+                                        Click="OnNotesFormatBulletList">
+                                    <iconPacks:PackIconBootstrapIcons Kind="ListUl"
+                                                                      Width="14"
+                                                                      Height="14" />
+                                </Button>
+
+                                <!-- Numbered List -->
+                                <Button x:Name="NumberedListButton"
+                                        Width="24"
+                                        Height="24"
+                                        Padding="4"
+                                        Margin="0 0 0 0"
+                                        ToolTip="Numbered List"
+                                        Click="OnNotesFormatNumberedList">
+                                    <iconPacks:PackIconBootstrapIcons Kind="ListOl"
+                                                                      Width="14"
+                                                                      Height="14" />
+                                </Button>
+                            </StackPanel>
+
+                            <!-- Save status and button -->
+                            <StackPanel Orientation="Horizontal"
+                                        DockPanel.Dock="Right"
+                                        VerticalAlignment="Center">
+                                <TextBlock x:Name="NotesSaveStatusText"
+                                           Text="All changes saved"
+                                           FontSize="10"
+                                           Foreground="Gray"
+                                           VerticalAlignment="Center"
+                                           Margin="0 0 8 0" />
+                                <Button Width="24"
+                                        Height="24"
+                                        Padding="4"
+                                        Command="{Binding SaveNotesCommand}"
+                                        ToolTip="Save notes">
+                                    <iconPacks:PackIconBootstrapIcons Kind="Floppy"
+                                                                      Width="14"
+                                                                      Height="14" />
+                                </Button>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- Rich text box fills remaining space -->
+                    <RichTextBox x:Name="NotesRichTextBox"
+                                 AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Auto"
+                                 BorderThickness="0"
+                                 Padding="8"
+                                 Background="White"
+                                 Loaded="OnNotesRichTextBoxLoaded"
+                                 TextChanged="OnNotesTextChanged" />
+                </DockPanel>
+            </Border>
+
+            <!-- Attachments -->
+            <Border Grid.Column="1" Grid.Row="1"
+                    BorderBrush="#dee2e6"
+                    BorderThickness="1"
+                    Margin="8"
+                    Background="White">
+                <DockPanel>
+                    <!-- Attachments header -->
+                    <Border DockPanel.Dock="Top"
+                            Background="#f8f9fa"
+                            BorderBrush="#dee2e6"
+                            BorderThickness="0 0 0 1"
+                            Padding="8 4">
+                        <DockPanel>
+                            <TextBlock Text="Attachments"
+                                       FontWeight="SemiBold"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"
+                                       DockPanel.Dock="Left" />
+                            <Button Content="Add"
+                                    DockPanel.Dock="Right"
+                                    Padding="8 3"
+                                    Command="{Binding AddAttachmentCommand}"
+                                    ToolTip="Add attachment" />
+                        </DockPanel>
+                    </Border>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="8">
+                            <ItemsControl ItemsSource="{Binding Evidence.Attachments}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="#dee2e6"
+                                                BorderThickness="1"
+                                                Padding="6"
+                                                Margin="0 0 0 6"
+                                                Background="#f8f9fa">
+                                            <DockPanel>
+                                                <StackPanel Orientation="Horizontal"
+                                                            DockPanel.Dock="Right"
+                                                            VerticalAlignment="Center">
+                                                    <Button Width="24"
+                                                            Height="24"
+                                                            Padding="4"
+                                                            Margin="4 0 0 0"
+                                                            ToolTip="Open attachment"
+                                                            Command="{Binding DataContext.OpenAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}">
+                                                        <iconPacks:PackIconBootstrapIcons Kind="BoxArrowUpRight"
+                                                                                          Width="10"
+                                                                                          Height="10" />
+                                                    </Button>
+                                                    <Button Width="24"
+                                                            Height="24"
+                                                            Padding="4"
+                                                            Margin="4 0 0 0"
+                                                            ToolTip="Show in folder"
+                                                            Command="{Binding DataContext.OpenAttachmentFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}">
+                                                        <iconPacks:PackIconBootstrapIcons Kind="Folder2Open"
+                                                                                          Width="10"
+                                                                                          Height="10" />
+                                                    </Button>
+                                                    <Button Width="24"
+                                                            Height="24"
+                                                            Padding="4"
+                                                            Margin="4 0 0 0"
+                                                            ToolTip="Remove attachment"
+                                                            Command="{Binding DataContext.RemoveAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}">
+                                                        <iconPacks:PackIconBootstrapIcons Kind="Trash"
+                                                                                          Width="10"
+                                                                                          Height="10" />
+                                                    </Button>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding FileName}"
+                                                           VerticalAlignment="Center"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           ToolTip="{Binding FileName}" />
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+    </DockPanel>
+</adonis:AdonisWindow>

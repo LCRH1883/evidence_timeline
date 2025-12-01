@@ -1,0 +1,61 @@
+<adonis:AdonisWindow x:Class="evidence_timeline.Views.PreferencesWindow"
+                     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                     xmlns:adonis="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+                     Title="Preferences"
+                     Height="320"
+                     Width="420"
+                     ResizeMode="CanResizeWithGrip"
+                     WindowStartupLocation="CenterOwner">
+    <Grid Margin="4">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Margin="0 0 0 8">
+            <TextBlock Text="Theme" Style="{StaticResource SectionHeaderText}" Margin="0 0 0 4" />
+            <ComboBox ItemsSource="{Binding ThemeOptions}"
+                      SelectedItem="{Binding SelectedTheme, Mode=TwoWay}" />
+        </StackPanel>
+
+        <GroupBox Header="Recent cases" Grid.Row="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding RecentCases}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" Style="{StaticResource BodyText}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <Button Grid.Row="1"
+                        Content="Clear recent cases"
+                        HorizontalAlignment="Left"
+                        Margin="0 3 0 0"
+                        Command="{Binding ClearRecentCasesCommand}" />
+            </Grid>
+        </GroupBox>
+
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Grid.Row="2"
+                    Margin="0 4 0 0">
+            <Button Style="{StaticResource DialogButton}"
+                    Margin="0 0 3 0"
+                    Content="Save"
+                    IsDefault="True"
+                    Click="OnSaveClicked" />
+            <Button Style="{StaticResource DialogButton}"
+                    Content="Cancel"
+                    IsCancel="True"
+                    Click="OnCancelClicked" />
+        </StackPanel>
+    </Grid>
+</adonis:AdonisWindow>
