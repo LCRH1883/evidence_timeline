@@ -4,10 +4,49 @@
 This application now supports non-destructive auto-updates using AutoUpdater.NET and GitHub Releases.
 
 ## How It's Non-Destructive
-- **User data is safe**: All cases are stored in user-selected folders (outside the app directory)
-- **Only app files updated**: Updates only replace application binaries
-- **Settings preserved**: AppData settings remain untouched
-- **Separate dev/production**: Debug builds use different settings folders
+
+Updates **ONLY** replace application executable files. All user data persists through updates.
+
+### What Gets Updated (Application Files Only)
+- Application binaries (`.exe`, `.dll` files)
+- Program resources (icons, UI files)
+- **Location**: Installation directory (e.g., `C:\Program Files\Evidence Timeline\`)
+
+### What Is NEVER Touched (Your Data)
+- Case files and folders (user-selected locations)
+- Evidence metadata (stored in case folders)
+- Notes and attachments (stored in case folders)
+- Application settings (stored in `%AppData%`)
+- Recent cases list (stored in `%AppData%`)
+- Window positions and sizes (stored in `%AppData%`)
+- User preferences (stored in `%AppData%`)
+
+### Data Storage Locations
+
+**Case Data** (Never touched by updates):
+- Location: User-selected folder when creating/opening case
+- Contains:
+  - `case.json` - Case metadata (name, case number, court location, court level)
+  - `settings.json` - Case-specific settings (pane visibility, sort order, zoom level, editor font size)
+  - `evidence/` - All evidence metadata files
+  - `evidence/{evidence-id}/` - Individual evidence folders
+    - `metadata.json` - Evidence details, dates, types, people, attachments
+    - `note.md` - Evidence notes (formatted text)
+    - `files/` - File attachments copied here
+
+**Application Settings** (Persisted through updates):
+- Debug: `%AppData%\EvidenceTimeline-Dev\settings.json`
+- Release: `%AppData%\EvidenceTimeline\settings.json`
+- Contains:
+  - Recent cases list (paths to recently opened cases)
+  - Last opened case path
+  - Application preferences
+
+### Why It's Safe
+1. **Separate storage**: User data is in user-selected folders, app is in Program Files
+2. **No data migration**: Updates don't move or modify any data files
+3. **Settings preservation**: All settings stored outside app directory
+4. **Rollback safe**: Can reinstall older version without losing data
 
 ## Development vs Production
 
@@ -25,24 +64,25 @@ This application now supports non-destructive auto-updates using AutoUpdater.NET
 
 ## Setup Instructions
 
-### 1. Update Code with Your GitHub Info
+### 1. GitHub Repository
 
-In `App.xaml.cs` and `MainWindow.xaml.cs`, replace:
-```
-YOUR_USERNAME → Your GitHub username
-YOUR_REPO → Your repository name
-```
+Your repository is configured as:
+- **Username**: LCRH1883
+- **Repository**: evidence_timeline
+- **Update URL**: `https://raw.githubusercontent.com/LCRH1883/evidence_timeline/main/update.xml`
 
-Example:
-```csharp
-AutoUpdater.Start("https://raw.githubusercontent.com/intagri/evidence-timeline/main/update.xml");
-```
+This is already configured in the code - no changes needed!
 
 ### 2. Commit update.xml to Your Repository
 
-1. Edit `update.xml` with your GitHub info
-2. Commit it to the `main` branch of your repository
-3. Push to GitHub
+1. The `update.xml` file is already configured
+2. Commit it to the `main` branch of your repository:
+   ```bash
+   git add update.xml
+   git commit -m "Add auto-update configuration"
+   git push origin main
+   ```
+3. This file must be in your public GitHub repo for the app to access it
 
 ### 3. Create a GitHub Release
 
@@ -67,8 +107,8 @@ When releasing a new version:
    <?xml version="1.0" encoding="UTF-8"?>
    <item>
        <version>1.0.1</version>
-       <url>https://github.com/YOUR_USERNAME/YOUR_REPO/releases/download/v1.0.1/EvidenceTimeline-Setup.exe</url>
-       <changelog>https://github.com/YOUR_USERNAME/YOUR_REPO/releases/tag/v1.0.1</changelog>
+       <url>https://github.com/LCRH1883/evidence_timeline/releases/download/v1.0.1/EvidenceTimeline-Setup.exe</url>
+       <changelog>https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.0.1</changelog>
        <mandatory>false</mandatory>
    </item>
    ```

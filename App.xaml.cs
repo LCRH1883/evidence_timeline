@@ -23,8 +23,7 @@ namespace evidence_timeline
             AutoUpdater.RemindLaterAt = 7;
 
             // Check for updates from GitHub
-            // TODO: Replace YOUR_USERNAME and YOUR_REPO with actual values
-            AutoUpdater.Start("https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/update.xml");
+            AutoUpdater.Start("https://raw.githubusercontent.com/LCRH1883/evidence_timeline/main/update.xml");
 #endif
         }
     }

@@ -307,7 +307,7 @@ namespace evidence_timeline
                 "Check for Updates", MessageBoxButton.OK, MessageBoxImage.Information);
 #else
             // Manually trigger update check
-            AutoUpdater.Start("https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/update.xml");
+            AutoUpdater.Start("https://raw.githubusercontent.com/LCRH1883/evidence_timeline/main/update.xml");
 #endif
         }
 

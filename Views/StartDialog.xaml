@@ -4,6 +4,7 @@
                      xmlns:adonis="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
                      xmlns:local="clr-namespace:evidence_timeline.Views"
                      Title="Evidence Timeline"
+                     Icon="/assets/intagri icon.png"
                      Width="540"
                      Height="380"
                      WindowStartupLocation="CenterScreen"
@@ -29,15 +30,17 @@
                 Padding="12 16"
                 Margin="-8 -8 -8 12">
             <StackPanel HorizontalAlignment="Center">
+                <Image Source="/assets/Logo.png"
+                       Width="240"
+                       Height="80"
+                       Margin="0 0 0 12"
+                       HorizontalAlignment="Center"
+                       Stretch="Uniform" />
                 <TextBlock Text="Evidence Timeline"
                            FontSize="20"
                            FontWeight="Bold"
                            HorizontalAlignment="Center"
-                           Margin="0 0 0 4" />
-                <TextBlock Text="by Intagri Technologies LLC"
-                           FontSize="10"
-                           Foreground="{StaticResource TextSecondary}"
-                           HorizontalAlignment="Center" />
+                           Margin="0 0 0 0" />
             </StackPanel>
         </Border>
 

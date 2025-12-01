@@ -8,6 +8,7 @@
                      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                      mc:Ignorable="d"
                      Title="Evidence Timeline"
+                     Icon="/assets/intagri icon.png"
                      Height="600"
                      Width="1000"
                      MinHeight="500"
