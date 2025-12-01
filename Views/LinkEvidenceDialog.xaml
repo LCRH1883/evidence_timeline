@@ -8,7 +8,7 @@
                      ResizeMode="CanResizeWithGrip"
                      MinWidth="360"
                      MinHeight="300">
-    <Grid Margin="16">
+    <Grid Margin="6">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -16,16 +16,12 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Search evidence:"
-                   FontWeight="SemiBold"
-                   FontSize="12"
-                   Margin="0 0 0 4" />
+        <TextBlock Text="Search evidence:" Style="{StaticResource LabelText}" Margin="0 0 0 2" />
 
         <TextBox x:Name="SearchBox"
                  Grid.Row="1"
                  Width="320"
-                 Padding="6 4"
-                 Margin="0 0 0 10"
+                 Margin="0 0 0 3"
                  TextChanged="OnSearchChanged" />
 
         <ListBox x:Name="EvidenceListBox"
@@ -38,16 +34,14 @@
         <StackPanel Grid.Row="3"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
-                    Margin="0 12 0 0">
-            <Button Content="OK"
-                    Width="90"
-                    Padding="8 3"
-                    Margin="0 0 8 0"
+                    Margin="0 4 0 0">
+            <Button Style="{StaticResource DialogButton}"
+                    Content="OK"
+                    Margin="0 0 6 0"
                     IsDefault="True"
                     Click="OnOkClicked" />
-            <Button Content="Cancel"
-                    Width="90"
-                    Padding="8 3"
+            <Button Style="{StaticResource DialogButton}"
+                    Content="Cancel"
                     IsCancel="True"
                     Click="OnCancelClicked" />
         </StackPanel>

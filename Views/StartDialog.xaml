@@ -2,35 +2,82 @@
                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                      xmlns:adonis="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+                     xmlns:local="clr-namespace:evidence_timeline.Views"
                      Title="Evidence Timeline"
-                     SizeToContent="WidthAndHeight"
-                     WindowStartupLocation="CenterOwner"
-                     ResizeMode="NoResize"
-                     MinWidth="320">
-    <Grid Margin="20">
+                     Width="540"
+                     Height="380"
+                     WindowStartupLocation="CenterScreen"
+                     ResizeMode="NoResize">
+    <adonis:AdonisWindow.Resources>
+        <local:NullToBoolConverter x:Key="NullToBoolConverter" />
+    </adonis:AdonisWindow.Resources>
+
+    <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+
         <StackPanel>
-            <TextBlock Text="Welcome"
-                       FontSize="18"
-                       FontWeight="Bold"
-                       Margin="0 0 0 10" />
-            <TextBlock Text="Create a new case or open an existing one."
-                       FontSize="12"
-                       Margin="0 0 0 18" />
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Create new case"
-                        Width="150"
-                        Padding="8 4"
-                        Margin="0 0 10 0"
-                        Click="OnCreateClicked" />
-                <Button Content="Open existing case"
-                        Width="150"
-                        Padding="8 4"
-                        Click="OnOpenClicked" />
-            </StackPanel>
+            <TextBlock Text="Welcome back"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Margin="0 0 0 6" />
+            <TextBlock Text="Pick a recent case or start a new one."
+                       Style="{StaticResource BodyText}"
+                       Margin="0 0 0 12" />
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1"
+                Padding="8"
+                CornerRadius="4">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="Recent cases"
+                           Style="{StaticResource SectionHeaderText}"
+                           Margin="0 0 0 6" />
+                <ListBox x:Name="RecentCasesList"
+                         Grid.Row="1"
+                         ItemsSource="{Binding RecentCases}"
+                         SelectedItem="{Binding SelectedCase, Mode=TwoWay}"
+                         MinHeight="160"
+                         MouseDoubleClick="OnRecentCaseDoubleClick">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding FullPath}"
+                                           FontSize="11"
+                                           Opacity="0.7" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="0 4 0 0">
+            <Button Content="Create new case"
+                    Width="130"
+                    Margin="0 0 3 0"
+                    Click="OnCreateClicked" />
+            <Button Content="Open selected"
+                    Width="120"
+                    Margin="0 0 3 0"
+                    IsEnabled="{Binding SelectedItem, ElementName=RecentCasesList, Converter={StaticResource NullToBoolConverter}}"
+                    Click="OnOpenClicked" />
+            <Button Content="Browse..."
+                    Width="90"
+                    Click="OnBrowseClicked" />
         </StackPanel>
     </Grid>
 </adonis:AdonisWindow>

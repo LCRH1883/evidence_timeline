@@ -7,7 +7,7 @@
                      WindowStartupLocation="CenterOwner"
                      ResizeMode="NoResize"
                      MinWidth="320">
-    <Grid Margin="16">
+    <Grid Margin="6">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -16,25 +16,22 @@
         <TextBlock x:Name="PromptText"
                    Text="Enter value"
                    TextWrapping="Wrap"
-                   FontSize="12"
-                   Margin="0 0 0 10" />
+                   Style="{StaticResource LabelText}"
+                   Margin="0 0 0 4" />
         <TextBox x:Name="InputBox"
                  Grid.Row="1"
                  MinWidth="280"
-                 Padding="6 4"
-                 Margin="0 0 0 14" />
+                 Margin="0 0 0 4" />
         <StackPanel Grid.Row="2"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right">
-            <Button Content="OK"
-                    Width="80"
-                    Padding="8 3"
-                    Margin="0 0 8 0"
+            <Button Style="{StaticResource DialogButton}"
+                    Content="OK"
+                    Margin="0 0 6 0"
                     IsDefault="True"
                     Click="OnOkClicked" />
-            <Button Content="Cancel"
-                    Width="80"
-                    Padding="8 3"
+            <Button Style="{StaticResource DialogButton}"
+                    Content="Cancel"
                     IsCancel="True"
                     Click="OnCancelClicked" />
         </StackPanel>

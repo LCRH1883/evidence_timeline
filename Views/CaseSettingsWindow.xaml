@@ -8,7 +8,7 @@
                      ResizeMode="CanResizeWithGrip"
                      WindowStartupLocation="CenterOwner">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Margin="12">
+        <Grid Margin="4">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -19,29 +19,26 @@
 
             <StackPanel>
                 <TextBlock Text="Visibility"
-                           FontWeight="Bold"
-                           FontSize="14"
-                           Margin="0 0 0 6" />
+                           Style="{StaticResource SectionHeaderText}"
+                           Margin="0 0 0 4" />
                 <CheckBox Content="Show metadata pane"
                           IsChecked="{Binding ShowRightPane, Mode=TwoWay}"
-                          Margin="0 4 0 4" />
+                          Margin="0 0 0 4" />
                 <CheckBox Content="Show notes pane"
                           IsChecked="{Binding ShowBottomPane, Mode=TwoWay}"
                           Margin="0 0 0 4" />
             </StackPanel>
 
-            <StackPanel Grid.Row="1" Margin="0 16 0 0">
+            <StackPanel Grid.Row="1" Margin="0 4 0 0">
                 <TextBlock Text="Sorting"
-                           FontWeight="Bold"
-                           FontSize="14"
-                           Margin="0 0 0 6" />
+                           Style="{StaticResource SectionHeaderText}"
+                           Margin="0 0 0 4" />
                 <CheckBox Content="Sort newest first"
-                          IsChecked="{Binding SortNewestFirst, Mode=TwoWay}"
-                          Margin="0 4 0 4" />
+                          IsChecked="{Binding SortNewestFirst, Mode=TwoWay}" />
             </StackPanel>
 
-            <GroupBox Header="Evidence types" Grid.Row="2" Margin="0 12 0 0">
-                <Grid Margin="8 4 8 8">
+            <GroupBox Header="Evidence types" Grid.Row="2" Margin="0 4 0 0">
+                <Grid Margin="3">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="120" />
@@ -63,8 +60,8 @@
                 </Grid>
             </GroupBox>
 
-            <GroupBox Header="People" Grid.Row="3" Margin="0 12 0 0">
-                <Grid Margin="8 4 8 8">
+            <GroupBox Header="People" Grid.Row="3" Margin="0 4 0 0">
+                <Grid Margin="3">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="140" />
@@ -94,13 +91,13 @@
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right"
                         Grid.Row="4"
-                        Margin="0 12 0 0">
-                <Button Width="90"
-                        Margin="0 0 8 0"
+                        Margin="0 4 0 0">
+                <Button Style="{StaticResource DialogButton}"
+                        Margin="0 0 6 0"
                         Content="Save"
                         IsDefault="True"
                         Click="OnSaveClicked" />
-                <Button Width="90"
+                <Button Style="{StaticResource DialogButton}"
                         Content="Cancel"
                         IsCancel="True"
                         Click="OnCancelClicked" />

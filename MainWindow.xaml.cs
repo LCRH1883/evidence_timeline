@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using AdonisUI.Controls;
 using evidence_timeline.ViewModels;
 using evidence_timeline.Views;
+using MessageBox = System.Windows.MessageBox;
+using MessageBoxButton = System.Windows.MessageBoxButton;
+using MessageBoxImage = System.Windows.MessageBoxImage;
 
 namespace evidence_timeline
 {
@@ -15,40 +20,75 @@ namespace evidence_timeline
     /// </summary>
     public partial class MainWindow : AdonisWindow
     {
+        private DispatcherTimer? _metadataAutoSaveTimer;
+        private DispatcherTimer? _notesAutoSaveTimer;
+        private DateTime? _lastMetadataSaveTime;
+        private DateTime? _lastNotesSaveTime;
+
         public MainWindow()
         {
             InitializeComponent();
             DataContext = new MainViewModel();
+            InitializeAutoSaveTimers();
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        private void InitializeAutoSaveTimers()
         {
-            if (DataContext is not MainViewModel vm)
+            // Metadata autosave timer (2 second delay)
+            _metadataAutoSaveTimer = new DispatcherTimer
             {
-                return;
-            }
-
-            if (vm.CurrentCase != null)
-            {
-                return;
-            }
-
-            var start = new StartDialog
-            {
-                Owner = this
+                Interval = TimeSpan.FromSeconds(2)
             };
+            _metadataAutoSaveTimer.Tick += OnMetadataAutoSaveTick;
 
-            var result = start.ShowDialog();
-            if (result == true)
+            // Notes autosave timer (2 second delay)
+            _notesAutoSaveTimer = new DispatcherTimer
             {
-                if (start.IsCreate)
+                Interval = TimeSpan.FromSeconds(2)
+            };
+            _notesAutoSaveTimer.Tick += OnNotesAutoSaveTick;
+        }
+
+        private async void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (DataContext is not MainViewModel vm)
                 {
-                    vm.CreateCaseCommand.Execute(null);
+                    return;
                 }
-                else
+
+                if (vm.CurrentCase != null)
                 {
-                    vm.OpenCaseCommand.Execute(null);
+                    return;
                 }
+
+                var start = new StartDialog
+                {
+                    Owner = this
+                };
+                start.LoadRecentCases(vm.RecentCasePaths);
+
+                var result = start.ShowDialog();
+                if (result == true)
+                {
+                    if (start.IsCreate)
+                    {
+                        vm.CreateCaseCommand.Execute(null);
+                    }
+                    else if (!string.IsNullOrWhiteSpace(start.SelectedCasePath))
+                    {
+                        await vm.OpenCaseFromPathAsync(start.SelectedCasePath);
+                    }
+                    else
+                    {
+                        vm.OpenCaseCommand.Execute(null);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unable to start application: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -70,28 +110,18 @@ namespace evidence_timeline
                 return;
             }
 
-            if (DataContext is MainViewModel vm)
-            {
-                vm.RequestMetadataAutoSave(true);
-            }
-
+            TriggerMetadataAutoSave();
             e.Handled = true;
         }
 
         private void OnMetadataSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (DataContext is MainViewModel vm)
-            {
-                vm.RequestMetadataAutoSave(true);
-            }
+            TriggerMetadataAutoSave();
         }
 
         private void OnMetadataFieldLostFocus(object sender, RoutedEventArgs e)
         {
-            if (DataContext is MainViewModel vm)
-            {
-                vm.RequestMetadataAutoSave();
-            }
+            TriggerMetadataAutoSave();
         }
 
         private void OnMetadataCheckboxChanged(object sender, RoutedEventArgs e)
@@ -101,10 +131,7 @@ namespace evidence_timeline
                 return;
             }
 
-            if (DataContext is MainViewModel vm)
-            {
-                vm.RequestMetadataAutoSave();
-            }
+            TriggerMetadataAutoSave();
         }
 
         private void OnNotesRichTextBoxLoaded(object sender, RoutedEventArgs e)
@@ -130,6 +157,9 @@ namespace evidence_timeline
 
             // Save RichTextBox content back to view model
             vm.NotesText = GetRtfAsPlainText(rtb);
+
+            // Trigger autosave
+            TriggerNotesAutoSave();
         }
 
         private void OnNotesFormatBold(object sender, RoutedEventArgs e)
@@ -218,6 +248,78 @@ namespace evidence_timeline
         {
             var textRange = new System.Windows.Documents.TextRange(rtb.Document.ContentStart, rtb.Document.ContentEnd);
             return textRange.Text;
+        }
+
+        private void TriggerMetadataAutoSave()
+        {
+            _metadataAutoSaveTimer?.Stop();
+            _metadataAutoSaveTimer?.Start();
+            UpdateMetadataSaveStatus("Saving...", System.Windows.Media.Brushes.Orange);
+        }
+
+        private void TriggerNotesAutoSave()
+        {
+            _notesAutoSaveTimer?.Stop();
+            _notesAutoSaveTimer?.Start();
+            UpdateNotesSaveStatus("Saving...", System.Windows.Media.Brushes.Orange);
+        }
+
+        private void OnMetadataAutoSaveTick(object? sender, EventArgs e)
+        {
+            _metadataAutoSaveTimer?.Stop();
+
+            if (DataContext is MainViewModel vm && vm.SaveMetadataCommand != null)
+            {
+                try
+                {
+                    vm.SaveMetadataCommand.Execute(null);
+                    _lastMetadataSaveTime = DateTime.Now;
+                    UpdateMetadataSaveStatus($"Saved at {_lastMetadataSaveTime:HH:mm:ss}", System.Windows.Media.Brushes.Gray);
+                }
+                catch (Exception ex)
+                {
+                    UpdateMetadataSaveStatus("Save failed", System.Windows.Media.Brushes.Red);
+                    System.Diagnostics.Debug.WriteLine($"Metadata save error: {ex.Message}");
+                }
+            }
+        }
+
+        private void OnNotesAutoSaveTick(object? sender, EventArgs e)
+        {
+            _notesAutoSaveTimer?.Stop();
+
+            if (DataContext is MainViewModel vm && vm.SaveNotesCommand != null)
+            {
+                try
+                {
+                    vm.SaveNotesCommand.Execute(null);
+                    _lastNotesSaveTime = DateTime.Now;
+                    UpdateNotesSaveStatus($"Saved at {_lastNotesSaveTime:HH:mm:ss}", System.Windows.Media.Brushes.Gray);
+                }
+                catch (Exception ex)
+                {
+                    UpdateNotesSaveStatus("Save failed", System.Windows.Media.Brushes.Red);
+                    System.Diagnostics.Debug.WriteLine($"Notes save error: {ex.Message}");
+                }
+            }
+        }
+
+        private void UpdateMetadataSaveStatus(string text, System.Windows.Media.Brush foreground)
+        {
+            if (MetadataSaveStatusText != null)
+            {
+                MetadataSaveStatusText.Text = text;
+                MetadataSaveStatusText.Foreground = foreground;
+            }
+        }
+
+        private void UpdateNotesSaveStatus(string text, System.Windows.Media.Brush foreground)
+        {
+            if (NotesSaveStatusText != null)
+            {
+                NotesSaveStatusText.Text = text;
+                NotesSaveStatusText.Foreground = foreground;
+            }
         }
     }
 }

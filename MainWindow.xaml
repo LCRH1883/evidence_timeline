@@ -14,47 +14,14 @@
                      MinWidth="800"
                      Loaded="OnLoaded">
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <!-- Window-specific styles only -->
         <Style x:Key="ResizableColumnStyle" TargetType="ColumnDefinition">
-            <Setter Property="Width" Value="240" />
-            <Setter Property="MinWidth" Value="120" />
+            <Setter Property="Width" Value="220" />
+            <Setter Property="MinWidth" Value="180" />
         </Style>
         <Style x:Key="ResizableRowStyle" TargetType="RowDefinition">
-            <Setter Property="Height" Value="200" />
-            <Setter Property="MinHeight" Value="120" />
-        </Style>
-        <Style TargetType="Button">
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Padding" Value="8 3" />
-            <Setter Property="MinHeight" Value="28" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-        </Style>
-        <Style TargetType="Button" x:Key="CompactIconButtonStyle">
-            <Setter Property="Width" Value="30" />
-            <Setter Property="Height" Value="30" />
-            <Setter Property="Padding" Value="4" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-        </Style>
-        <Style TargetType="TextBlock" x:Key="SectionHeaderTextStyle">
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Margin" Value="0 6 0 4" />
-        </Style>
-        <Style TargetType="TextBlock" x:Key="LabelTextStyle">
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Margin" Value="0 2 0 2" />
-        </Style>
-        <Style TargetType="TextBox">
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Padding" Value="6 3" />
-        </Style>
-        <Style TargetType="ComboBox">
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Padding" Value="6 3" />
-        </Style>
-        <Style TargetType="CheckBox">
-            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Height" Value="180" />
+            <Setter Property="MinHeight" Value="100" />
         </Style>
     </Window.Resources>
 
@@ -88,6 +55,16 @@
                 <MenuItem Header="Show Notes Pane" IsCheckable="True" IsChecked="{Binding IsBottomPaneVisible, Mode=TwoWay}" />
                 <Separator />
                 <MenuItem Header="Sort Newest First" IsCheckable="True" IsChecked="{Binding SortNewestFirst, Mode=TwoWay}" />
+                <Separator />
+                <MenuItem Header="_Zoom">
+                    <MenuItem Header="50%" Command="{Binding SetZoomCommand}" CommandParameter="0.5" />
+                    <MenuItem Header="75%" Command="{Binding SetZoomCommand}" CommandParameter="0.75" />
+                    <MenuItem Header="100% (Default)" Command="{Binding SetZoomCommand}" CommandParameter="1.0" />
+                    <MenuItem Header="125%" Command="{Binding SetZoomCommand}" CommandParameter="1.25" />
+                    <MenuItem Header="150%" Command="{Binding SetZoomCommand}" CommandParameter="1.5" />
+                    <MenuItem Header="175%" Command="{Binding SetZoomCommand}" CommandParameter="1.75" />
+                    <MenuItem Header="200%" Command="{Binding SetZoomCommand}" CommandParameter="2.0" />
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="_Settings">
                 <MenuItem Header="_Preferences" Command="{Binding OpenPreferencesCommand}" />
@@ -130,6 +107,9 @@
 
         <!-- Main content grid -->
         <Grid>
+            <Grid.LayoutTransform>
+                <ScaleTransform ScaleX="{Binding ZoomLevel}" ScaleY="{Binding ZoomLevel}" />
+            </Grid.LayoutTransform>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition>
@@ -195,17 +175,17 @@
                     </Grid.RowDefinitions>
                     <!-- Case name header -->
                     <TextBlock Text="{Binding CurrentCase.Name, TargetNullValue='No case loaded'}"
-                               FontSize="15"
-                               FontWeight="Bold"
+                               FontSize="10"
+                               FontWeight="SemiBold"
                                HorizontalAlignment="Center"
-                               Margin="8 8 8 4" />
+                               Margin="4 2 4 2" />
 
                     <!-- Compact filter bar -->
                     <Border Grid.Row="1"
-                            Background="#f8f9fa"
-                            BorderBrush="#dee2e6"
+                            Background="{StaticResource BackgroundLight}"
+                            BorderBrush="{StaticResource BorderBrush}"
                             BorderThickness="0 1"
-                            Padding="8 6">
+                            Padding="4 2">
                         <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <!-- Search -->
                             <TextBlock Text="Search:"
@@ -256,20 +236,20 @@
                                     Margin="0 0 12 0" />
 
                             <!-- Action buttons -->
-                            <Button Style="{StaticResource CompactIconButtonStyle}"
+                            <Button Style="{StaticResource IconButton}"
                                     Command="{Binding NewEvidenceCommand}"
                                     ToolTip="New Evidence"
                                     Margin="0 0 6 0">
-                                <iconPacks:PackIconMaterial Kind="PlusBoxMultipleOutline"
-                                                            Width="16"
-                                                            Height="16" />
+                                <iconPacks:PackIconBootstrapIcons Kind="FileEarmarkPlus"
+                                                                  Width="12"
+                                                                  Height="12" />
                             </Button>
-                            <Button Style="{StaticResource CompactIconButtonStyle}"
+                            <Button Style="{StaticResource IconButton}"
                                     Command="{Binding OpenEvidenceWindowCommand}"
                                     ToolTip="Open Evidence">
-                                <iconPacks:PackIconMaterial Kind="FolderOpenOutline"
-                                                            Width="16"
-                                                            Height="16" />
+                                <iconPacks:PackIconBootstrapIcons Kind="Folder2Open"
+                                                                  Width="12"
+                                                                  Height="12" />
                             </Button>
                         </WrapPanel>
                     </Border>
@@ -318,71 +298,79 @@
                     <DockPanel>
                         <!-- Compact header bar -->
                         <Border DockPanel.Dock="Top"
-                                Background="#f8f9fa"
-                                BorderBrush="#dee2e6"
+                                Background="{StaticResource BackgroundLight}"
+                                BorderBrush="{StaticResource BorderBrush}"
                                 BorderThickness="0 0 0 1"
-                                Padding="8 4">
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                Padding="4 2">
+                            <DockPanel VerticalAlignment="Center">
                                 <TextBlock Text="Metadata"
                                            FontWeight="SemiBold"
-                                           FontSize="12"
+                                           FontSize="9"
                                            VerticalAlignment="Center"
+                                           DockPanel.Dock="Left"
                                            Margin="0" />
-                                <Button Command="{Binding SaveMetadataCommand}"
-                                        Style="{StaticResource CompactIconButtonStyle}"
-                                        Width="24"
-                                        Height="24"
-                                        Margin="8 0 0 0"
-                                        ToolTip="Save metadata">
-                                    <iconPacks:PackIconMaterial Kind="ContentSaveOutline"
-                                                                Width="14"
-                                                                Height="14" />
-                                </Button>
-                            </StackPanel>
+                                <StackPanel Orientation="Horizontal"
+                                            DockPanel.Dock="Right"
+                                            VerticalAlignment="Center">
+                                    <TextBlock x:Name="MetadataSaveStatusText"
+                                               Text="All changes saved"
+                                               FontSize="8"
+                                               Foreground="Gray"
+                                               VerticalAlignment="Center"
+                                               Margin="4 0 4 0" />
+                                    <Button Command="{Binding SaveMetadataCommand}"
+                                            Style="{StaticResource IconButton}"
+                                            ToolTip="Save metadata">
+                                        <iconPacks:PackIconBootstrapIcons Kind="Floppy"
+                                                                          Width="12"
+                                                                          Height="12" />
+                                    </Button>
+                                </StackPanel>
+                            </DockPanel>
                         </Border>
 
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel Margin="8">
-                            <TextBlock Text="Title" Style="{StaticResource LabelTextStyle}" />
+                            <StackPanel Margin="4">
+                            <TextBlock Text="Title" Style="{StaticResource LabelText}" />
                             <TextBox Text="{Binding SelectedEvidenceDetail.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0 2 0 6"
+                                     Margin="0 0 0 3"
                                      KeyDown="OnMetadataEnterKey"
                                      LostFocus="OnMetadataFieldLostFocus" />
-                            <TextBlock Text="Court #" Style="{StaticResource LabelTextStyle}" />
+                            <TextBlock Text="Court #" Style="{StaticResource LabelText}" />
                             <TextBox Text="{Binding SelectedEvidenceDetail.CourtNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0 2 0 6"
+                                     Margin="0 0 0 3"
                                      KeyDown="OnMetadataEnterKey"
                                      LostFocus="OnMetadataFieldLostFocus" />
-                            <TextBlock Text="Type" Style="{StaticResource LabelTextStyle}" />
+                            <TextBlock Text="Type" Style="{StaticResource LabelText}" />
                             <ComboBox ItemsSource="{Binding EvidenceTypes}"
                                       DisplayMemberPath="Name"
                                       SelectedValuePath="Id"
                                       SelectedValue="{Binding SelectedEvidenceDetail.TypeId, Mode=TwoWay}"
-                                      Margin="0 2 0 6"
+                                      Margin="0 0 0 3"
                                       SelectionChanged="OnMetadataSelectionChanged" />
-                            <TextBlock Text="Date mode" Style="{StaticResource LabelTextStyle}" />
+                            <TextBlock Text="Date mode" Style="{StaticResource LabelText}" />
                             <ComboBox SelectedValue="{Binding SelectedDateMode, Mode=TwoWay}"
                                       SelectedValuePath="Tag"
-                                      Margin="0 2 0 6"
+                                      Margin="0 0 0 3"
                                       SelectionChanged="OnMetadataSelectionChanged">
                                 <ComboBoxItem Content="Exact" Tag="{x:Static models:EvidenceDateMode.Exact}" />
                                 <ComboBoxItem Content="Around" Tag="{x:Static models:EvidenceDateMode.Around}" />
                                 <ComboBoxItem Content="Broad" Tag="{x:Static models:EvidenceDateMode.Broad}" />
                             </ComboBox>
-                            <TextBlock Text="Exact date" Style="{StaticResource LabelTextStyle}" />
+                            <TextBlock Text="Exact date" Style="{StaticResource LabelText}" />
                             <DatePicker SelectedDate="{Binding ExactDate, Mode=TwoWay}"
-                                        Margin="0 2 0 6"
+                                        Margin="0 0 0 3"
                                         SelectedDateChanged="OnMetadataSelectionChanged" />
-                            <TextBlock Text="Start date" Style="{StaticResource LabelTextStyle}" />
+                            <TextBlock Text="Start date" Style="{StaticResource LabelText}" />
                             <DatePicker SelectedDate="{Binding StartDate, Mode=TwoWay}"
-                                        Margin="0 2 0 6"
+                                        Margin="0 0 0 3"
                                         SelectedDateChanged="OnMetadataSelectionChanged" />
-                            <TextBlock Text="End date" Style="{StaticResource LabelTextStyle}" />
+                            <TextBlock Text="End date" Style="{StaticResource LabelText}" />
                             <DatePicker SelectedDate="{Binding EndDate, Mode=TwoWay}"
-                                        Margin="0 2 0 6"
+                                        Margin="0 0 0 3"
                                         SelectedDateChanged="OnMetadataSelectionChanged" />
-                            <TextBlock Text="Around amount/unit" Style="{StaticResource LabelTextStyle}" />
-                            <StackPanel Orientation="Horizontal" Margin="0 2 0 6">
+                            <TextBlock Text="Around amount/unit" Style="{StaticResource LabelText}" />
+                            <StackPanel Orientation="Horizontal" Margin="0 0 0 3">
                                 <TextBox Width="60"
                                          Text="{Binding AroundAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          KeyDown="OnMetadataEnterKey"
@@ -396,7 +384,7 @@
                                     <ComboBoxItem Content="months" />
                                 </ComboBox>
                             </StackPanel>
-                            <TextBlock Text="People" Style="{StaticResource LabelTextStyle}" Margin="0 6 0 0" />
+                            <TextBlock Text="People" Style="{StaticResource LabelText}" Margin="0 6 0 0" />
                             <ItemsControl ItemsSource="{Binding PersonOptions}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -418,38 +406,38 @@
                                      AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto"
                                      Height="60" />
-                            <TextBlock Text="Attachments" Style="{StaticResource LabelTextStyle}" Margin="0 6 0 4" />
+                            <TextBlock Text="Attachments" Style="{StaticResource LabelText}" Margin="0 6 0 4" />
                             <ItemsControl ItemsSource="{Binding SelectedEvidenceDetail.Attachments}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding FileName}" Width="150" />
-                                            <Button Style="{StaticResource CompactIconButtonStyle}"
+                                            <Button Style="{StaticResource IconButton}"
                                                     Margin="4 0 0 0"
                                                     ToolTip="Open attachment"
                                                     Command="{Binding DataContext.OpenAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                     CommandParameter="{Binding}">
-                                                <iconPacks:PackIconMaterial Kind="OpenInNew"
-                                                                            Width="14"
-                                                                            Height="14" />
+                                                <iconPacks:PackIconBootstrapIcons Kind="BoxArrowUpRight"
+                                                                                  Width="14"
+                                                                                  Height="14" />
                                             </Button>
-                                            <Button Style="{StaticResource CompactIconButtonStyle}"
+                                            <Button Style="{StaticResource IconButton}"
                                                     Margin="4 0 0 0"
                                                     ToolTip="Show in folder"
                                                     Command="{Binding DataContext.OpenAttachmentFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                     CommandParameter="{Binding}">
-                                                <iconPacks:PackIconMaterial Kind="FolderOpenOutline"
-                                                                            Width="14"
-                                                                            Height="14" />
+                                                <iconPacks:PackIconBootstrapIcons Kind="Folder2Open"
+                                                                                  Width="14"
+                                                                                  Height="14" />
                                             </Button>
-                                            <Button Style="{StaticResource CompactIconButtonStyle}"
+                                            <Button Style="{StaticResource IconButton}"
                                                     Margin="4 0 0 0"
                                                     ToolTip="Remove attachment"
                                                     Command="{Binding DataContext.RemoveAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                     CommandParameter="{Binding}">
-                                                <iconPacks:PackIconMaterial Kind="DeleteOutline"
-                                                                            Width="14"
-                                                                            Height="14" />
+                                                <iconPacks:PackIconBootstrapIcons Kind="Trash"
+                                                                                  Width="14"
+                                                                                  Height="14" />
                                             </Button>
                                         </StackPanel>
                                     </DataTemplate>
@@ -503,86 +491,93 @@
                                         Margin="0 0 8 0">
                                 <!-- Bold -->
                                 <Button x:Name="BoldButton"
-                                        Style="{StaticResource CompactIconButtonStyle}"
+                                        Style="{StaticResource IconButton}"
                                         Width="24"
                                         Height="24"
                                         Margin="0 0 2 0"
                                         ToolTip="Bold (Ctrl+B)"
                                         Click="OnNotesFormatBold">
-                                    <iconPacks:PackIconMaterial Kind="FormatBold"
-                                                                Width="14"
-                                                                Height="14" />
+                                    <iconPacks:PackIconBootstrapIcons Kind="TypeBold"
+                                                                      Width="10"
+                                                                      Height="10" />
                                 </Button>
 
                                 <!-- Italic -->
                                 <Button x:Name="ItalicButton"
-                                        Style="{StaticResource CompactIconButtonStyle}"
+                                        Style="{StaticResource IconButton}"
                                         Width="24"
                                         Height="24"
                                         Margin="0 0 2 0"
                                         ToolTip="Italic (Ctrl+I)"
                                         Click="OnNotesFormatItalic">
-                                    <iconPacks:PackIconMaterial Kind="FormatItalic"
-                                                                Width="14"
-                                                                Height="14" />
+                                    <iconPacks:PackIconBootstrapIcons Kind="TypeItalic"
+                                                                      Width="10"
+                                                                      Height="10" />
                                 </Button>
 
                                 <!-- Underline -->
                                 <Button x:Name="UnderlineButton"
-                                        Style="{StaticResource CompactIconButtonStyle}"
+                                        Style="{StaticResource IconButton}"
                                         Width="24"
                                         Height="24"
                                         Margin="0 0 8 0"
                                         ToolTip="Underline (Ctrl+U)"
                                         Click="OnNotesFormatUnderline">
-                                    <iconPacks:PackIconMaterial Kind="FormatUnderline"
-                                                                Width="14"
-                                                                Height="14" />
+                                    <iconPacks:PackIconBootstrapIcons Kind="TypeUnderline"
+                                                                      Width="10"
+                                                                      Height="10" />
                                 </Button>
 
                                 <!-- Bullet List -->
                                 <Button x:Name="BulletListButton"
-                                        Style="{StaticResource CompactIconButtonStyle}"
+                                        Style="{StaticResource IconButton}"
                                         Width="24"
                                         Height="24"
                                         Margin="0 0 2 0"
                                         ToolTip="Bullet List"
                                         Click="OnNotesFormatBulletList">
-                                    <iconPacks:PackIconMaterial Kind="FormatListBulleted"
-                                                                Width="14"
-                                                                Height="14" />
+                                    <iconPacks:PackIconBootstrapIcons Kind="ListUl"
+                                                                      Width="10"
+                                                                      Height="10" />
                                 </Button>
 
                                 <!-- Numbered List -->
                                 <Button x:Name="NumberedListButton"
-                                        Style="{StaticResource CompactIconButtonStyle}"
+                                        Style="{StaticResource IconButton}"
                                         Width="24"
                                         Height="24"
                                         Margin="0 0 0 0"
                                         ToolTip="Numbered List"
                                         Click="OnNotesFormatNumberedList">
-                                    <iconPacks:PackIconMaterial Kind="FormatListNumbered"
-                                                                Width="14"
-                                                                Height="14" />
+                                    <iconPacks:PackIconBootstrapIcons Kind="ListOl"
+                                                                      Width="10"
+                                                                      Height="10" />
                                 </Button>
                             </StackPanel>
 
-                            <!-- Save button on the right -->
-                            <Button Command="{Binding SaveNotesCommand}"
-                                    Style="{StaticResource CompactIconButtonStyle}"
-                                    Width="24"
-                                    Height="24"
-                                    DockPanel.Dock="Right"
-                                    ToolTip="Save notes">
-                                <iconPacks:PackIconMaterial Kind="ContentSaveOutline"
-                                                            Width="14"
-                                                            Height="14" />
-                            </Button>
+                            <!-- Save status and button -->
+                            <StackPanel Orientation="Horizontal"
+                                        DockPanel.Dock="Right"
+                                        VerticalAlignment="Center">
+                                <TextBlock x:Name="NotesSaveStatusText"
+                                           Text="All changes saved"
+                                           FontSize="8"
+                                           Foreground="Gray"
+                                           VerticalAlignment="Center"
+                                           Margin="0 0 4 0" />
+                                <Button Command="{Binding SaveNotesCommand}"
+                                        Style="{StaticResource IconButton}"
+                                        ToolTip="Save notes">
+                                    <iconPacks:PackIconBootstrapIcons Kind="Floppy"
+                                                                      Width="10"
+                                                                      Height="10" />
+                                </Button>
+                            </StackPanel>
                         </DockPanel>
                     </Border>
 
                     <!-- Rich text box fills remaining space with border -->
-                    <Border Margin="8"
+                    <Border Margin="4"
                             BorderBrush="#adb5bd"
                             BorderThickness="1"
                             Background="White">
@@ -590,7 +585,6 @@
                                      AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto"
                                      BorderThickness="0"
-                                     Padding="8"
                                      Background="White"
                                      Loaded="OnNotesRichTextBoxLoaded"
                                      TextChanged="OnNotesTextChanged" />

@@ -47,6 +47,7 @@ namespace evidence_timeline.ViewModels
         private bool _isRightPaneVisible = true;
         private bool _isBottomPaneVisible = true;
         private string _notesText = string.Empty;
+        private double _zoomLevel = 1.0;
         private bool _isBusy;
         private string _linkedEvidenceText = string.Empty;
         private bool _sortNewestFirst = true;
@@ -77,6 +78,7 @@ namespace evidence_timeline.ViewModels
             DeletePersonCommand = new AsyncRelayCommand(DeletePersonAsync, () => CurrentCase != null && SelectedPerson != null);
             OpenPreferencesCommand = new RelayCommand(OpenPreferences);
             OpenCaseSettingsCommand = new AsyncRelayCommand(OpenCaseSettingsAsync, () => CurrentCase != null);
+            SetZoomCommand = new RelayCommand<object>(SetZoom);
 
             PersonOptions.CollectionChanged += OnPersonOptionsChanged;
 
@@ -231,6 +233,18 @@ namespace evidence_timeline.ViewModels
             }
         }
 
+        public double ZoomLevel
+        {
+            get => _zoomLevel;
+            set
+            {
+                if (SetProperty(ref _zoomLevel, value) && !_isLoadingCaseSettings)
+                {
+                    _ = SaveCaseSettingsAsync();
+                }
+            }
+        }
+
         public string NotesText
         {
             get => _notesText;
@@ -248,6 +262,8 @@ namespace evidence_timeline.ViewModels
             get => _isBusy;
             private set => SetProperty(ref _isBusy, value);
         }
+
+        public IReadOnlyList<string> RecentCasePaths => (_appSettings?.RecentCases ?? new List<string>()).ToArray();
 
         public EvidenceDateMode SelectedDateMode
         {
@@ -381,6 +397,7 @@ namespace evidence_timeline.ViewModels
         public ICommand DeletePersonCommand { get; }
         public ICommand OpenPreferencesCommand { get; }
         public ICommand OpenCaseSettingsCommand { get; }
+        public ICommand SetZoomCommand { get; }
 
         private async Task CreateCaseAsync()
         {
@@ -441,6 +458,31 @@ namespace evidence_timeline.ViewModels
                 IsBusy = false;
             }
         }
+
+        public async Task OpenCaseFromPathAsync(string? path)
+        {
+            if (IsBusy || string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            try
+            {
+                IsBusy = true;
+                var caseInfo = await _caseStorage.LoadCaseAsync(path);
+                await LoadCaseDataAsync(caseInfo);
+                AddRecentCase(path);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unable to open case: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
 
         private async Task LoadCaseDataAsync(CaseInfo caseInfo)
         {
@@ -781,6 +823,18 @@ namespace evidence_timeline.ViewModels
             {
                 _appSettings = vm.ToAppSettings();
                 _ = SaveAppSettingsAsync();
+            }
+        }
+
+        private void SetZoom(object? parameter)
+        {
+            if (parameter is double zoom)
+            {
+                ZoomLevel = zoom;
+            }
+            else if (parameter is string zoomStr && double.TryParse(zoomStr, out var zoomValue))
+            {
+                ZoomLevel = zoomValue;
             }
         }
 
@@ -1688,6 +1742,7 @@ namespace evidence_timeline.ViewModels
                 _caseSettings.ShowRightPane = IsRightPaneVisible;
                 _caseSettings.ShowBottomPane = IsBottomPaneVisible;
                 _caseSettings.SortNewestFirst = SortNewestFirst;
+                _caseSettings.ZoomLevel = ZoomLevel;
 
                 var path = GetCaseSettingsPath(CurrentCase);
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -1707,6 +1762,7 @@ namespace evidence_timeline.ViewModels
                 IsRightPaneVisible = _caseSettings.ShowRightPane;
                 IsBottomPaneVisible = _caseSettings.ShowBottomPane;
                 SortNewestFirst = _caseSettings.SortNewestFirst;
+                ZoomLevel = _caseSettings.ZoomLevel;
             }
             finally
             {

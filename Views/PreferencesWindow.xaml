@@ -7,18 +7,17 @@
                      Width="420"
                      ResizeMode="CanResizeWithGrip"
                      WindowStartupLocation="CenterOwner">
-    <Grid Margin="12">
+    <Grid Margin="4">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Margin="0 0 0 12">
-            <TextBlock Text="Theme" FontWeight="Bold" />
+        <StackPanel Margin="0 0 0 8">
+            <TextBlock Text="Theme" Style="{StaticResource SectionHeaderText}" Margin="0 0 0 4" />
             <ComboBox ItemsSource="{Binding ThemeOptions}"
-                      SelectedItem="{Binding SelectedTheme, Mode=TwoWay}"
-                      Margin="0 4 0 0" />
+                      SelectedItem="{Binding SelectedTheme, Mode=TwoWay}" />
         </StackPanel>
 
         <GroupBox Header="Recent cases" Grid.Row="1">
@@ -31,7 +30,7 @@
                     <ItemsControl ItemsSource="{Binding RecentCases}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding}" />
+                                <TextBlock Text="{Binding}" Style="{StaticResource BodyText}" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -39,7 +38,7 @@
                 <Button Grid.Row="1"
                         Content="Clear recent cases"
                         HorizontalAlignment="Left"
-                        Margin="0 8 0 0"
+                        Margin="0 3 0 0"
                         Command="{Binding ClearRecentCasesCommand}" />
             </Grid>
         </GroupBox>
@@ -47,13 +46,13 @@
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     Grid.Row="2"
-                    Margin="0 12 0 0">
-            <Button Width="90"
-                    Margin="0 0 8 0"
+                    Margin="0 4 0 0">
+            <Button Style="{StaticResource DialogButton}"
+                    Margin="0 0 3 0"
                     Content="Save"
                     IsDefault="True"
                     Click="OnSaveClicked" />
-            <Button Width="90"
+            <Button Style="{StaticResource DialogButton}"
                     Content="Cancel"
                     IsCancel="True"
                     Click="OnCancelClicked" />
