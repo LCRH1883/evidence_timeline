@@ -8,6 +8,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Threading;
 using AdonisUI.Controls;
+using AutoUpdaterDotNET;
 using evidence_timeline.ViewModels;
 using evidence_timeline.Views;
 using MessageBox = System.Windows.MessageBox;
@@ -297,6 +298,28 @@ namespace evidence_timeline
                 NotesSaveStatusText.Text = text;
                 NotesSaveStatusText.Foreground = foreground;
             }
+        }
+
+        private void OnCheckForUpdatesClicked(object sender, RoutedEventArgs e)
+        {
+#if DEBUG
+            MessageBox.Show("Update checks are disabled in development builds.\n\nUpdates are only available in the installed Release version.",
+                "Check for Updates", MessageBoxButton.OK, MessageBoxImage.Information);
+#else
+            // Manually trigger update check
+            AutoUpdater.Start("https://raw.githubusercontent.com/LCRH1883/evidence_timeline/main/update.xml");
+#endif
+        }
+
+        private void OnAboutClicked(object sender, RoutedEventArgs e)
+        {
+            var aboutMessage = "Evidence Timeline\n" +
+                             "Version 1.0.0\n\n" +
+                             "Developed by Intagri Technologies LLC\n\n" +
+                             "© 2025 Intagri Technologies LLC\n" +
+                             "All rights reserved.";
+
+            MessageBox.Show(aboutMessage, "About Evidence Timeline", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }

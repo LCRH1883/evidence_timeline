@@ -8,6 +8,7 @@
                      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                      mc:Ignorable="d"
                      Title="Evidence Timeline"
+                     Icon="/assets/intagri icon.png"
                      Height="600"
                      Width="1000"
                      MinHeight="500"
@@ -82,7 +83,9 @@
                 <MenuItem Header="Case _Settings" Command="{Binding OpenCaseSettingsCommand}" IsEnabled="{Binding CurrentCase}" />
             </MenuItem>
             <MenuItem Header="_Help">
-                <MenuItem Header="About" IsEnabled="False" />
+                <MenuItem Header="_Check for Updates..." Click="OnCheckForUpdatesClicked" />
+                <Separator />
+                <MenuItem Header="_About Evidence Timeline" Click="OnAboutClicked" />
             </MenuItem>
         </Menu>
 
@@ -474,133 +477,261 @@
                           ShowsPreview="True"
                           Visibility="{Binding IsBottomPaneVisible, Converter={StaticResource BoolToVis}}" />
 
-            <!-- Notes pane spanning center/right -->
+            <!-- Bottom pane with tabs spanning center/right -->
             <Border Grid.Row="2"
                     Grid.ColumnSpan="3"
                     BorderBrush="#dee2e6"
                     BorderThickness="0 1 0 0"
                     Visibility="{Binding IsBottomPaneVisible, Converter={StaticResource BoolToVis}}">
-                <DockPanel>
-                    <!-- Compact header bar with formatting toolbar -->
-                    <Border DockPanel.Dock="Top"
-                            Background="#f8f9fa"
-                            BorderBrush="#dee2e6"
-                            BorderThickness="0 0 0 1"
-                            Padding="8 4">
+                <TabControl Margin="0">
+                    <!-- Notes Tab -->
+                    <TabItem Header="Notes">
                         <DockPanel>
-                            <TextBlock Text="Notes"
-                                       FontWeight="SemiBold"
-                                       FontSize="12"
-                                       VerticalAlignment="Center"
-                                       DockPanel.Dock="Left"
-                                       Margin="0 0 12 0" />
+                            <!-- Compact header bar with formatting toolbar -->
+                            <Border DockPanel.Dock="Top"
+                                    Background="#f8f9fa"
+                                    BorderBrush="#dee2e6"
+                                    BorderThickness="0 0 0 1"
+                                    Padding="8 4">
+                                <DockPanel>
+                                    <!-- Formatting toolbar -->
+                                    <StackPanel Orientation="Horizontal"
+                                                VerticalAlignment="Center"
+                                                DockPanel.Dock="Left"
+                                                Margin="0 0 8 0">
+                                        <!-- Bold -->
+                                        <Button x:Name="BoldButton"
+                                                Style="{StaticResource IconButton}"
+                                                Width="24"
+                                                Height="24"
+                                                Margin="0 0 2 0"
+                                                ToolTip="Bold (Ctrl+B)"
+                                                Click="OnNotesFormatBold">
+                                            <iconPacks:PackIconBootstrapIcons Kind="TypeBold"
+                                                                              Width="10"
+                                                                              Height="10" />
+                                        </Button>
 
-                            <!-- Formatting toolbar -->
-                            <StackPanel Orientation="Horizontal"
-                                        VerticalAlignment="Center"
-                                        DockPanel.Dock="Left"
-                                        Margin="0 0 8 0">
-                                <!-- Bold -->
-                                <Button x:Name="BoldButton"
-                                        Style="{StaticResource IconButton}"
-                                        Width="24"
-                                        Height="24"
-                                        Margin="0 0 2 0"
-                                        ToolTip="Bold (Ctrl+B)"
-                                        Click="OnNotesFormatBold">
-                                    <iconPacks:PackIconBootstrapIcons Kind="TypeBold"
-                                                                      Width="10"
-                                                                      Height="10" />
-                                </Button>
+                                        <!-- Italic -->
+                                        <Button x:Name="ItalicButton"
+                                                Style="{StaticResource IconButton}"
+                                                Width="24"
+                                                Height="24"
+                                                Margin="0 0 2 0"
+                                                ToolTip="Italic (Ctrl+I)"
+                                                Click="OnNotesFormatItalic">
+                                            <iconPacks:PackIconBootstrapIcons Kind="TypeItalic"
+                                                                              Width="10"
+                                                                              Height="10" />
+                                        </Button>
 
-                                <!-- Italic -->
-                                <Button x:Name="ItalicButton"
-                                        Style="{StaticResource IconButton}"
-                                        Width="24"
-                                        Height="24"
-                                        Margin="0 0 2 0"
-                                        ToolTip="Italic (Ctrl+I)"
-                                        Click="OnNotesFormatItalic">
-                                    <iconPacks:PackIconBootstrapIcons Kind="TypeItalic"
-                                                                      Width="10"
-                                                                      Height="10" />
-                                </Button>
+                                        <!-- Underline -->
+                                        <Button x:Name="UnderlineButton"
+                                                Style="{StaticResource IconButton}"
+                                                Width="24"
+                                                Height="24"
+                                                Margin="0 0 8 0"
+                                                ToolTip="Underline (Ctrl+U)"
+                                                Click="OnNotesFormatUnderline">
+                                            <iconPacks:PackIconBootstrapIcons Kind="TypeUnderline"
+                                                                              Width="10"
+                                                                              Height="10" />
+                                        </Button>
 
-                                <!-- Underline -->
-                                <Button x:Name="UnderlineButton"
-                                        Style="{StaticResource IconButton}"
-                                        Width="24"
-                                        Height="24"
-                                        Margin="0 0 8 0"
-                                        ToolTip="Underline (Ctrl+U)"
-                                        Click="OnNotesFormatUnderline">
-                                    <iconPacks:PackIconBootstrapIcons Kind="TypeUnderline"
-                                                                      Width="10"
-                                                                      Height="10" />
-                                </Button>
+                                        <!-- Bullet List -->
+                                        <Button x:Name="BulletListButton"
+                                                Style="{StaticResource IconButton}"
+                                                Width="24"
+                                                Height="24"
+                                                Margin="0 0 2 0"
+                                                ToolTip="Bullet List"
+                                                Click="OnNotesFormatBulletList">
+                                            <iconPacks:PackIconBootstrapIcons Kind="ListUl"
+                                                                              Width="10"
+                                                                              Height="10" />
+                                        </Button>
 
-                                <!-- Bullet List -->
-                                <Button x:Name="BulletListButton"
-                                        Style="{StaticResource IconButton}"
-                                        Width="24"
-                                        Height="24"
-                                        Margin="0 0 2 0"
-                                        ToolTip="Bullet List"
-                                        Click="OnNotesFormatBulletList">
-                                    <iconPacks:PackIconBootstrapIcons Kind="ListUl"
-                                                                      Width="10"
-                                                                      Height="10" />
-                                </Button>
+                                        <!-- Numbered List -->
+                                        <Button x:Name="NumberedListButton"
+                                                Style="{StaticResource IconButton}"
+                                                Width="24"
+                                                Height="24"
+                                                Margin="0 0 0 0"
+                                                ToolTip="Numbered List"
+                                                Click="OnNotesFormatNumberedList">
+                                            <iconPacks:PackIconBootstrapIcons Kind="ListOl"
+                                                                              Width="10"
+                                                                              Height="10" />
+                                        </Button>
+                                    </StackPanel>
 
-                                <!-- Numbered List -->
-                                <Button x:Name="NumberedListButton"
-                                        Style="{StaticResource IconButton}"
-                                        Width="24"
-                                        Height="24"
-                                        Margin="0 0 0 0"
-                                        ToolTip="Numbered List"
-                                        Click="OnNotesFormatNumberedList">
-                                    <iconPacks:PackIconBootstrapIcons Kind="ListOl"
-                                                                      Width="10"
-                                                                      Height="10" />
-                                </Button>
-                            </StackPanel>
+                                    <!-- Save status and button -->
+                                    <StackPanel Orientation="Horizontal"
+                                                DockPanel.Dock="Right"
+                                                VerticalAlignment="Center">
+                                        <TextBlock x:Name="NotesSaveStatusText"
+                                                   Text="All changes saved"
+                                                   FontSize="8"
+                                                   Foreground="Gray"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0 0 4 0" />
+                                        <Button Command="{Binding SaveNotesCommand}"
+                                                Style="{StaticResource IconButton}"
+                                                ToolTip="Save notes">
+                                            <iconPacks:PackIconBootstrapIcons Kind="Floppy"
+                                                                              Width="10"
+                                                                              Height="10" />
+                                        </Button>
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
 
-                            <!-- Save status and button -->
-                            <StackPanel Orientation="Horizontal"
-                                        DockPanel.Dock="Right"
-                                        VerticalAlignment="Center">
-                                <TextBlock x:Name="NotesSaveStatusText"
-                                           Text="All changes saved"
-                                           FontSize="8"
-                                           Foreground="Gray"
-                                           VerticalAlignment="Center"
-                                           Margin="0 0 4 0" />
-                                <Button Command="{Binding SaveNotesCommand}"
-                                        Style="{StaticResource IconButton}"
-                                        ToolTip="Save notes">
-                                    <iconPacks:PackIconBootstrapIcons Kind="Floppy"
-                                                                      Width="10"
-                                                                      Height="10" />
-                                </Button>
-                            </StackPanel>
+                            <!-- Rich text box fills remaining space with border -->
+                            <Border Margin="4"
+                                    BorderBrush="#adb5bd"
+                                    BorderThickness="1"
+                                    Background="White">
+                                <RichTextBox x:Name="NotesRichTextBox"
+                                             AcceptsReturn="True"
+                                             VerticalScrollBarVisibility="Auto"
+                                             BorderThickness="0"
+                                             Background="White"
+                                             Loaded="OnNotesRichTextBoxLoaded"
+                                             TextChanged="OnNotesTextChanged" />
+                            </Border>
                         </DockPanel>
-                    </Border>
+                    </TabItem>
 
-                    <!-- Rich text box fills remaining space with border -->
-                    <Border Margin="4"
-                            BorderBrush="#adb5bd"
-                            BorderThickness="1"
-                            Background="White">
-                        <RichTextBox x:Name="NotesRichTextBox"
-                                     AcceptsReturn="True"
-                                     VerticalScrollBarVisibility="Auto"
-                                     BorderThickness="0"
-                                     Background="White"
-                                     Loaded="OnNotesRichTextBoxLoaded"
-                                     TextChanged="OnNotesTextChanged" />
-                    </Border>
-                </DockPanel>
+                    <!-- Case Info Tab -->
+                    <TabItem Header="Case Info">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <Grid Margin="12" HorizontalAlignment="Left">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="250" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="250" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Case Number -->
+                                <TextBlock Grid.Row="0" Grid.Column="0"
+                                           Text="Case Number:"
+                                           Style="{StaticResource LabelText}"
+                                           VerticalAlignment="Center"
+                                           Margin="0 0 8 0" />
+                                <TextBox Grid.Row="0" Grid.Column="1"
+                                         Text="{Binding CurrentCase.CaseNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding CurrentCase, Converter={StaticResource BoolToVis}}"
+                                         Margin="0 0 0 6" />
+
+                                <!-- Court Location -->
+                                <TextBlock Grid.Row="0" Grid.Column="3"
+                                           Text="Court Location:"
+                                           Style="{StaticResource LabelText}"
+                                           VerticalAlignment="Center"
+                                           Margin="0 0 8 0" />
+                                <TextBox Grid.Row="0" Grid.Column="4"
+                                         Text="{Binding CurrentCase.CaseLocation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding CurrentCase, Converter={StaticResource BoolToVis}}"
+                                         Margin="0 0 0 6" />
+
+                                <!-- Court Level -->
+                                <TextBlock Grid.Row="1" Grid.Column="0"
+                                           Text="Court Level:"
+                                           Style="{StaticResource LabelText}"
+                                           VerticalAlignment="Center"
+                                           Margin="0 0 8 0" />
+                                <TextBox Grid.Row="1" Grid.Column="1"
+                                         Text="{Binding CurrentCase.CourtLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding CurrentCase, Converter={StaticResource BoolToVis}}"
+                                         Margin="0 0 0 6" />
+
+                                <!-- Save Button -->
+                                <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                        Content="Save Case Info"
+                                        Command="{Binding SaveCaseCommand}"
+                                        HorizontalAlignment="Left"
+                                        Margin="0 6 0 0" />
+                            </Grid>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <!-- Info Tab -->
+                    <TabItem Header="Info">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="12">
+                                <TextBlock Text="Case Statistics"
+                                           Style="{StaticResource HeaderText}"
+                                           Margin="0 0 0 8" />
+
+                                <Grid Margin="0 8 0 0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Total Evidence -->
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                               Text="Total Evidence:"
+                                               Style="{StaticResource LabelText}"
+                                               FontWeight="SemiBold"
+                                               Margin="0 4" />
+                                    <TextBlock Grid.Row="0" Grid.Column="1"
+                                               Text="{Binding EvidenceSummaries.Count}"
+                                               Style="{StaticResource BodyText}"
+                                               Margin="8 4" />
+
+                                    <!-- Case Created -->
+                                    <TextBlock Grid.Row="1" Grid.Column="0"
+                                               Text="Case Created:"
+                                               Style="{StaticResource LabelText}"
+                                               FontWeight="SemiBold"
+                                               Margin="0 4" />
+                                    <TextBlock Grid.Row="1" Grid.Column="1"
+                                               Text="{Binding CurrentCase.CreatedAt, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}"
+                                               Style="{StaticResource BodyText}"
+                                               Margin="8 4" />
+
+                                    <!-- Last Opened -->
+                                    <TextBlock Grid.Row="2" Grid.Column="0"
+                                               Text="Last Opened:"
+                                               Style="{StaticResource LabelText}"
+                                               FontWeight="SemiBold"
+                                               Margin="0 4" />
+                                    <TextBlock Grid.Row="2" Grid.Column="1"
+                                               Text="{Binding CurrentCase.LastOpenedAt, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}"
+                                               Style="{StaticResource BodyText}"
+                                               Margin="8 4" />
+
+                                    <!-- Case Path -->
+                                    <TextBlock Grid.Row="3" Grid.Column="0"
+                                               Text="Case Location:"
+                                               Style="{StaticResource LabelText}"
+                                               FontWeight="SemiBold"
+                                               Margin="0 4"
+                                               VerticalAlignment="Top" />
+                                    <TextBlock Grid.Row="3" Grid.Column="1"
+                                               Text="{Binding CurrentCase.RootPath}"
+                                               Style="{StaticResource BodyText}"
+                                               TextWrapping="Wrap"
+                                               Margin="8 4" />
+                                </Grid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+                </TabControl>
             </Border>
         </Grid>
     </DockPanel>

@@ -4,8 +4,9 @@
                      xmlns:adonis="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
                      xmlns:local="clr-namespace:evidence_timeline.Views"
                      Title="Evidence Timeline"
-                     Width="540"
-                     Height="380"
+                     Icon="/assets/intagri icon.png"
+                     Width="640"
+                     Height="550"
                      WindowStartupLocation="CenterScreen"
                      ResizeMode="NoResize">
     <adonis:AdonisWindow.Resources>
@@ -15,11 +16,35 @@
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel>
+        <!-- App Branding Header -->
+        <Border Grid.Row="0"
+                Background="#f8f9fa"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0 0 0 1"
+                Padding="12 16"
+                Margin="-8 -8 -8 12">
+            <StackPanel HorizontalAlignment="Center">
+                <Image Source="/assets/Logo.png"
+                       Width="240"
+                       Height="80"
+                       Margin="0 0 0 12"
+                       HorizontalAlignment="Center"
+                       Stretch="Uniform" />
+                <TextBlock Text="Evidence Timeline"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Margin="0 0 0 0" />
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="1">
             <TextBlock Text="Welcome back"
                        FontSize="16"
                        FontWeight="SemiBold"
@@ -29,7 +54,7 @@
                        Margin="0 0 0 12" />
         </StackPanel>
 
-        <Border Grid.Row="1"
+        <Border Grid.Row="2"
                 BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="1"
                 Padding="8"
@@ -46,7 +71,8 @@
                          Grid.Row="1"
                          ItemsSource="{Binding RecentCases}"
                          SelectedItem="{Binding SelectedCase, Mode=TwoWay}"
-                         MinHeight="160"
+                         MinHeight="280"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
                          MouseDoubleClick="OnRecentCaseDoubleClick">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -62,7 +88,7 @@
             </Grid>
         </Border>
 
-        <StackPanel Grid.Row="2"
+        <StackPanel Grid.Row="3"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center"
                     Margin="0 4 0 0">
@@ -79,5 +105,13 @@
                     Width="90"
                     Click="OnBrowseClicked" />
         </StackPanel>
+
+        <!-- Copyright Footer -->
+        <TextBlock Grid.Row="4"
+                   Text="© 2025 Intagri Technologies LLC. All rights reserved."
+                   FontSize="8"
+                   Foreground="{StaticResource TextSecondary}"
+                   HorizontalAlignment="Center"
+                   Margin="0 8 0 0" />
     </Grid>
 </adonis:AdonisWindow>

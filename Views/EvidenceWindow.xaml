@@ -4,6 +4,7 @@
                      xmlns:adonis="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
                      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                      Title="Evidence Details"
+                     Icon="/assets/intagri icon.png"
                      Height="600"
                      Width="900"
                      MinHeight="500"

@@ -1717,7 +1717,11 @@ namespace evidence_timeline.ViewModels
         private static string GetAppSettingsPath()
         {
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+#if DEBUG
+            var folder = Path.Combine(appData, "EvidenceTimeline-Dev");
+#else
             var folder = Path.Combine(appData, "EvidenceTimeline");
+#endif
             Directory.CreateDirectory(folder);
             return Path.Combine(folder, "settings.json");
         }
