@@ -5,8 +5,8 @@
                      xmlns:local="clr-namespace:evidence_timeline.Views"
                      Title="Evidence Timeline"
                      Icon="/assets/intagri icon.png"
-                     Width="540"
-                     Height="380"
+                     Width="640"
+                     Height="550"
                      WindowStartupLocation="CenterScreen"
                      ResizeMode="NoResize">
     <adonis:AdonisWindow.Resources>
@@ -71,7 +71,8 @@
                          Grid.Row="1"
                          ItemsSource="{Binding RecentCases}"
                          SelectedItem="{Binding SelectedCase, Mode=TwoWay}"
-                         MinHeight="160"
+                         MinHeight="280"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
                          MouseDoubleClick="OnRecentCaseDoubleClick">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
