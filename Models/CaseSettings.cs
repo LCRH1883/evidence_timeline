@@ -7,5 +7,6 @@ namespace evidence_timeline.Models
         public bool ShowBottomPane { get; set; } = true;
         public bool SortNewestFirst { get; set; } = true;
         public double ZoomLevel { get; set; } = 1.0;
+        public double EditorFontSize { get; set; } = 9.0;
     }
 }

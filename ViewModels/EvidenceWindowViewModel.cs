@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Collections.Specialized;
 using System.Threading;
@@ -43,6 +45,10 @@ namespace evidence_timeline.ViewModels
             Evidence = CloneEvidence(evidence);
             SaveCommand = new AsyncRelayCommand(SaveAsync);
             SaveNotesCommand = new AsyncRelayCommand(SaveNotesAsync);
+            AddAttachmentCommand = new AsyncRelayCommand(AddAttachmentAsync);
+            OpenAttachmentCommand = new RelayCommand<AttachmentInfo>(attachment => _ = OpenAttachmentAsync(attachment));
+            OpenAttachmentFolderCommand = new RelayCommand<AttachmentInfo>(attachment => _ = OpenAttachmentFolderAsync(attachment));
+            RemoveAttachmentCommand = new RelayCommand<AttachmentInfo>(attachment => _ = RemoveAttachmentAsync(attachment));
 
             PersonOptions = new ObservableCollection<SelectableItem>();
             LinkedEvidence = new ObservableCollection<string>(Evidence.LinkedEvidenceIds);
@@ -70,6 +76,10 @@ namespace evidence_timeline.ViewModels
 
         public ICommand SaveCommand { get; }
         public ICommand SaveNotesCommand { get; }
+        public ICommand AddAttachmentCommand { get; }
+        public ICommand OpenAttachmentCommand { get; }
+        public ICommand OpenAttachmentFolderCommand { get; }
+        public ICommand RemoveAttachmentCommand { get; }
 
         public async Task LoadAsync()
         {
@@ -373,6 +383,146 @@ namespace evidence_timeline.ViewModels
                 ?? dateInfo.StartDate
                 ?? dateInfo.EndDate
                 ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        }
+
+        private async Task AddAttachmentAsync()
+        {
+            using var dialog = new System.Windows.Forms.OpenFileDialog
+            {
+                Title = "Select attachment(s)",
+                Multiselect = true
+            };
+
+            var result = dialog.ShowDialog();
+            if (result != System.Windows.Forms.DialogResult.OK || dialog.FileNames.Length == 0)
+            {
+                return;
+            }
+
+            var targetFolder = await _evidenceStorage.GetEvidenceFolderPathAsync(_caseInfo, Evidence);
+            var filesFolder = Path.Combine(targetFolder, "files");
+            Directory.CreateDirectory(filesFolder);
+
+            foreach (var file in dialog.FileNames)
+            {
+                var fileName = Path.GetFileName(file);
+                var targetPath = Path.Combine(filesFolder, fileName);
+                targetPath = EnsureUniqueFilePath(targetPath);
+                File.Copy(file, targetPath, true);
+
+                var relative = Path.Combine("files", Path.GetFileName(targetPath));
+                if (Evidence.Attachments.All(a => !string.Equals(a.RelativePath, relative, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Evidence.Attachments.Add(new AttachmentInfo
+                    {
+                        FileName = Path.GetFileName(targetPath),
+                        RelativePath = relative
+                    });
+                }
+            }
+
+            await SaveAsync();
+        }
+
+        private async Task OpenAttachmentAsync(AttachmentInfo? attachment)
+        {
+            if (attachment == null)
+            {
+                return;
+            }
+
+            var folder = await _evidenceStorage.GetEvidenceFolderPathAsync(_caseInfo, Evidence);
+            var fullPath = Path.Combine(folder, attachment.RelativePath);
+            if (!File.Exists(fullPath))
+            {
+                MessageBox.Show($"File not found: {attachment.FileName}", "Open Attachment", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = fullPath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unable to open attachment: {ex.Message}", "Open Attachment", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task OpenAttachmentFolderAsync(AttachmentInfo? attachment)
+        {
+            if (attachment == null)
+            {
+                return;
+            }
+
+            var folder = await _evidenceStorage.GetEvidenceFolderPathAsync(_caseInfo, Evidence);
+            var fullPath = Path.Combine(folder, attachment.RelativePath);
+            var directory = Path.GetDirectoryName(fullPath);
+            if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
+            {
+                MessageBox.Show("Attachment folder not found.", "Open Folder", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = directory,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unable to open folder: {ex.Message}", "Open Folder", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task RemoveAttachmentAsync(AttachmentInfo? attachment)
+        {
+            var target = attachment ?? Evidence.Attachments.LastOrDefault();
+            if (target == null)
+            {
+                return;
+            }
+
+            var folder = await _evidenceStorage.GetEvidenceFolderPathAsync(_caseInfo, Evidence);
+            var fullPath = Path.Combine(folder, target.RelativePath);
+            if (File.Exists(fullPath))
+            {
+                File.Delete(fullPath);
+            }
+
+            Evidence.Attachments.Remove(target);
+            await SaveAsync();
+        }
+
+        private static string EnsureUniqueFilePath(string basePath)
+        {
+            if (!File.Exists(basePath))
+            {
+                return basePath;
+            }
+
+            var directory = Path.GetDirectoryName(basePath) ?? string.Empty;
+            var name = Path.GetFileNameWithoutExtension(basePath);
+            var extension = Path.GetExtension(basePath);
+            var counter = 1;
+
+            string candidate;
+            do
+            {
+                candidate = Path.Combine(directory, $"{name} ({counter}){extension}");
+                counter++;
+            }
+            while (File.Exists(candidate));
+
+            return candidate;
         }
     }
 }

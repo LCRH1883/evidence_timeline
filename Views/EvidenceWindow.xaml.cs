@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Threading;
 using AdonisUI.Controls;
@@ -149,41 +150,17 @@ namespace evidence_timeline.Views
 
         private void OnNotesFormatBulletList(object sender, RoutedEventArgs e)
         {
-            if (NotesRichTextBox.Selection != null && !NotesRichTextBox.Selection.IsEmpty)
+            if (EditingCommands.ToggleBullets.CanExecute(null, NotesRichTextBox))
             {
-                // Get selected text and split into lines
-                var selectedText = NotesRichTextBox.Selection.Text;
-                var lines = selectedText.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-                // Add bullet to each line
-                var bulletedText = string.Join("\n", lines.Select(line => "• " + line.TrimStart()));
-
-                NotesRichTextBox.Selection.Text = bulletedText;
-            }
-            else
-            {
-                // Insert bullet at current position
-                NotesRichTextBox.CaretPosition.InsertTextInRun("• ");
+                EditingCommands.ToggleBullets.Execute(null, NotesRichTextBox);
             }
         }
 
         private void OnNotesFormatNumberedList(object sender, RoutedEventArgs e)
         {
-            if (NotesRichTextBox.Selection != null && !NotesRichTextBox.Selection.IsEmpty)
+            if (EditingCommands.ToggleNumbering.CanExecute(null, NotesRichTextBox))
             {
-                // Get selected text and split into lines
-                var selectedText = NotesRichTextBox.Selection.Text;
-                var lines = selectedText.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-                // Add numbers to each line
-                var numberedText = string.Join("\n", lines.Select((line, index) => $"{index + 1}. {line.TrimStart()}"));
-
-                NotesRichTextBox.Selection.Text = numberedText;
-            }
-            else
-            {
-                // Insert number at current position
-                NotesRichTextBox.CaretPosition.InsertTextInRun("1. ");
+                EditingCommands.ToggleNumbering.Execute(null, NotesRichTextBox);
             }
         }
 

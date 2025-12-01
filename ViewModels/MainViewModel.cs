@@ -48,6 +48,7 @@ namespace evidence_timeline.ViewModels
         private bool _isBottomPaneVisible = true;
         private string _notesText = string.Empty;
         private double _zoomLevel = 1.0;
+        private double _editorFontSize = 9.0;
         private bool _isBusy;
         private string _linkedEvidenceText = string.Empty;
         private bool _sortNewestFirst = true;
@@ -63,8 +64,8 @@ namespace evidence_timeline.ViewModels
             NewEvidenceCommand = new AsyncRelayCommand(NewEvidenceAsync, () => CurrentCase != null);
             OpenEvidenceWindowCommand = new RelayCommand(OpenEvidenceWindow, () => SelectedSummary != null);
             AddAttachmentCommand = new AsyncRelayCommand(AddAttachmentAsync, () => SelectedEvidenceDetail != null && CurrentCase != null);
-            OpenAttachmentCommand = new RelayCommand<AttachmentInfo>(OpenAttachment);
-            OpenAttachmentFolderCommand = new RelayCommand<AttachmentInfo>(OpenAttachmentFolder);
+            OpenAttachmentCommand = new RelayCommand<AttachmentInfo>(attachment => _ = OpenAttachmentAsync(attachment));
+            OpenAttachmentFolderCommand = new RelayCommand<AttachmentInfo>(attachment => _ = OpenAttachmentFolderAsync(attachment));
             RemoveAttachmentCommand = new RelayCommand<AttachmentInfo>(attachment => _ = RemoveAttachmentAsync(attachment));
             SaveNotesCommand = new AsyncRelayCommand(SaveNotesAsync, () => SelectedEvidenceDetail != null && CurrentCase != null);
             SaveMetadataCommand = new AsyncRelayCommand(SaveMetadataAsync, () => SelectedEvidenceDetail != null && CurrentCase != null);
@@ -79,6 +80,7 @@ namespace evidence_timeline.ViewModels
             OpenPreferencesCommand = new RelayCommand(OpenPreferences);
             OpenCaseSettingsCommand = new AsyncRelayCommand(OpenCaseSettingsAsync, () => CurrentCase != null);
             SetZoomCommand = new RelayCommand<object>(SetZoom);
+            SetEditorFontSizeCommand = new RelayCommand<object>(SetEditorFontSize);
 
             PersonOptions.CollectionChanged += OnPersonOptionsChanged;
 
@@ -245,6 +247,22 @@ namespace evidence_timeline.ViewModels
             }
         }
 
+        public double EditorFontSize
+        {
+            get => _editorFontSize;
+            set
+            {
+                if (SetProperty(ref _editorFontSize, value) && !_isLoadingCaseSettings)
+                {
+                    if (System.Windows.Application.Current != null)
+                    {
+                        System.Windows.Application.Current.Resources["EditorFontSize"] = value;
+                    }
+                    _ = SaveCaseSettingsAsync();
+                }
+            }
+        }
+
         public string NotesText
         {
             get => _notesText;
@@ -398,6 +416,7 @@ namespace evidence_timeline.ViewModels
         public ICommand OpenPreferencesCommand { get; }
         public ICommand OpenCaseSettingsCommand { get; }
         public ICommand SetZoomCommand { get; }
+        public ICommand SetEditorFontSizeCommand { get; }
 
         private async Task CreateCaseAsync()
         {
@@ -838,6 +857,18 @@ namespace evidence_timeline.ViewModels
             }
         }
 
+        private void SetEditorFontSize(object? parameter)
+        {
+            if (parameter is double fontSize)
+            {
+                EditorFontSize = fontSize;
+            }
+            else if (parameter is string fontSizeStr && double.TryParse(fontSizeStr, out var fontSizeValue))
+            {
+                EditorFontSize = fontSizeValue;
+            }
+        }
+
         private async Task OpenCaseSettingsAsync()
         {
             if (CurrentCase == null)
@@ -1162,14 +1193,14 @@ namespace evidence_timeline.ViewModels
             UpdateSummaryLists(updatedSummary);
         }
 
-        private void OpenAttachment(AttachmentInfo? attachment)
+        private async Task OpenAttachmentAsync(AttachmentInfo? attachment)
         {
             if (CurrentCase == null || SelectedEvidenceDetail == null || attachment == null)
             {
                 return;
             }
 
-            var folder = _evidenceStorage.GetEvidenceFolderPathAsync(CurrentCase, SelectedEvidenceDetail).Result;
+            var folder = await _evidenceStorage.GetEvidenceFolderPathAsync(CurrentCase, SelectedEvidenceDetail);
             var fullPath = Path.Combine(folder, attachment.RelativePath);
             if (!File.Exists(fullPath))
             {
@@ -1191,14 +1222,14 @@ namespace evidence_timeline.ViewModels
             }
         }
 
-        private void OpenAttachmentFolder(AttachmentInfo? attachment)
+        private async Task OpenAttachmentFolderAsync(AttachmentInfo? attachment)
         {
             if (CurrentCase == null || SelectedEvidenceDetail == null || attachment == null)
             {
                 return;
             }
 
-            var folder = _evidenceStorage.GetEvidenceFolderPathAsync(CurrentCase, SelectedEvidenceDetail).Result;
+            var folder = await _evidenceStorage.GetEvidenceFolderPathAsync(CurrentCase, SelectedEvidenceDetail);
             var fullPath = Path.Combine(folder, attachment.RelativePath);
             var directory = Path.GetDirectoryName(fullPath);
             if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
@@ -1743,6 +1774,7 @@ namespace evidence_timeline.ViewModels
                 _caseSettings.ShowBottomPane = IsBottomPaneVisible;
                 _caseSettings.SortNewestFirst = SortNewestFirst;
                 _caseSettings.ZoomLevel = ZoomLevel;
+                _caseSettings.EditorFontSize = EditorFontSize;
 
                 var path = GetCaseSettingsPath(CurrentCase);
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -1763,6 +1795,7 @@ namespace evidence_timeline.ViewModels
                 IsBottomPaneVisible = _caseSettings.ShowBottomPane;
                 SortNewestFirst = _caseSettings.SortNewestFirst;
                 ZoomLevel = _caseSettings.ZoomLevel;
+                EditorFontSize = _caseSettings.EditorFontSize;
             }
             finally
             {

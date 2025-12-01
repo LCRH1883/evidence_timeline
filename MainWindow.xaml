@@ -65,6 +65,17 @@
                     <MenuItem Header="175%" Command="{Binding SetZoomCommand}" CommandParameter="1.75" />
                     <MenuItem Header="200%" Command="{Binding SetZoomCommand}" CommandParameter="2.0" />
                 </MenuItem>
+                <MenuItem Header="Editor _Font Size">
+                    <MenuItem Header="6 pt" Command="{Binding SetEditorFontSizeCommand}" CommandParameter="6" />
+                    <MenuItem Header="7 pt" Command="{Binding SetEditorFontSizeCommand}" CommandParameter="7" />
+                    <MenuItem Header="8 pt" Command="{Binding SetEditorFontSizeCommand}" CommandParameter="8" />
+                    <MenuItem Header="9 pt (Default)" Command="{Binding SetEditorFontSizeCommand}" CommandParameter="9" />
+                    <MenuItem Header="10 pt" Command="{Binding SetEditorFontSizeCommand}" CommandParameter="10" />
+                    <MenuItem Header="11 pt" Command="{Binding SetEditorFontSizeCommand}" CommandParameter="11" />
+                    <MenuItem Header="12 pt" Command="{Binding SetEditorFontSizeCommand}" CommandParameter="12" />
+                    <MenuItem Header="13 pt" Command="{Binding SetEditorFontSizeCommand}" CommandParameter="13" />
+                    <MenuItem Header="14 pt" Command="{Binding SetEditorFontSizeCommand}" CommandParameter="14" />
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="_Settings">
                 <MenuItem Header="_Preferences" Command="{Binding OpenPreferencesCommand}" />

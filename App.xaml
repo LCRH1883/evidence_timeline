@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:evidence_timeline"
              xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
+             xmlns:System="clr-namespace:System;assembly=mscorlib"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
@@ -21,6 +22,9 @@
 
             <!-- Converters -->
             <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+            <!-- Editor Font Size -->
+            <System:Double x:Key="EditorFontSize">9.0</System:Double>
 
             <!-- Typography -->
             <Style x:Key="HeaderText" TargetType="TextBlock">
@@ -48,7 +52,7 @@
 
             <!-- Form Controls -->
             <Style TargetType="TextBox">
-                <Setter Property="FontSize" Value="9" />
+                <Setter Property="FontSize" Value="{DynamicResource EditorFontSize}" />
                 <Setter Property="Padding" Value="4 2" />
                 <Setter Property="MinHeight" Value="20" />
             </Style>
@@ -113,7 +117,7 @@
             </Style>
 
             <Style TargetType="RichTextBox">
-                <Setter Property="FontSize" Value="9" />
+                <Setter Property="FontSize" Value="{DynamicResource EditorFontSize}" />
                 <Setter Property="Padding" Value="4" />
             </Style>
 
