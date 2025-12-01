@@ -8,6 +8,8 @@ namespace evidence_timeline.Models
         public string Id { get; set; } = Guid.NewGuid().ToString("N");
         public string Name { get; set; } = string.Empty;
         public string CaseNumber { get; set; } = string.Empty;
+        public string CaseLocation { get; set; } = string.Empty;
+        public string CourtLevel { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime LastOpenedAt { get; set; } = DateTime.UtcNow;
         public int NextEvidenceNumber { get; set; }

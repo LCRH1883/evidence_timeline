@@ -298,5 +298,16 @@ namespace evidence_timeline
                 NotesSaveStatusText.Foreground = foreground;
             }
         }
+
+        private void OnAboutClicked(object sender, RoutedEventArgs e)
+        {
+            var aboutMessage = "Evidence Timeline\n" +
+                             "Version 1.0.0\n\n" +
+                             "Developed by Intagri Technologies LLC\n\n" +
+                             "© 2025 Intagri Technologies LLC\n" +
+                             "All rights reserved.";
+
+            MessageBox.Show(aboutMessage, "About Evidence Timeline", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
     }
 }

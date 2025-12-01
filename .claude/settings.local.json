@@ -8,7 +8,8 @@
       "Bash(powershell:*)",
       "WebSearch",
       "WebFetch(domain:icons.getbootstrap.com)",
-      "Bash(timeout /t 5)"
+      "Bash(timeout /t 5)",
+      "Bash(dotnet add:*)"
     ],
     "deny": [],
     "ask": []

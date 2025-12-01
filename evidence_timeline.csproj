@@ -13,6 +13,7 @@
   <ItemGroup>
     <PackageReference Include="AdonisUI" Version="1.17.1" />
     <PackageReference Include="AdonisUI.ClassicTheme" Version="1.17.1" />
+    <PackageReference Include="Autoupdater.NET.Official" Version="1.9.2" />
     <PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
   </ItemGroup>
 

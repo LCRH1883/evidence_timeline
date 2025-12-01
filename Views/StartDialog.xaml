@@ -15,11 +15,33 @@
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel>
+        <!-- App Branding Header -->
+        <Border Grid.Row="0"
+                Background="#f8f9fa"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0 0 0 1"
+                Padding="12 16"
+                Margin="-8 -8 -8 12">
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Text="Evidence Timeline"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Margin="0 0 0 4" />
+                <TextBlock Text="by Intagri Technologies LLC"
+                           FontSize="10"
+                           Foreground="{StaticResource TextSecondary}"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="1">
             <TextBlock Text="Welcome back"
                        FontSize="16"
                        FontWeight="SemiBold"
@@ -29,7 +51,7 @@
                        Margin="0 0 0 12" />
         </StackPanel>
 
-        <Border Grid.Row="1"
+        <Border Grid.Row="2"
                 BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="1"
                 Padding="8"
@@ -62,7 +84,7 @@
             </Grid>
         </Border>
 
-        <StackPanel Grid.Row="2"
+        <StackPanel Grid.Row="3"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center"
                     Margin="0 4 0 0">
@@ -79,5 +101,13 @@
                     Width="90"
                     Click="OnBrowseClicked" />
         </StackPanel>
+
+        <!-- Copyright Footer -->
+        <TextBlock Grid.Row="4"
+                   Text="© 2025 Intagri Technologies LLC. All rights reserved."
+                   FontSize="8"
+                   Foreground="{StaticResource TextSecondary}"
+                   HorizontalAlignment="Center"
+                   Margin="0 8 0 0" />
     </Grid>
 </adonis:AdonisWindow>
