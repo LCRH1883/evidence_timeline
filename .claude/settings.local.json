@@ -14,7 +14,9 @@
       "Bash(\"C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe\" installer.iss)",
       "Bash(dir:*)",
       "Bash(findstr:*)",
-      "Bash(copy \"D:\\Projects\\evidence_timeline\\assets\\Logo.png\" \"D:\\Projects\\evidence_timeline\\docs\\website\\Logo.png\")"
+      "Bash(copy \"D:\\Projects\\evidence_timeline\\assets\\Logo.png\" \"D:\\Projects\\evidence_timeline\\docs\\website\\Logo.png\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
