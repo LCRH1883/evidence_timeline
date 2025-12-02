@@ -16,7 +16,8 @@
       "Bash(findstr:*)",
       "Bash(copy \"D:\\Projects\\evidence_timeline\\assets\\Logo.png\" \"D:\\Projects\\evidence_timeline\\docs\\website\\Logo.png\")",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
