@@ -169,6 +169,7 @@ Click the **"Info"** tab in the bottom pane to view:
 
 - **Automatic** (Release builds only): Checks on startup, prompts if update available
 - **Manual**: **Help → Check for Updates**
+- **View Changelog**: **Help → View Changelog** to see version history
 - Debug builds: Updates are disabled in development versions
 
 ## Data Storage
@@ -392,11 +393,22 @@ The auto-updater will now detect the new version and prompt users to update.
 
 This is a proprietary application developed by Intagri Technologies LLC. For bug reports or feature requests, please contact the development team.
 
+## Privacy
+
+**Your data stays on your computer.** Evidence Timeline does not collect, transmit, or access your case data. All information is stored locally in folders you choose.
+
+- No accounts or logins required
+- No analytics or telemetry
+- No data collection
+- Only internet connection: checking for software updates (optional)
+
+For complete privacy information, see **[PRIVACY.md](PRIVACY.md)**.
+
 ## License
 
 © 2025 Intagri Technologies LLC. All rights reserved.
 
-This software is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited.
+This software is proprietary and confidential. See **[LICENSE](LICENSE)** for complete terms.
 
 ## Support
 
@@ -406,11 +418,34 @@ For support inquiries, please contact:
 
 ## Additional Documentation
 
+### For Users
+- **[USER_MANUAL.md](docs/USER_MANUAL.md)** - Complete user guide and tutorial
+- **[FAQ.md](docs/FAQ.md)** - Frequently asked questions
+- **[PRIVACY.md](PRIVACY.md)** - Privacy policy and data handling
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
+
+### For Developers
+- **[CLAUDE.md](CLAUDE.md)** - Development guidelines for AI-assisted coding
+- **[AGENTS.md](AGENTS.md)** - Complete release checklist and development guidelines
 - **[UPDATE_SETUP.md](UPDATE_SETUP.md)** - Detailed auto-update system documentation
 - **[ICON_SETUP.md](ICON_SETUP.md)** - Icon and branding implementation guide
-- **[CLAUDE.md](CLAUDE.md)** - Development guidelines for AI-assisted coding
+- **[STYLE_GUIDE.md](STYLE_GUIDE.md)** - UI styling and design guidelines
 
 ## Version History
+
+See **[CHANGELOG.md](CHANGELOG.md)** for complete version history.
+
+### v1.0.2 (Latest - December 2025)
+- Added changelog viewer window
+- Enhanced update notification with inline changelog preview
+- "Already up-to-date" message when no updates available
+- Improved update user experience
+
+### v1.0.1 (December 2025)
+- Windows installer for distribution
+- Auto-update feature with GitHub integration
+- Company branding and configuration
+- GitHub Pages deployment workflow
 
 ### v1.0.0 (Initial Release)
 - Case and evidence management

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Evidence Timeline</title>
+    <meta name="description" content="Privacy policy for Evidence Timeline. Learn how we handle your data and protect your privacy.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html" class="logo">
+                <img src="Logo.png" alt="Intagri Technologies">
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="download.html">Download</a></li>
+                <li><a href="changelog.html">Changelog</a></li>
+                <li><a href="support.html">Support</a></li>
+                <li><a href="privacy.html" class="active">Privacy</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1>Privacy Policy</h1>
+        <p><strong>Developed by Intagri Technologies LLC</strong><br>
+        Last Updated: December 1, 2025</p>
+
+        <section class="content-section">
+            <h2>TL;DR - Privacy Summary</h2>
+            <p><strong>Evidence Timeline is a fully local, offline application:</strong></p>
+            <ul>
+                <li>✅ <strong>All your data stays on your computer</strong></li>
+                <li>✅ <strong>We do NOT collect, access, or transmit your case data</strong></li>
+                <li>✅ <strong>No accounts, logins, or user tracking</strong></li>
+                <li>✅ <strong>No analytics or telemetry</strong></li>
+                <li>✅ <strong>No advertisements</strong></li>
+                <li>✅ <strong>No third-party data sharing</strong></li>
+            </ul>
+            <p>The only internet connection used is for <strong>checking for software updates</strong> from our public GitHub repository.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Data Storage and Ownership</h2>
+
+            <h3>Your Data Belongs to You</h3>
+            <p>All case data, evidence information, notes, and attachments are stored <strong>locally on your computer</strong> in folders that <strong>you choose</strong>. Intagri Technologies LLC does not have access to, collect, or store any of your case data.</p>
+
+            <h3>What Data is Stored Locally</h3>
+
+            <h4>1. Case Data (User-Selected Folder)</h4>
+            <p>When you create a case, you choose where to store it. This folder contains:</p>
+            <ul>
+                <li><strong>Case Information:</strong> Case name, case number, court location, court level</li>
+                <li><strong>Evidence Metadata:</strong> Evidence descriptions, dates, types, court numbers</li>
+                <li><strong>Notes:</strong> All notes you write for cases and evidence</li>
+                <li><strong>Attachments:</strong> Files you attach to evidence items</li>
+                <li><strong>Evidence Links:</strong> Connections between related evidence</li>
+                <li><strong>Person Associations:</strong> People linked to evidence items</li>
+                <li><strong>Case Settings:</strong> UI preferences for that specific case</li>
+            </ul>
+            <p><strong>Location:</strong> Wherever you choose when creating a case<br>
+            <strong>Ownership:</strong> You own and control this data<br>
+            <strong>Access:</strong> Only you and users with access to your computer can access this data</p>
+
+            <h4>2. Application Settings (AppData)</h4>
+            <p>The application stores minimal settings in your Windows user profile:</p>
+            <ul>
+                <li><strong>Recent Cases List:</strong> Paths to recently opened cases for quick access</li>
+                <li><strong>Last Opened Case:</strong> The most recently used case</li>
+                <li><strong>Application Preferences:</strong> UI theme preference</li>
+            </ul>
+            <p><strong>Location:</strong> <code>%AppData%\EvidenceTimeline\settings.json</code><br>
+            <strong>Content:</strong> Only file paths and UI preferences - no case data</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Data Collection</h2>
+
+            <h3>We Do NOT Collect:</h3>
+            <ul>
+                <li>❌ Personal information (names, addresses, email, phone numbers)</li>
+                <li>❌ Case data or evidence information</li>
+                <li>❌ Notes or attachments</li>
+                <li>❌ User activity or behavior</li>
+                <li>❌ Analytics or telemetry</li>
+                <li>❌ Crash reports or error logs</li>
+                <li>❌ IP addresses or location data</li>
+                <li>❌ System information or device identifiers</li>
+            </ul>
+
+            <h3>What We Access (Update Checks Only):</h3>
+            <p>When the application checks for updates, it:</p>
+            <ol>
+                <li><strong>Connects to GitHub</strong> (https://raw.githubusercontent.com/LCRH1883/evidence_timeline/main/update.xml)</li>
+                <li><strong>Downloads a small XML file</strong> containing version information</li>
+                <li><strong>Compares version numbers</strong> to determine if an update is available</li>
+                <li><strong>If update available:</strong> Downloads the installer from GitHub Releases (public URL)</li>
+            </ol>
+            <p><strong>Data Transmitted:</strong> Only the HTTP request to GitHub's servers (standard web request)</p>
+            <p><strong>Note:</strong> Update checks are disabled in Debug/Development builds and only occur in Release builds.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Internet Connectivity</h2>
+
+            <h3>When Does the Application Connect to the Internet?</h3>
+            <p><strong>Release Builds (Installed Version):</strong></p>
+            <ul>
+                <li>On startup: Checks for software updates (can be skipped)</li>
+                <li>Manual check: When you click Help → Check for Updates</li>
+                <li>Update download: When you choose to download an available update</li>
+            </ul>
+
+            <h3>Can I Use the Application Offline?</h3>
+            <p><strong>Yes!</strong> The application works completely offline. All functionality is available without an internet connection:</p>
+            <ul>
+                <li>✅ Create and manage cases</li>
+                <li>✅ Add and edit evidence</li>
+                <li>✅ Take notes and attach files</li>
+                <li>✅ Link evidence and associate people</li>
+                <li>✅ View case statistics and information</li>
+            </ul>
+            <p>The only feature requiring internet is the <strong>software update check</strong>, which can be skipped or disabled.</p>
+        </section>
+
+        <section class="content-section">
+            <h2>Third-Party Services</h2>
+
+            <h3>GitHub (Update Distribution Only)</h3>
+            <p>We use <strong>GitHub Releases</strong> to distribute software updates. When checking for updates:</p>
+            <ul>
+                <li><strong>Service:</strong> GitHub.com (owned by Microsoft)</li>
+                <li><strong>Purpose:</strong> Hosting update information and installer files</li>
+                <li><strong>Data Transmitted:</strong> Standard HTTP request to public GitHub URLs</li>
+                <li><strong>GitHub's Role:</strong> GitHub may log web server requests as part of their service</li>
+                <li><strong>Privacy Policy:</strong> <a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement">GitHub Privacy Statement</a></li>
+            </ul>
+            <p><strong>No other third-party services are used.</strong></p>
+        </section>
+
+        <section class="content-section">
+            <h2>Data Security</h2>
+
+            <h3>Local Storage Security</h3>
+            <p>Your data is secured by:</p>
+            <ol>
+                <li><strong>Windows File System Permissions:</strong> Only users with access to your Windows account can access the data</li>
+                <li><strong>No Cloud Storage:</strong> Data is never transmitted to cloud servers</li>
+                <li><strong>No External Database:</strong> All data stored in local JSON and Markdown files</li>
+                <li><strong>Separate Case Folders:</strong> Each case is isolated in its own folder</li>
+            </ol>
+
+            <h3>Recommendations for Enhanced Security</h3>
+            <p>To protect sensitive case data:</p>
+            <ul>
+                <li>✅ Use <strong>Windows BitLocker</strong> or other disk encryption</li>
+                <li>✅ Store cases on <strong>encrypted drives</strong> if handling sensitive information</li>
+                <li>✅ Use <strong>strong Windows user account passwords</strong></li>
+                <li>✅ Enable <strong>Windows Defender</strong> or other antivirus software</li>
+                <li>✅ <strong>Backup your case folders regularly</strong> to prevent data loss</li>
+                <li>✅ Store backups on <strong>encrypted external drives</strong> or secure locations</li>
+            </ul>
+        </section>
+
+        <section class="content-section">
+            <h2>Updates and Data Safety</h2>
+
+            <h3>Non-Destructive Updates</h3>
+            <p>When you install a software update:</p>
+
+            <p><strong>What Gets Updated</strong> (Application Only):</p>
+            <ul>
+                <li>Application executable files (.exe, .dll)</li>
+                <li>Program resources (icons, UI files)</li>
+                <li>Installation directory (e.g., C:\Program Files\Evidence Timeline\)</li>
+            </ul>
+
+            <p><strong>What Is NEVER Touched</strong> (Your Data):</p>
+            <ul>
+                <li>✅ Case folders and all contents</li>
+                <li>✅ Evidence metadata and notes</li>
+                <li>✅ File attachments</li>
+                <li>✅ Application settings in AppData</li>
+                <li>✅ Recent cases list</li>
+            </ul>
+
+            <p><strong>Why It's Safe:</strong></p>
+            <ul>
+                <li>User data is stored separately from the application</li>
+                <li>Updates only replace program files, never data files</li>
+                <li>You can reinstall or downgrade without losing data</li>
+            </ul>
+        </section>
+
+        <section class="content-section">
+            <h2>Your Rights and Control</h2>
+            <p>You have complete control over your data:</p>
+            <ul>
+                <li><strong>Access:</strong> You can access all your data at any time (stored in folders you chose)</li>
+                <li><strong>Modify:</strong> You can edit or update any data using the application</li>
+                <li><strong>Export:</strong> You can copy case folders to share or backup data</li>
+                <li><strong>Delete:</strong> You can delete any or all data at any time</li>
+                <li><strong>Portability:</strong> Case folders are portable - move them to any location or computer</li>
+            </ul>
+        </section>
+
+        <section class="content-section">
+            <h2>Contact Information</h2>
+            <p>For questions about this Privacy Policy or data practices:</p>
+            <ul>
+                <li><strong>GitHub Issues:</strong> <a href="https://github.com/LCRH1883/evidence_timeline/issues">github.com/LCRH1883/evidence_timeline/issues</a></li>
+                <li><strong>Company:</strong> Intagri Technologies LLC</li>
+            </ul>
+        </section>
+
+        <section class="content-section">
+            <h2>Complete Privacy Policy</h2>
+            <p>For the complete, detailed privacy policy including legal compliance, data retention, and professional responsibility information, please see:</p>
+            <p><a href="https://github.com/LCRH1883/evidence_timeline/blob/main/PRIVACY.md">View Complete Privacy Policy on GitHub →</a></p>
+        </section>
+
+        <section class="content-section">
+            <p><strong>Last Updated:</strong> December 1, 2025<br>
+            <strong>Version:</strong> 1.0</p>
+            <p>&copy; 2025 Intagri Technologies LLC. All rights reserved.</p>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Intagri Technologies LLC. All rights reserved.</p>
+        <p>
+            <a href="privacy.html">Privacy Policy</a> |
+            <a href="https://github.com/LCRH1883/evidence_timeline">GitHub</a> |
+            <a href="support.html">Support</a>
+        </p>
+    </footer>
+</body>
+</html>
