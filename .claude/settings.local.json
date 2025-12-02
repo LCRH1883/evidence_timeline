@@ -13,7 +13,8 @@
       "Bash(dotnet publish:*)",
       "Bash(\"C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe\" installer.iss)",
       "Bash(dir:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(copy \"D:\\Projects\\evidence_timeline\\assets\\Logo.png\" \"D:\\Projects\\evidence_timeline\\docs\\website\\Logo.png\")"
     ],
     "deny": [],
     "ask": []
