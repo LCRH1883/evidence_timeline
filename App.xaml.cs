@@ -15,6 +15,8 @@ namespace evidence_timeline
     /// </summary>
     public partial class App : System.Windows.Application
     {
+        private bool _isManualUpdateCheck;
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -31,12 +33,15 @@ namespace evidence_timeline
             AutoUpdater.RemindLaterAt = 7;
 
             // Check for updates from GitHub
-            AutoUpdater.Start("https://raw.githubusercontent.com/LCRH1883/evidence_timeline/main/update.xml");
+            StartUpdateCheck(isManual: false);
 #endif
         }
 
         private void OnCheckForUpdateEvent(UpdateInfoEventArgs args)
         {
+            var isManualCheck = _isManualUpdateCheck;
+            _isManualUpdateCheck = false;
+
             if (args.Error == null)
             {
                 if (args.IsUpdateAvailable)
@@ -44,7 +49,7 @@ namespace evidence_timeline
                     // Show custom update dialog with changelog
                     ShowUpdateDialog(args);
                 }
-                else
+                else if (isManualCheck)
                 {
                     // App is already on the latest version
                     var currentVersion = args.CurrentVersion?.ToString() ?? "Unknown";
@@ -74,6 +79,17 @@ namespace evidence_timeline
                         MessageBoxImage.Error);
                 }
             }
+        }
+
+        private void StartUpdateCheck(bool isManual)
+        {
+            _isManualUpdateCheck = isManual;
+            AutoUpdater.Start("https://raw.githubusercontent.com/LCRH1883/evidence_timeline/main/update.xml");
+        }
+
+        public void StartManualUpdateCheck()
+        {
+            StartUpdateCheck(isManual: true);
         }
 
         private void ShowUpdateDialog(UpdateInfoEventArgs args)

@@ -306,8 +306,15 @@ namespace evidence_timeline
             MessageBox.Show("Update checks are disabled in development builds.\n\nUpdates are only available in the installed Release version.",
                 "Check for Updates", MessageBoxButton.OK, MessageBoxImage.Information);
 #else
-            // Manually trigger update check
-            AutoUpdater.Start("https://raw.githubusercontent.com/LCRH1883/evidence_timeline/main/update.xml");
+            // Manually trigger update check and only show "up to date" if initiated here
+            if (System.Windows.Application.Current is App app)
+            {
+                app.StartManualUpdateCheck();
+            }
+            else
+            {
+                AutoUpdater.Start("https://raw.githubusercontent.com/LCRH1883/evidence_timeline/main/update.xml");
+            }
 #endif
         }
 
@@ -322,7 +329,7 @@ namespace evidence_timeline
 
         private void OnAboutClicked(object sender, RoutedEventArgs e)
         {
-            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.1";
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.1.0";
             var aboutMessage = "Evidence Timeline\n" +
                              $"Version {version}\n\n" +
                              "Developed by Intagri Technologies LLC\n\n" +

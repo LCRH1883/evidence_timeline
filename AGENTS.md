@@ -38,12 +38,12 @@ When creating a new version release, follow these steps **in order**:
 #### 1. Update Version Numbers
 - [ ] **CHANGELOG.md**: Add new version section at the top with date and categorize changes (Added, Changed, Fixed, Removed, Security)
 - [ ] **CHANGELOG.md**: Update "Current Version" in the Version Tracking section
-- [ ] **CHANGELOG.md**: Add version link at the bottom (e.g., `[1.0.2]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.0.2`)
-- [ ] **evidence_timeline.csproj**: Update `Version`, `AssemblyVersion`, and `FileVersion` (e.g., `1.0.2` and `1.0.2.0`)
-- [ ] **installer.iss**: Update `MyAppVersion` define (e.g., `#define MyAppVersion "1.0.2"`)
-- [ ] **update.xml**: Update `<version>` tag (e.g., `1.0.2`)
-- [ ] **update.xml**: Update `<url>` tag with new download URL (e.g., `https://github.com/LCRH1883/evidence_timeline/releases/download/v1.0.2/EvidenceTimeline-Setup-v1.0.2.exe`)
-- [ ] **update.xml**: Update `<changelog>` tag with new release URL (e.g., `https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.0.2`)
+- [ ] **CHANGELOG.md**: Add version link at the bottom (e.g., `[1.1.0]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.0`)
+- [ ] **evidence_timeline.csproj**: Update `Version`, `AssemblyVersion`, and `FileVersion` (e.g., `1.1.0` and `1.1.0.0`)
+- [ ] **installer.iss**: Update `MyAppVersion` define (e.g., `#define MyAppVersion "1.1.0"`)
+- [ ] **update.xml**: Update `<version>` tag (e.g., `1.1.0`)
+- [ ] **update.xml**: Update `<url>` tag with new download URL (e.g., `https://github.com/LCRH1883/evidence_timeline/releases/download/v1.1.0/EvidenceTimeline-Setup-v1.1.0.exe`)
+- [ ] **update.xml**: Update `<changelog>` tag with new release URL (e.g., `https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.0`)
 
 #### 2. Build the Release
 - [ ] Clean previous builds: `dotnet clean`
@@ -54,14 +54,14 @@ When creating a new version release, follow these steps **in order**:
 #### 3. Commit Changes
 - [ ] Commit all version changes: `git add CHANGELOG.md evidence_timeline.csproj installer.iss update.xml`
 - [ ] Create commit: `git commit -m "Bump version to {version}"`
-- [ ] Tag release: `git tag v{version}` (e.g., `git tag v1.0.2`)
+- [ ] Tag release: `git tag v{version}` (e.g., `git tag v1.1.0`)
 - [ ] Push changes: `git push origin main`
 - [ ] Push tags: `git push origin v{version}`
 
 #### 4. Create GitHub Release
 - [ ] Go to: `https://github.com/LCRH1883/evidence_timeline/releases/new`
 - [ ] Select tag: `v{version}` (should exist from previous step)
-- [ ] Release title: `Evidence Timeline v{version}` (e.g., `Evidence Timeline v1.0.2`)
+- [ ] Release title: `Evidence Timeline v{version}` (e.g., `Evidence Timeline v1.1.0`)
 - [ ] Description: Copy changelog content from CHANGELOG.md for this version
 - [ ] Upload installer: Attach `installer_output\EvidenceTimeline-Setup-v{version}.exe`
 - [ ] Verify installer filename matches URL in update.xml exactly
@@ -75,10 +75,10 @@ When creating a new version release, follow these steps **in order**:
 - [ ] Test the update process (optional but recommended)
 
 ### Important Notes
-- **Installer naming scheme:** `EvidenceTimeline-Setup-v{version}.exe` (e.g., `EvidenceTimeline-Setup-v1.0.2.exe`)
+- **Installer naming scheme:** `EvidenceTimeline-Setup-v{version}.exe` (e.g., `EvidenceTimeline-Setup-v1.1.0.exe`)
 - **Installer output location:** `D:\Projects\evidence_timeline\installer_output\`
-- **Version format:** Use semantic versioning `MAJOR.MINOR.PATCH` (e.g., `1.0.2`)
-- **Git tag format:** Always prefix with `v` (e.g., `v1.0.2`)
+- **Version format:** Use semantic versioning `MAJOR.MINOR.PATCH` (e.g., `1.1.0`)
+- **Git tag format:** Always prefix with `v` (e.g., `v1.1.0`)
 - **Auto-update requires:** The `update.xml` file MUST be in the `main` branch on GitHub and publicly accessible
 - **Installer URL must match:** The filename in the GitHub release must exactly match the URL in `update.xml`
 
