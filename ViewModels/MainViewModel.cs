@@ -63,6 +63,7 @@ namespace evidence_timeline.ViewModels
             SaveCaseCommand = new AsyncRelayCommand(SaveCaseAsync, () => CurrentCase != null);
             NewEvidenceCommand = new AsyncRelayCommand(NewEvidenceAsync, () => CurrentCase != null);
             OpenEvidenceWindowCommand = new RelayCommand(OpenEvidenceWindow, () => SelectedSummary != null);
+            OpenRecentCaseCommand = new RelayCommand<string>(path => _ = OpenCaseFromPathAsync(path));
             DeleteEvidenceCommand = new AsyncRelayCommand(DeleteEvidenceAsync, () => SelectedSummary != null && CurrentCase != null);
             RemoveRecentCaseCommand = new RelayCommand<string>(RemoveRecentCase);
             AddAttachmentCommand = new AsyncRelayCommand(AddAttachmentAsync, () => SelectedEvidenceDetail != null && CurrentCase != null);
@@ -415,6 +416,7 @@ namespace evidence_timeline.ViewModels
         public ICommand SaveCaseCommand { get; }
         public ICommand NewEvidenceCommand { get; }
         public ICommand OpenEvidenceWindowCommand { get; }
+        public ICommand OpenRecentCaseCommand { get; }
         public ICommand DeleteEvidenceCommand { get; }
         public ICommand RemoveRecentCaseCommand { get; }
         public ICommand AddAttachmentCommand { get; }

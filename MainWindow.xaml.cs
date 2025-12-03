@@ -337,5 +337,25 @@ namespace evidence_timeline
 
             MessageBox.Show(aboutMessage, "About Evidence Timeline", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
+        private async void OnOpenRecentClicked(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not MainViewModel vm)
+            {
+                return;
+            }
+
+            var dialog = new OpenRecentWindow
+            {
+                Owner = this,
+                DataContext = vm
+            };
+
+            var result = dialog.ShowDialog();
+            if (result == true && !string.IsNullOrWhiteSpace(dialog.SelectedPath))
+            {
+                await vm.OpenCaseFromPathAsync(dialog.SelectedPath);
+            }
+        }
     }
 }

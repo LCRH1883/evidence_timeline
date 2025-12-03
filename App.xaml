@@ -5,6 +5,7 @@
              xmlns:adonisUi="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
              xmlns:System="clr-namespace:System;assembly=mscorlib"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:views="clr-namespace:evidence_timeline.Views"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
@@ -39,6 +40,7 @@
             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#111111" />
             <SolidColorBrush x:Key="MenuItemHoverBackground" Color="#e9ecef" />
             <SolidColorBrush x:Key="MenuItemHoverForeground" Color="#212529" />
+            <views:PathToNameConverter x:Key="PathToNameConverter" />
 
             <!-- Converters -->
             <BooleanToVisibilityConverter x:Key="BoolToVis" />
