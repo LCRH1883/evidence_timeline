@@ -103,7 +103,18 @@ namespace evidence_timeline.Services
             var existingFolder = await FindEvidenceFolderByIdAsync(evidenceRoot, evidenceId);
             if (!string.IsNullOrWhiteSpace(existingFolder) && Directory.Exists(existingFolder))
             {
-                Directory.Delete(existingFolder, true);
+                PrepareDirectoryForDelete(existingFolder);
+
+                try
+                {
+                    Directory.Delete(existingFolder, true);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // If deletion fails due to attributes/locks, try one more time after clearing attributes.
+                    PrepareDirectoryForDelete(existingFolder);
+                    Directory.Delete(existingFolder, true);
+                }
             }
         }
 
@@ -159,6 +170,43 @@ namespace evidence_timeline.Services
             }
 
             return null;
+        }
+
+        private static void PrepareDirectoryForDelete(string path)
+        {
+            // Clear read-only/hidden attributes that can block deletion (e.g., OneDrive/sync paths).
+            foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    File.SetAttributes(file, FileAttributes.Normal);
+                }
+                catch
+                {
+                    // Ignore and let delete attempt surface any remaining errors.
+                }
+            }
+
+            foreach (var dir in Directory.EnumerateDirectories(path, "*", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    File.SetAttributes(dir, FileAttributes.Normal);
+                }
+                catch
+                {
+                    // Best effort.
+                }
+            }
+
+            try
+            {
+                File.SetAttributes(path, FileAttributes.Normal);
+            }
+            catch
+            {
+                // Best effort on the root directory.
+            }
         }
 
         private static async Task SaveEvidenceFileAsync(string folderPath, Evidence evidence)

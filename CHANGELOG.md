@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.0] - 2025-12-01
+## [1.1.1] - 2025-12-01
 
 ### Added
 - Changelog viewer window accessible from Help menu
@@ -59,11 +59,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version Tracking
 
-**Current Version:** 1.1.0
+**Current Version:** 1.1.1
 **Repository:** https://github.com/LCRH1883/evidence_timeline
 
 ### Version History
-- **1.1.0** - Enhanced update system with changelog integration
+- **1.1.1** - Enhanced update system with changelog integration
 - **1.0.1** - Auto-update and installer release
 - **1.0.0** - Initial public release
 
@@ -85,6 +85,6 @@ When releasing a new version:
 4. Update the "Current Version" in the Version Tracking section
 5. Commit the changelog with the version bump
 
-[1.1.0]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.0
+[1.1.1]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.1
 [1.0.1]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.0.1
 [1.0.0]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.0.0

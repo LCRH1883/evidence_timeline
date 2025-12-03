@@ -1,6 +1,6 @@
 # Evidence Timeline - User Manual
 
-**Version 1.1.0**
+**Version 1.1.1**
 **Developed by Intagri Technologies LLC**
 **© 2025 Intagri Technologies LLC. All rights reserved.**
 
