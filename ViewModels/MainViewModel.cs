@@ -63,6 +63,9 @@ namespace evidence_timeline.ViewModels
             SaveCaseCommand = new AsyncRelayCommand(SaveCaseAsync, () => CurrentCase != null);
             NewEvidenceCommand = new AsyncRelayCommand(NewEvidenceAsync, () => CurrentCase != null);
             OpenEvidenceWindowCommand = new RelayCommand(OpenEvidenceWindow, () => SelectedSummary != null);
+            OpenRecentCaseCommand = new RelayCommand<string>(path => _ = OpenCaseFromPathAsync(path));
+            DeleteEvidenceCommand = new AsyncRelayCommand(DeleteEvidenceAsync, () => SelectedSummary != null && CurrentCase != null);
+            RemoveRecentCaseCommand = new RelayCommand<string>(RemoveRecentCase);
             AddAttachmentCommand = new AsyncRelayCommand(AddAttachmentAsync, () => SelectedEvidenceDetail != null && CurrentCase != null);
             OpenAttachmentCommand = new RelayCommand<AttachmentInfo>(attachment => _ = OpenAttachmentAsync(attachment));
             OpenAttachmentFolderCommand = new RelayCommand<AttachmentInfo>(attachment => _ = OpenAttachmentFolderAsync(attachment));
@@ -283,6 +286,20 @@ namespace evidence_timeline.ViewModels
 
         public IReadOnlyList<string> RecentCasePaths => (_appSettings?.RecentCases ?? new List<string>()).ToArray();
 
+        private void RemoveRecentCase(string? path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            _appSettings ??= new AppSettings();
+            _appSettings.RecentCases.RemoveAll(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase));
+            _ = SaveAppSettingsAsync();
+
+            OnPropertyChanged(nameof(RecentCasePaths));
+        }
+
         public EvidenceDateMode SelectedDateMode
         {
             get => SelectedEvidenceDetail?.DateInfo.Mode ?? EvidenceDateMode.Exact;
@@ -399,6 +416,9 @@ namespace evidence_timeline.ViewModels
         public ICommand SaveCaseCommand { get; }
         public ICommand NewEvidenceCommand { get; }
         public ICommand OpenEvidenceWindowCommand { get; }
+        public ICommand OpenRecentCaseCommand { get; }
+        public ICommand DeleteEvidenceCommand { get; }
+        public ICommand RemoveRecentCaseCommand { get; }
         public ICommand AddAttachmentCommand { get; }
         public ICommand OpenAttachmentCommand { get; }
         public ICommand OpenAttachmentFolderCommand { get; }
@@ -841,6 +861,7 @@ namespace evidence_timeline.ViewModels
             if (result == true)
             {
                 _appSettings = vm.ToAppSettings();
+                ApplyThemePreference();
                 _ = SaveAppSettingsAsync();
             }
         }
@@ -1109,6 +1130,49 @@ namespace evidence_timeline.ViewModels
             TryOpenEvidenceWindow(SelectedSummary.Id, WpfApp.Current?.MainWindow);
         }
 
+        private async Task DeleteEvidenceAsync()
+        {
+            if (CurrentCase == null || SelectedSummary == null)
+            {
+                return;
+            }
+
+            var label = $"#{SelectedSummary.EvidenceNumber} {SelectedSummary.Title}".Trim();
+            var confirm = MessageBox.Show(
+                $"Are you sure you want to delete evidence {label}? This cannot be undone.",
+                "Delete Evidence",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                await _evidenceStorage.DeleteEvidenceAsync(CurrentCase, SelectedSummary.Id);
+
+                _allEvidenceSummaries.RemoveAll(s => string.Equals(s.Id, SelectedSummary.Id, StringComparison.OrdinalIgnoreCase));
+                var displayItem = EvidenceList.FirstOrDefault(s => string.Equals(s.Id, SelectedSummary.Id, StringComparison.OrdinalIgnoreCase));
+                if (displayItem != null)
+                {
+                    EvidenceList.Remove(displayItem);
+                }
+
+                SelectedSummary = EvidenceList.FirstOrDefault();
+                SelectedEvidenceDetail = null;
+                _loadedEvidenceSnapshot = null;
+                _loadedNotesSnapshot = string.Empty;
+
+                RaiseCommandStates();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Unable to delete evidence: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void RaiseCommandStates()
         {
             if (NewEvidenceCommand is AsyncRelayCommand asyncNewEvidence)
@@ -1119,6 +1183,11 @@ namespace evidence_timeline.ViewModels
             if (OpenEvidenceWindowCommand is RelayCommand relayOpenEvidence)
             {
                 relayOpenEvidence.RaiseCanExecuteChanged();
+            }
+
+            if (DeleteEvidenceCommand is AsyncRelayCommand asyncDeleteEvidence)
+            {
+                asyncDeleteEvidence.RaiseCanExecuteChanged();
             }
 
             if (SaveNotesCommand is AsyncRelayCommand asyncSaveNotes)
@@ -1694,6 +1763,7 @@ namespace evidence_timeline.ViewModels
                     var settings = await JsonHelper.LoadAsync<AppSettings>(path);
                     _appSettings = settings ?? new AppSettings();
                 }
+                ApplyThemePreference();
             }
             catch
             {
@@ -1711,6 +1781,21 @@ namespace evidence_timeline.ViewModels
             }
             catch
             {
+            }
+        }
+
+        private void ApplyThemePreference()
+        {
+            try
+            {
+                if (WpfApp.Current is App app)
+                {
+                    app.ApplyTheme(_appSettings?.Theme);
+                }
+            }
+            catch
+            {
+                // Theme application is best-effort; ignore failures to keep startup resilient.
             }
         }
 

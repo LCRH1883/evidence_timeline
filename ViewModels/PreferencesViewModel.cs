@@ -14,6 +14,7 @@ namespace evidence_timeline.ViewModels
             RecentCases = new ObservableCollection<string>(appSettings.RecentCases);
 
             ClearRecentCasesCommand = new RelayCommand(ClearRecentCases, () => RecentCases.Any());
+            RemoveRecentCaseCommand = new RelayCommand<string>(RemoveRecentCase);
         }
 
         public ObservableCollection<string> ThemeOptions { get; }
@@ -27,6 +28,23 @@ namespace evidence_timeline.ViewModels
         }
 
         public ICommand ClearRecentCasesCommand { get; }
+        public ICommand RemoveRecentCaseCommand { get; }
+
+        private void RemoveRecentCase(string? path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            RecentCases.Remove(path);
+            if (ClearRecentCasesCommand is RelayCommand relay)
+            {
+                relay.RaiseCanExecuteChanged();
+            }
+
+            OnPropertyChanged(nameof(RecentCases));
+        }
 
         private void ClearRecentCases()
         {

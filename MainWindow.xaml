@@ -31,6 +31,7 @@
             <MenuItem Header="_File">
                 <MenuItem Header="_New Case" Command="{Binding CreateCaseCommand}" />
                 <MenuItem Header="_Open Case" Command="{Binding OpenCaseCommand}" />
+                <MenuItem Header="Open _Recent..." Click="OnOpenRecentClicked" />
                 <MenuItem Header="_Save Case" Command="{Binding SaveCaseCommand}" />
                 <Separator />
                 <MenuItem Header="E_xit" IsEnabled="False" />
@@ -92,8 +93,8 @@
 
         <!-- Bottom status bar -->
         <Border DockPanel.Dock="Bottom"
-                Background="#f8f9fa"
-                BorderBrush="#dee2e6"
+                Background="{DynamicResource BackgroundLight}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0 1 0 0"
                 Padding="8 4">
             <DockPanel>
@@ -197,8 +198,8 @@
 
                     <!-- Compact filter bar -->
                     <Border Grid.Row="1"
-                            Background="{StaticResource BackgroundLight}"
-                            BorderBrush="{StaticResource BorderBrush}"
+                            Background="{DynamicResource BackgroundLight}"
+                            BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="0 1"
                             Padding="4 2">
                         <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -247,7 +248,7 @@
                             <!-- Separator -->
                             <Border Width="1"
                                     Height="24"
-                                    Background="#dee2e6"
+                                    Background="{DynamicResource BorderBrush}"
                                     Margin="0 0 12 0" />
 
                             <!-- Action buttons -->
@@ -255,16 +256,27 @@
                                     Command="{Binding NewEvidenceCommand}"
                                     ToolTip="New Evidence"
                                     Margin="0 0 6 0">
-                                <iconPacks:PackIconBootstrapIcons Kind="FileEarmarkPlus"
-                                                                  Width="12"
-                                                                  Height="12" />
+                                <iconPacks:PackIconMaterial Kind="PlusBoxMultipleOutline"
+                                                            Width="14"
+                                                            Height="14"
+                                                            Foreground="{DynamicResource IconForeground}" />
                             </Button>
                             <Button Style="{StaticResource IconButton}"
                                     Command="{Binding OpenEvidenceWindowCommand}"
                                     ToolTip="Open Evidence">
-                                <iconPacks:PackIconBootstrapIcons Kind="Folder2Open"
-                                                                  Width="12"
-                                                                  Height="12" />
+                                <iconPacks:PackIconMaterial Kind="FolderOpenOutline"
+                                                            Width="14"
+                                                            Height="14"
+                                                            Foreground="{DynamicResource IconForeground}" />
+                            </Button>
+                            <Button Style="{StaticResource IconButton}"
+                                    Command="{Binding DeleteEvidenceCommand}"
+                                    ToolTip="Delete Evidence"
+                                    Margin="6 0 0 0">
+                                <iconPacks:PackIconMaterial Kind="DeleteForeverOutline"
+                                                            Width="14"
+                                                            Height="14"
+                                                            Foreground="{DynamicResource IconForeground}" />
                             </Button>
                         </WrapPanel>
                     </Border>
@@ -276,6 +288,12 @@
                               Margin="8"
                               SelectionMode="Single"
                               MouseDoubleClick="OnEvidenceRowDoubleClick">
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Open" Command="{Binding OpenEvidenceWindowCommand}" />
+                                <MenuItem Header="Delete" Command="{Binding DeleteEvidenceCommand}" />
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#"
                                                 Width="60"
@@ -299,22 +317,22 @@
                 <GridSplitter Grid.Column="1"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch"
-                              Background="#d1d5db"
+                              Background="{DynamicResource BorderBrush}"
                               ResizeDirection="Columns"
                               ResizeBehavior="PreviousAndNext"
                               ShowsPreview="True"
                               Visibility="{Binding IsRightPaneVisible, Converter={StaticResource BoolToVis}}" />
 
                 <Border Grid.Column="2"
-                        Background="White"
-                        BorderBrush="#dee2e6"
+                        Background="{DynamicResource SurfaceBackground}"
+                        BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1 0 0 0"
                         Visibility="{Binding IsRightPaneVisible, Converter={StaticResource BoolToVis}}">
                     <DockPanel>
                         <!-- Compact header bar -->
                         <Border DockPanel.Dock="Top"
-                                Background="{StaticResource BackgroundLight}"
-                                BorderBrush="{StaticResource BorderBrush}"
+                                Background="{DynamicResource BackgroundLight}"
+                                BorderBrush="{DynamicResource BorderBrush}"
                                 BorderThickness="0 0 0 1"
                                 Padding="4 2">
                             <DockPanel VerticalAlignment="Center">
@@ -330,15 +348,15 @@
                                     <TextBlock x:Name="MetadataSaveStatusText"
                                                Text="All changes saved"
                                                FontSize="8"
-                                               Foreground="Gray"
+                                               Foreground="{DynamicResource TextSecondary}"
                                                VerticalAlignment="Center"
                                                Margin="4 0 4 0" />
                                     <Button Command="{Binding SaveMetadataCommand}"
                                             Style="{StaticResource IconButton}"
                                             ToolTip="Save metadata">
-                                        <iconPacks:PackIconBootstrapIcons Kind="Floppy"
-                                                                          Width="12"
-                                                                          Height="12" />
+                                <iconPacks:PackIconMaterial Kind="ContentSaveOutline"
+                                                            Width="14"
+                                                            Height="14" />
                                     </Button>
                                 </StackPanel>
                             </DockPanel>
@@ -472,7 +490,7 @@
                           Grid.ColumnSpan="3"
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Stretch"
-                          Background="#d1d5db"
+                          Background="{DynamicResource BorderBrush}"
                           ResizeDirection="Rows"
                           ResizeBehavior="PreviousAndNext"
                           ShowsPreview="True"
@@ -481,7 +499,7 @@
             <!-- Bottom pane with tabs spanning center/right -->
             <Border Grid.Row="2"
                     Grid.ColumnSpan="3"
-                    BorderBrush="#dee2e6"
+                    BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="0 1 0 0"
                     Visibility="{Binding IsBottomPaneVisible, Converter={StaticResource BoolToVis}}">
                 <TabControl Margin="0">
@@ -490,8 +508,8 @@
                         <DockPanel>
                             <!-- Compact header bar with formatting toolbar -->
                             <Border DockPanel.Dock="Top"
-                                    Background="#f8f9fa"
-                                    BorderBrush="#dee2e6"
+                                    Background="{DynamicResource BackgroundLight}"
+                                    BorderBrush="{DynamicResource BorderBrush}"
                                     BorderThickness="0 0 0 1"
                                     Padding="8 4">
                                 <DockPanel>
@@ -573,15 +591,15 @@
                                         <TextBlock x:Name="NotesSaveStatusText"
                                                    Text="All changes saved"
                                                    FontSize="8"
-                                                   Foreground="Gray"
+                                                   Foreground="{DynamicResource TextSecondary}"
                                                    VerticalAlignment="Center"
                                                    Margin="0 0 4 0" />
                                         <Button Command="{Binding SaveNotesCommand}"
                                                 Style="{StaticResource IconButton}"
                                                 ToolTip="Save notes">
-                                            <iconPacks:PackIconBootstrapIcons Kind="Floppy"
-                                                                              Width="10"
-                                                                              Height="10" />
+                                            <iconPacks:PackIconMaterial Kind="ContentSaveOutline"
+                                                                        Width="12"
+                                                                        Height="12" />
                                         </Button>
                                     </StackPanel>
                                 </DockPanel>
@@ -589,14 +607,14 @@
 
                             <!-- Rich text box fills remaining space with border -->
                             <Border Margin="4"
-                                    BorderBrush="#adb5bd"
+                                    BorderBrush="{DynamicResource BorderBrush}"
                                     BorderThickness="1"
-                                    Background="White">
+                                    Background="{DynamicResource SurfaceBackground}">
                                 <RichTextBox x:Name="NotesRichTextBox"
                                              AcceptsReturn="True"
                                              VerticalScrollBarVisibility="Auto"
                                              BorderThickness="0"
-                                             Background="White"
+                                             Background="{DynamicResource SurfaceBackground}"
                                              Loaded="OnNotesRichTextBoxLoaded"
                                              TextChanged="OnNotesTextChanged" />
                             </Border>

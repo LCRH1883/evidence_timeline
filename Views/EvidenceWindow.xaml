@@ -16,8 +16,8 @@
     <DockPanel>
         <!-- Custom title bar -->
         <Border DockPanel.Dock="Top"
-                Background="{StaticResource BackgroundLight}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource BackgroundLight}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0 0 0 1"
                 Padding="4 2"
                 MouseLeftButtonDown="OnTitleBarMouseDown">
@@ -68,7 +68,7 @@
             <TextBlock x:Name="SaveStatusText"
                        Text="All changes saved"
                        FontSize="11"
-                       Foreground="Gray"
+                       Foreground="{DynamicResource TextSecondary}"
                        VerticalAlignment="Center"
                        Margin="8 0 0 0" />
         </StackPanel>
@@ -85,15 +85,15 @@
 
             <!-- Metadata -->
             <Border Grid.Column="1"
-                    BorderBrush="#dee2e6"
+                    BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="1"
                     Margin="8"
-                    Background="White">
+                    Background="{DynamicResource SurfaceBackground}">
                 <DockPanel>
                     <!-- Metadata header -->
                     <Border DockPanel.Dock="Top"
-                            Background="#f8f9fa"
-                            BorderBrush="#dee2e6"
+                            Background="{DynamicResource BackgroundLight}"
+                            BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="0 0 0 1"
                             Padding="8 4">
                         <TextBlock Text="Metadata"
@@ -210,15 +210,15 @@
 
             <!-- Notes -->
             <Border Grid.Column="0" Grid.RowSpan="2"
-                    BorderBrush="#dee2e6"
+                    BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="1"
                     Margin="8"
-                    Background="White">
+                    Background="{DynamicResource SurfaceBackground}">
                 <DockPanel>
                     <!-- Notes header with formatting toolbar -->
                     <Border DockPanel.Dock="Top"
-                            Background="#f8f9fa"
-                            BorderBrush="#dee2e6"
+                            Background="{DynamicResource BackgroundLight}"
+                            BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="0 0 0 1"
                             Padding="8 4">
                         <DockPanel>
@@ -307,7 +307,7 @@
                                 <TextBlock x:Name="NotesSaveStatusText"
                                            Text="All changes saved"
                                            FontSize="10"
-                                           Foreground="Gray"
+                                           Foreground="{DynamicResource TextSecondary}"
                                            VerticalAlignment="Center"
                                            Margin="0 0 8 0" />
                                 <Button Width="24"
@@ -329,7 +329,7 @@
                                  VerticalScrollBarVisibility="Auto"
                                  BorderThickness="0"
                                  Padding="8"
-                                 Background="White"
+                                 Background="{DynamicResource SurfaceBackground}"
                                  Loaded="OnNotesRichTextBoxLoaded"
                                  TextChanged="OnNotesTextChanged" />
                 </DockPanel>
@@ -337,15 +337,15 @@
 
             <!-- Attachments -->
             <Border Grid.Column="1" Grid.Row="1"
-                    BorderBrush="#dee2e6"
+                    BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="1"
                     Margin="8"
-                    Background="White">
+                    Background="{DynamicResource SurfaceBackground}">
                 <DockPanel>
                     <!-- Attachments header -->
                     <Border DockPanel.Dock="Top"
-                            Background="#f8f9fa"
-                            BorderBrush="#dee2e6"
+                            Background="{DynamicResource BackgroundLight}"
+                            BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="0 0 0 1"
                             Padding="8 4">
                         <DockPanel>
@@ -367,11 +367,11 @@
                             <ItemsControl ItemsSource="{Binding Evidence.Attachments}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="#dee2e6"
+                                        <Border BorderBrush="{DynamicResource BorderBrush}"
                                                 BorderThickness="1"
                                                 Padding="6"
                                                 Margin="0 0 0 6"
-                                                Background="#f8f9fa">
+                                                Background="{DynamicResource BackgroundLight}">
                                             <DockPanel>
                                                 <StackPanel Orientation="Horizontal"
                                                             DockPanel.Dock="Right"

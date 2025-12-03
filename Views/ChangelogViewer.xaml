@@ -23,9 +23,9 @@
 
         <!-- Changelog content -->
         <Border Grid.Row="1"
-                BorderBrush="#dee2e6"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="1"
-                Background="White">
+                Background="{DynamicResource SurfaceBackground}">
             <ScrollViewer VerticalScrollBarVisibility="Auto"
                           Padding="12">
                 <TextBlock x:Name="ChangelogTextBlock"
