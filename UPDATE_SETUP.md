@@ -97,8 +97,8 @@ When releasing a new version:
 
 3. **Create GitHub Release:**
    - Go to your repo → Releases → Create new release
-   - Tag: `v1.1.0` (increment version number)
-   - Title: `Evidence Timeline v1.1.0`
+   - Tag: `v1.1.1` (increment version number)
+   - Title: `Evidence Timeline v1.1.1`
    - Description: Changelog/release notes
    - Attach your installer/executable file
 
@@ -106,9 +106,9 @@ When releasing a new version:
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
    <item>
-       <version>1.1.0</version>
-       <url>https://github.com/LCRH1883/evidence_timeline/releases/download/v1.1.0/EvidenceTimeline-Setup-v1.1.0.exe</url>
-       <changelog>https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.0</changelog>
+       <version>1.1.1</version>
+       <url>https://github.com/LCRH1883/evidence_timeline/releases/download/v1.1.1/EvidenceTimeline-Setup-v1.1.1.exe</url>
+       <changelog>https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.1</changelog>
        <mandatory>false</mandatory>
    </item>
    ```

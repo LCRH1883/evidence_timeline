@@ -318,7 +318,7 @@ Output will be in `bin\Release\net10.0-windows\win-x64\publish\`
 
 Update the version in `update.xml`:
 ```xml
-<version>1.1.0</version>
+<version>1.1.1</version>
 ```
 
 ### 2. Build Release Version
@@ -338,10 +338,10 @@ Use an installer tool such as:
 
 1. Go to: https://github.com/LCRH1883/evidence_timeline/releases
 2. Click **"Create a new release"**
-3. Tag version: `v1.1.0` (must match update.xml)
-4. Release title: `Evidence Timeline v1.1.0`
+3. Tag version: `v1.1.1` (must match update.xml)
+4. Release title: `Evidence Timeline v1.1.1`
 5. Add release notes describing changes
-6. Attach the installer file (e.g., `EvidenceTimeline-Setup-v1.1.0.exe`)
+6. Attach the installer file (e.g., `EvidenceTimeline-Setup-v1.1.1.exe`)
 7. Click **"Publish release"**
 
 ### 5. Update update.xml
@@ -351,9 +351,9 @@ Update `update.xml` with the new release information:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <item>
-    <version>1.1.0</version>
-    <url>https://github.com/LCRH1883/evidence_timeline/releases/download/v1.1.0/EvidenceTimeline-Setup-v1.1.0.exe</url>
-    <changelog>https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.0</changelog>
+    <version>1.1.1</version>
+    <url>https://github.com/LCRH1883/evidence_timeline/releases/download/v1.1.1/EvidenceTimeline-Setup-v1.1.1.exe</url>
+    <changelog>https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.1</changelog>
     <mandatory>false</mandatory>
 </item>
 ```
@@ -362,7 +362,7 @@ Update `update.xml` with the new release information:
 
 ```bash
 git add update.xml
-git commit -m "Release version 1.1.0"
+git commit -m "Release version 1.1.1"
 git push origin main
 ```
 
@@ -435,7 +435,7 @@ For support inquiries, please contact:
 
 See **[CHANGELOG.md](CHANGELOG.md)** for complete version history.
 
-### v1.1.0 (Latest - December 2025)
+### v1.1.1 (Latest - December 2025)
 - Added changelog viewer window
 - Enhanced update notification with inline changelog preview
 - "Already up-to-date" message when no updates available

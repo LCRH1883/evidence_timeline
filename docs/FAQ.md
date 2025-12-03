@@ -1,7 +1,7 @@
 # Frequently Asked Questions (FAQ)
 
 **Evidence Timeline**
-**Version 1.1.0**
+**Version 1.1.1**
 **© 2025 Intagri Technologies LLC**
 
 ---
