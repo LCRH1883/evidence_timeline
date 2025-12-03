@@ -69,8 +69,7 @@ namespace evidence_timeline
                 {
                     Owner = this
                 };
-                start.LoadRecentCases(vm.RecentCasePaths);
-
+                start.DataContext = vm;
                 var result = start.ShowDialog();
                 if (result == true)
                 {

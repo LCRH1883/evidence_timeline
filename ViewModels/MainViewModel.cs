@@ -64,6 +64,7 @@ namespace evidence_timeline.ViewModels
             NewEvidenceCommand = new AsyncRelayCommand(NewEvidenceAsync, () => CurrentCase != null);
             OpenEvidenceWindowCommand = new RelayCommand(OpenEvidenceWindow, () => SelectedSummary != null);
             DeleteEvidenceCommand = new AsyncRelayCommand(DeleteEvidenceAsync, () => SelectedSummary != null && CurrentCase != null);
+            RemoveRecentCaseCommand = new RelayCommand<string>(RemoveRecentCase);
             AddAttachmentCommand = new AsyncRelayCommand(AddAttachmentAsync, () => SelectedEvidenceDetail != null && CurrentCase != null);
             OpenAttachmentCommand = new RelayCommand<AttachmentInfo>(attachment => _ = OpenAttachmentAsync(attachment));
             OpenAttachmentFolderCommand = new RelayCommand<AttachmentInfo>(attachment => _ = OpenAttachmentFolderAsync(attachment));
@@ -284,6 +285,20 @@ namespace evidence_timeline.ViewModels
 
         public IReadOnlyList<string> RecentCasePaths => (_appSettings?.RecentCases ?? new List<string>()).ToArray();
 
+        private void RemoveRecentCase(string? path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            _appSettings ??= new AppSettings();
+            _appSettings.RecentCases.RemoveAll(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase));
+            _ = SaveAppSettingsAsync();
+
+            OnPropertyChanged(nameof(RecentCasePaths));
+        }
+
         public EvidenceDateMode SelectedDateMode
         {
             get => SelectedEvidenceDetail?.DateInfo.Mode ?? EvidenceDateMode.Exact;
@@ -401,6 +416,7 @@ namespace evidence_timeline.ViewModels
         public ICommand NewEvidenceCommand { get; }
         public ICommand OpenEvidenceWindowCommand { get; }
         public ICommand DeleteEvidenceCommand { get; }
+        public ICommand RemoveRecentCaseCommand { get; }
         public ICommand AddAttachmentCommand { get; }
         public ICommand OpenAttachmentCommand { get; }
         public ICommand OpenAttachmentFolderCommand { get; }
