@@ -24,8 +24,8 @@
 
         <!-- App Branding Header -->
         <Border Grid.Row="0"
-                Background="#f8f9fa"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource BackgroundLight}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0 0 0 1"
                 Padding="12 16"
                 Margin="-8 -8 -8 12">
@@ -55,7 +55,7 @@
         </StackPanel>
 
         <Border Grid.Row="2"
-                BorderBrush="{StaticResource BorderBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="1"
                 Padding="8"
                 CornerRadius="4">
@@ -100,7 +100,18 @@
                     Width="120"
                     Margin="0 0 3 0"
                     IsEnabled="{Binding SelectedItem, ElementName=RecentCasesList, Converter={StaticResource NullToBoolConverter}}"
-                    Click="OnOpenClicked" />
+                    Click="OnOpenClicked">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Style.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+                                <Setter Property="Opacity" Value="0.6" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
             <Button Content="Browse..."
                     Width="90"
                     Click="OnBrowseClicked" />
@@ -110,7 +121,7 @@
         <TextBlock Grid.Row="4"
                    Text="© 2025 Intagri Technologies LLC. All rights reserved."
                    FontSize="8"
-                   Foreground="{StaticResource TextSecondary}"
+                   Foreground="{DynamicResource TextSecondary}"
                    HorizontalAlignment="Center"
                    Margin="0 8 0 0" />
     </Grid>
