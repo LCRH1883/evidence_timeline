@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.IO;
 using System.Windows.Threading;
 using AdonisUI.Controls;
 using AutoUpdaterDotNET;
@@ -102,6 +103,42 @@ namespace evidence_timeline
 
             var evidenceId = vm.SelectedSummary.Id;
             vm.TryOpenEvidenceWindow(evidenceId, this);
+        }
+
+        private void OnAttachmentsDragOver(object sender, System.Windows.DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop))
+            {
+                e.Effects = System.Windows.DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effects = System.Windows.DragDropEffects.None;
+            }
+
+            e.Handled = true;
+        }
+
+        private async void OnAttachmentsDrop(object sender, System.Windows.DragEventArgs e)
+        {
+            if (DataContext is not MainViewModel vm)
+            {
+                return;
+            }
+
+            if (!e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop) || e.Data.GetData(System.Windows.DataFormats.FileDrop) is not string[] files)
+            {
+                return;
+            }
+
+            var existingFiles = files.Where(File.Exists).ToList();
+            if (existingFiles.Count == 0)
+            {
+                return;
+            }
+
+            e.Handled = true;
+            await vm.AddAttachmentsFromPathsAsync(existingFiles);
         }
 
         private void OnMetadataEnterKey(object sender, System.Windows.Input.KeyEventArgs e)

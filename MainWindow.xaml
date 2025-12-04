@@ -440,45 +440,50 @@
                                      VerticalScrollBarVisibility="Auto"
                                      Height="60" />
                             <TextBlock Text="Attachments" Style="{StaticResource LabelText}" Margin="0 6 0 4" />
-                            <ItemsControl ItemsSource="{Binding SelectedEvidenceDetail.Attachments}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding FileName}" Width="150" />
-                                            <Button Style="{StaticResource IconButton}"
-                                                    Margin="4 0 0 0"
-                                                    ToolTip="Open attachment"
-                                                    Command="{Binding DataContext.OpenAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}">
-                                                <iconPacks:PackIconBootstrapIcons Kind="BoxArrowUpRight"
-                                                                                  Width="14"
-                                                                                  Height="14" />
-                                            </Button>
-                                            <Button Style="{StaticResource IconButton}"
-                                                    Margin="4 0 0 0"
-                                                    ToolTip="Show in folder"
-                                                    Command="{Binding DataContext.OpenAttachmentFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}">
-                                                <iconPacks:PackIconBootstrapIcons Kind="Folder2Open"
-                                                                                  Width="14"
-                                                                                  Height="14" />
-                                            </Button>
-                                            <Button Style="{StaticResource IconButton}"
-                                                    Margin="4 0 0 0"
-                                                    ToolTip="Remove attachment"
-                                                    Command="{Binding DataContext.RemoveAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}">
-                                                <iconPacks:PackIconBootstrapIcons Kind="Trash"
-                                                                                  Width="14"
-                                                                                  Height="14" />
-                                            </Button>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <Button Content="Add attachment"
-                                    Command="{Binding AddAttachmentCommand}"
-                                    Margin="0 6 0 0" />
+                            <StackPanel AllowDrop="True"
+                                        Background="Transparent"
+                                        DragOver="OnAttachmentsDragOver"
+                                        Drop="OnAttachmentsDrop">
+                                <ItemsControl ItemsSource="{Binding SelectedEvidenceDetail.Attachments}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding FileName}" Width="150" />
+                                                <Button Style="{StaticResource IconButton}"
+                                                        Margin="4 0 0 0"
+                                                        ToolTip="Open attachment"
+                                                        Command="{Binding DataContext.OpenAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}">
+                                                    <iconPacks:PackIconBootstrapIcons Kind="BoxArrowUpRight"
+                                                                                      Width="14"
+                                                                                      Height="14" />
+                                                </Button>
+                                                <Button Style="{StaticResource IconButton}"
+                                                        Margin="4 0 0 0"
+                                                        ToolTip="Show in folder"
+                                                        Command="{Binding DataContext.OpenAttachmentFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}">
+                                                    <iconPacks:PackIconBootstrapIcons Kind="Folder2Open"
+                                                                                      Width="14"
+                                                                                      Height="14" />
+                                                </Button>
+                                                <Button Style="{StaticResource IconButton}"
+                                                        Margin="4 0 0 0"
+                                                        ToolTip="Remove attachment"
+                                                        Command="{Binding DataContext.RemoveAttachmentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}">
+                                                    <iconPacks:PackIconBootstrapIcons Kind="Trash"
+                                                                                      Width="14"
+                                                                                      Height="14" />
+                                                </Button>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button Content="Add attachment"
+                                        Command="{Binding AddAttachmentCommand}"
+                                        Margin="0 6 0 0" />
+                            </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
                 </DockPanel>

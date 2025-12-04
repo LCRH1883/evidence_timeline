@@ -325,6 +325,11 @@ namespace evidence_timeline.ViewModels
                 return true;
             }
 
+            if (!AttachmentsMatch(current.Attachments, snapshot.Attachments))
+            {
+                return true;
+            }
+
             return false;
         }
 
@@ -337,6 +342,21 @@ namespace evidence_timeline.ViewModels
 
             return current.OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
                 .SequenceEqual(snapshot.OrderBy(x => x, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static bool AttachmentsMatch(IList<AttachmentInfo> current, IList<AttachmentInfo> snapshot)
+        {
+            if (current.Count != snapshot.Count)
+            {
+                return false;
+            }
+
+            var currentKeys = current.Select(a => $"{a.RelativePath}|{a.FileName}")
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
+            var snapshotKeys = snapshot.Select(a => $"{a.RelativePath}|{a.FileName}")
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
+
+            return currentKeys.SequenceEqual(snapshotKeys, StringComparer.OrdinalIgnoreCase);
         }
 
         private void OnPersonOptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -399,11 +419,27 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
+            await AddAttachmentsFromPathsAsync(dialog.FileNames);
+        }
+
+        public async Task AddAttachmentsFromPathsAsync(IEnumerable<string> filePaths)
+        {
+            var files = filePaths
+                .Where(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (files.Count == 0)
+            {
+                return;
+            }
+
             var targetFolder = await _evidenceStorage.GetEvidenceFolderPathAsync(_caseInfo, Evidence);
             var filesFolder = Path.Combine(targetFolder, "files");
             Directory.CreateDirectory(filesFolder);
 
-            foreach (var file in dialog.FileNames)
+            var added = false;
+            foreach (var file in files)
             {
                 var fileName = Path.GetFileName(file);
                 var targetPath = Path.Combine(filesFolder, fileName);
@@ -418,10 +454,14 @@ namespace evidence_timeline.ViewModels
                         FileName = Path.GetFileName(targetPath),
                         RelativePath = relative
                     });
+                    added = true;
                 }
             }
 
-            await SaveAsync();
+            if (added)
+            {
+                await SaveAsync();
+            }
         }
 
         private async Task OpenAttachmentAsync(AttachmentInfo? attachment)
