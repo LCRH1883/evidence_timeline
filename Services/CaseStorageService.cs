@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using evidence_timeline.Models;
 using evidence_timeline.Utilities;
@@ -30,7 +31,7 @@ namespace evidence_timeline.Services
             caseInfo.RootPath = caseFolder;
 
             await JsonHelper.SaveAsync(Path.Combine(caseFolder, "case.json"), caseInfo);
-            await JsonHelper.SaveAsync(Path.Combine(caseFolder, "types.json"), new List<EvidenceType>());
+            await JsonHelper.SaveAsync(Path.Combine(caseFolder, "types.json"), CreateDefaultEvidenceTypes());
             await JsonHelper.SaveAsync(Path.Combine(caseFolder, "people.json"), new List<Person>());
             PathHelper.EnsureDirectory(Path.Combine(caseFolder, "evidence"));
 
@@ -87,6 +88,30 @@ namespace evidence_timeline.Services
             }
 
             return caseInfo.RootPath;
+        }
+
+        private static List<EvidenceType> CreateDefaultEvidenceTypes()
+        {
+            var defaultNames = new[]
+            {
+                "Document(s)",
+                "Contract",
+                "Letter",
+                "Email",
+                "Message(s)",
+                "Photograph",
+                "Receipt",
+                "Audio",
+                "Video"
+            };
+
+            return defaultNames
+                .Select(name => new EvidenceType
+                {
+                    Id = Guid.NewGuid().ToString("N"),
+                    Name = name
+                })
+                .ToList();
         }
     }
 }
