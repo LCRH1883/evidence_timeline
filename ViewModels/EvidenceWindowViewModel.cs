@@ -560,10 +560,38 @@ namespace evidence_timeline.ViewModels
             var filesFolder = Path.Combine(targetFolder, "files");
             Directory.CreateDirectory(filesFolder);
 
-            var added = false;
+            var changed = false;
             foreach (var file in files)
             {
                 var fileName = Path.GetFileName(file);
+
+                var missingExisting = AttachmentItems.FirstOrDefault(a =>
+                {
+                    if (string.IsNullOrWhiteSpace(a.RelativePath))
+                    {
+                        return false;
+                    }
+
+                    var existingPath = Path.Combine(targetFolder, a.RelativePath);
+                    return string.Equals(a.FileName, fileName, StringComparison.OrdinalIgnoreCase)
+                        && !File.Exists(existingPath);
+                });
+
+                if (missingExisting != null)
+                {
+                    var restorePath = Path.Combine(targetFolder, missingExisting.RelativePath);
+                    var restoreDir = Path.GetDirectoryName(restorePath);
+                    if (!string.IsNullOrWhiteSpace(restoreDir))
+                    {
+                        Directory.CreateDirectory(restoreDir);
+                    }
+
+                    File.Copy(file, restorePath, true);
+                    missingExisting.FileName = Path.GetFileName(restorePath);
+                    changed = true;
+                    continue;
+                }
+
                 var targetPath = Path.Combine(filesFolder, fileName);
                 targetPath = EnsureUniqueFilePath(targetPath);
                 File.Copy(file, targetPath, true);
@@ -576,11 +604,11 @@ namespace evidence_timeline.ViewModels
                         FileName = Path.GetFileName(targetPath),
                         RelativePath = relative
                     });
-                    added = true;
+                    changed = true;
                 }
             }
 
-            if (added)
+            if (changed)
             {
                 await SaveAsync();
             }
