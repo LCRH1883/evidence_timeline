@@ -28,19 +28,72 @@
         <p>All notable changes to Evidence Timeline are documented here. We follow <a href="https://semver.org/">Semantic Versioning</a>.</p>
 
         <section class="content-section">
+            <!-- Version 1.1.3 -->
+            <div class="changelog-entry">
+                <div class="changelog-version">
+                    <h2>Version 1.1.3</h2>
+                    <span class="version-badge latest-badge">Latest</span>
+                    <span class="changelog-date">December 2, 2025</span>
+                </div>
+                <div class="changelog-content">
+                    <h3>Added</h3>
+                    <ul>
+                        <li>People manager window with add/edit/delete controls, notes, and aliases</li>
+                        <li>Evidence creation now uses the full Evidence window to capture notes and attachments immediately</li>
+                        <li>Resizable splitters between notes, metadata, and attachments in the Evidence window</li>
+                        <li>Default evidence types seeded on new cases: Document(s), Contract, Letter, Email, Message(s), Photograph, Receipt, Audio, Video</li>
+                        <li>Drag-and-drop support for adding attachments directly into evidence</li>
+                    </ul>
+                    <h3>Fixed</h3>
+                    <ul>
+                        <li>Attachments open with their default applications (HTML in browser, media in associated players)</li>
+                        <li>Evidence type rename reliability and display within Case Settings</li>
+                        <li>Dialogs and windows now follow the active window to stay on the correct monitor</li>
+                    </ul>
+                    <p><a href="https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.3">View Release on GitHub →</a></p>
+                </div>
+            </div>
+
+            <!-- Version 1.1.2 -->
+            <div class="changelog-entry">
+                <div class="changelog-version">
+                    <h2>Version 1.1.2</h2>
+                    <span class="changelog-date">December 2, 2025</span>
+                </div>
+                <div class="changelog-content">
+                    <h3>Added</h3>
+                    <ul>
+                        <li>Drag-and-drop support for adding attachments directly into evidence</li>
+                        <li>Default evidence types seeded on new cases (Document(s), Contract, Letter, Email, Message(s), Photograph, Receipt, Audio, Video)</li>
+                        <li>Changelog viewer window and "View Changelog" menu item in Help</li>
+                        <li>Update notifications that display changelog content with an "Already up-to-date" message</li>
+                        <li>CHANGELOG.md included in the application build output</li>
+                    </ul>
+                    <h3>Changed</h3>
+                    <ul>
+                        <li>Update dialog now displays changelog content inline for a clearer update experience</li>
+                    </ul>
+                    <h3>Fixed</h3>
+                    <ul>
+                        <li>Attachments now open with the correct default application</li>
+                        <li>Evidence type rename flows correctly update and save without crashes</li>
+                    </ul>
+                    <p><a href="https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.2">View Release on GitHub →</a></p>
+                </div>
+            </div>
+
             <!-- Version 1.1.1 -->
             <div class="changelog-entry">
                 <div class="changelog-version">
                     <h2>Version 1.1.1</h2>
-                    <span class="version-badge latest-badge">Latest</span>
                     <span class="changelog-date">December 1, 2025</span>
                 </div>
                 <div class="changelog-content">
                     <h3>Added</h3>
                     <ul>
                         <li>Changelog viewer window accessible from Help menu</li>
-                        <li>"View Changelog" menu item in Help menu for viewing version history</li>
                         <li>Enhanced update notification system that displays changelog content</li>
+                        <li>"View Changelog" menu item in Help menu for viewing version history</li>
                         <li>"Already up-to-date" message when no updates are available</li>
                         <li>CHANGELOG.md file for tracking version history and changes</li>
                     </ul>
@@ -48,7 +101,6 @@
                     <ul>
                         <li>Update dialog now displays changelog content instead of just linking to GitHub</li>
                         <li>Improved update experience with inline changelog preview</li>
-                        <li>CHANGELOG.md is now included in application build output</li>
                     </ul>
                     <p><a href="https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.1">View Release on GitHub →</a></p>
                 </div>
@@ -118,6 +170,8 @@
         <section class="content-section">
             <h2>Version History Summary</h2>
             <ul>
+                <li><strong>1.1.3</strong> - People manager, improved evidence window layout, and attachment handling fixes</li>
+                <li><strong>1.1.2</strong> - Drag-and-drop attachments, default evidence types, and integrated changelog viewer</li>
                 <li><strong>1.1.1</strong> - Enhanced update system with changelog integration</li>
                 <li><strong>1.0.1</strong> - Auto-update and installer release</li>
                 <li><strong>1.0.0</strong> - Initial public release</li>
