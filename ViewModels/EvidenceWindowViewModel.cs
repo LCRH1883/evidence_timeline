@@ -72,6 +72,81 @@ namespace evidence_timeline.ViewModels
         public ObservableCollection<SelectableItem> PersonOptions { get; }
         public ObservableCollection<string> LinkedEvidence { get; }
 
+        public EvidenceDateMode SelectedDateMode
+        {
+            get => Evidence.DateInfo?.Mode ?? EvidenceDateMode.Exact;
+            set
+            {
+                EnsureDateInfo();
+                if (Evidence.DateInfo.Mode != value)
+                {
+                    Evidence.DateInfo.Mode = value;
+                    OnPropertyChanged();
+                    RequestMetadataAutoSave();
+                }
+            }
+        }
+
+        public DateTime? ExactDate
+        {
+            get => Evidence.DateInfo?.ExactDate?.ToDateTime(TimeOnly.MinValue);
+            set
+            {
+                EnsureDateInfo();
+                Evidence.DateInfo.ExactDate = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+                OnPropertyChanged();
+                RequestMetadataAutoSave();
+            }
+        }
+
+        public DateTime? StartDate
+        {
+            get => Evidence.DateInfo?.StartDate?.ToDateTime(TimeOnly.MinValue);
+            set
+            {
+                EnsureDateInfo();
+                Evidence.DateInfo.StartDate = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+                OnPropertyChanged();
+                RequestMetadataAutoSave();
+            }
+        }
+
+        public DateTime? EndDate
+        {
+            get => Evidence.DateInfo?.EndDate?.ToDateTime(TimeOnly.MinValue);
+            set
+            {
+                EnsureDateInfo();
+                Evidence.DateInfo.EndDate = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+                OnPropertyChanged();
+                RequestMetadataAutoSave();
+            }
+        }
+
+        public int? AroundAmount
+        {
+            get => Evidence.DateInfo?.AroundAmount;
+            set
+            {
+                EnsureDateInfo();
+                Evidence.DateInfo.AroundAmount = value;
+                OnPropertyChanged();
+                RequestMetadataAutoSave();
+            }
+        }
+
+        public string? AroundUnit
+        {
+            get => Evidence.DateInfo?.AroundUnit;
+            set
+            {
+                EnsureDateInfo();
+                Evidence.DateInfo.AroundUnit = value;
+                OnPropertyChanged();
+                RequestMetadataAutoSave();
+            }
+        }
+
         public string NotesText
         {
             get => _notesText;
@@ -407,6 +482,11 @@ namespace evidence_timeline.ViewModels
             }
         }
 
+        private void EnsureDateInfo()
+        {
+            Evidence.DateInfo ??= new EvidenceDateInfo();
+        }
+
         private static void UpdateSortDate(Evidence evidence)
         {
             evidence.DateInfo ??= new EvidenceDateInfo();
@@ -415,15 +495,21 @@ namespace evidence_timeline.ViewModels
 
         private static DateOnly ResolveSortDate(EvidenceDateInfo dateInfo)
         {
+            var resolvedDate = dateInfo.ExactDate
+                ?? dateInfo.StartDate
+                ?? dateInfo.EndDate;
+
+            if (resolvedDate != null)
+            {
+                return resolvedDate.Value;
+            }
+
             if (dateInfo.SortDate != default)
             {
                 return dateInfo.SortDate;
             }
 
-            return dateInfo.ExactDate
-                ?? dateInfo.StartDate
-                ?? dateInfo.EndDate
-                ?? DateOnly.FromDateTime(DateTime.UtcNow);
+            return DateOnly.FromDateTime(DateTime.UtcNow);
         }
 
         private async Task AddAttachmentAsync()
@@ -474,10 +560,38 @@ namespace evidence_timeline.ViewModels
             var filesFolder = Path.Combine(targetFolder, "files");
             Directory.CreateDirectory(filesFolder);
 
-            var added = false;
+            var changed = false;
             foreach (var file in files)
             {
                 var fileName = Path.GetFileName(file);
+
+                var missingExisting = AttachmentItems.FirstOrDefault(a =>
+                {
+                    if (string.IsNullOrWhiteSpace(a.RelativePath))
+                    {
+                        return false;
+                    }
+
+                    var existingPath = Path.Combine(targetFolder, a.RelativePath);
+                    return string.Equals(a.FileName, fileName, StringComparison.OrdinalIgnoreCase)
+                        && !File.Exists(existingPath);
+                });
+
+                if (missingExisting != null)
+                {
+                    var restorePath = Path.Combine(targetFolder, missingExisting.RelativePath);
+                    var restoreDir = Path.GetDirectoryName(restorePath);
+                    if (!string.IsNullOrWhiteSpace(restoreDir))
+                    {
+                        Directory.CreateDirectory(restoreDir);
+                    }
+
+                    File.Copy(file, restorePath, true);
+                    missingExisting.FileName = Path.GetFileName(restorePath);
+                    changed = true;
+                    continue;
+                }
+
                 var targetPath = Path.Combine(filesFolder, fileName);
                 targetPath = EnsureUniqueFilePath(targetPath);
                 File.Copy(file, targetPath, true);
@@ -490,11 +604,11 @@ namespace evidence_timeline.ViewModels
                         FileName = Path.GetFileName(targetPath),
                         RelativePath = relative
                     });
-                    added = true;
+                    changed = true;
                 }
             }
 
-            if (added)
+            if (changed)
             {
                 await SaveAsync();
             }
