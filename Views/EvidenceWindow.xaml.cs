@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.IO;
 using System.Windows.Threading;
 using AdonisUI.Controls;
 using evidence_timeline.ViewModels;
@@ -82,6 +83,42 @@ namespace evidence_timeline.Views
         private void OnCloseClicked(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void OnAttachmentsDragOver(object sender, System.Windows.DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop))
+            {
+                e.Effects = System.Windows.DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effects = System.Windows.DragDropEffects.None;
+            }
+
+            e.Handled = true;
+        }
+
+        private async void OnAttachmentsDrop(object sender, System.Windows.DragEventArgs e)
+        {
+            if (DataContext is not EvidenceWindowViewModel vm)
+            {
+                return;
+            }
+
+            if (!e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop) || e.Data.GetData(System.Windows.DataFormats.FileDrop) is not string[] files)
+            {
+                return;
+            }
+
+            var existingFiles = files.Where(File.Exists).ToList();
+            if (existingFiles.Count == 0)
+            {
+                return;
+            }
+
+            e.Handled = true;
+            await vm.AddAttachmentsFromPathsAsync(existingFiles);
         }
 
         private void OnNotesRichTextBoxLoaded(object sender, RoutedEventArgs e)

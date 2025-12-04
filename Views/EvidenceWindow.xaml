@@ -340,7 +340,10 @@
                     BorderBrush="{DynamicResource BorderBrush}"
                     BorderThickness="1"
                     Margin="8"
-                    Background="{DynamicResource SurfaceBackground}">
+                    Background="{DynamicResource SurfaceBackground}"
+                    AllowDrop="True"
+                    DragOver="OnAttachmentsDragOver"
+                    Drop="OnAttachmentsDrop">
                 <DockPanel>
                     <!-- Attachments header -->
                     <Border DockPanel.Dock="Top"

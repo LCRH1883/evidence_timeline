@@ -924,17 +924,24 @@ namespace evidence_timeline.ViewModels
                     _isLoadingCaseSettings = false;
                 }
 
-                if (vm.HasTypeChanges)
+                try
                 {
-                    await ApplyTypeChangesAsync(vm.EvidenceTypes.ToList(), originalTypes);
-                }
+                    if (vm.HasTypeChanges)
+                    {
+                        await ApplyTypeChangesAsync(vm.EvidenceTypes.Select(t => t.ToEvidenceType()).ToList(), originalTypes);
+                    }
 
-                if (vm.HasPeopleChanges)
+                    if (vm.HasPeopleChanges)
+                    {
+                        await ApplyPeopleChangesAsync(vm.People.Select(p => p.ToPerson()).ToList(), originalPeople);
+                    }
+
+                    _ = SaveCaseSettingsAsync();
+                }
+                catch (Exception ex)
                 {
-                    await ApplyPeopleChangesAsync(vm.People.Select(p => p.ToPerson()).ToList(), originalPeople);
+                    MessageBox.Show($"Unable to save case settings: {ex.Message}", "Case Settings", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-
-                _ = SaveCaseSettingsAsync();
             }
         }
 
@@ -1235,11 +1242,32 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
+            await AddAttachmentsFromPathsAsync(dialog.FileNames);
+        }
+
+        public async Task AddAttachmentsFromPathsAsync(IEnumerable<string> filePaths)
+        {
+            if (CurrentCase == null || SelectedEvidenceDetail == null)
+            {
+                return;
+            }
+
+            var files = filePaths
+                .Where(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (files.Count == 0)
+            {
+                return;
+            }
+
             var targetFolder = await _evidenceStorage.GetEvidenceFolderPathAsync(CurrentCase, SelectedEvidenceDetail);
             var filesFolder = Path.Combine(targetFolder, "files");
             Directory.CreateDirectory(filesFolder);
 
-            foreach (var file in dialog.FileNames)
+            var added = false;
+            foreach (var file in files)
             {
                 var fileName = Path.GetFileName(file);
                 var targetPath = Path.Combine(filesFolder, fileName);
@@ -1254,12 +1282,19 @@ namespace evidence_timeline.ViewModels
                         FileName = Path.GetFileName(targetPath),
                         RelativePath = relative
                     });
+                    added = true;
                 }
+            }
+
+            if (!added)
+            {
+                return;
             }
 
             await _evidenceStorage.SaveEvidenceAsync(CurrentCase, SelectedEvidenceDetail);
             var updatedSummary = BuildSummary(SelectedEvidenceDetail);
             UpdateSummaryLists(updatedSummary);
+            _loadedEvidenceSnapshot = CloneEvidence(SelectedEvidenceDetail);
         }
 
         private async Task OpenAttachmentAsync(AttachmentInfo? attachment)
@@ -1279,11 +1314,7 @@ namespace evidence_timeline.ViewModels
 
             try
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = fullPath,
-                    UseShellExecute = true
-                });
+                OpenWithDefaultApp(fullPath);
             }
             catch (Exception ex)
             {
@@ -1345,6 +1376,28 @@ namespace evidence_timeline.ViewModels
             await _evidenceStorage.SaveEvidenceAsync(CurrentCase, SelectedEvidenceDetail);
             var updatedSummary = BuildSummary(SelectedEvidenceDetail);
             UpdateSummaryLists(updatedSummary);
+            _loadedEvidenceSnapshot = CloneEvidence(SelectedEvidenceDetail);
+        }
+
+        private static void OpenWithDefaultApp(string path)
+        {
+            var extension = Path.GetExtension(path);
+            var startInfo = new ProcessStartInfo
+            {
+                UseShellExecute = true,
+                Verb = "open"
+            };
+
+            if (!string.IsNullOrWhiteSpace(extension) && HtmlExtensions.Contains(extension))
+            {
+                startInfo.FileName = new Uri(path).AbsoluteUri;
+            }
+            else
+            {
+                startInfo.FileName = path;
+            }
+
+            Process.Start(startInfo);
         }
 
         private static string EnsureUniqueFilePath(string basePath)
@@ -1368,6 +1421,15 @@ namespace evidence_timeline.ViewModels
 
             return candidate;
         }
+
+        private static readonly HashSet<string> HtmlExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".html",
+            ".htm",
+            ".xhtml",
+            ".mht",
+            ".mhtml"
+        };
 
         private void ManageLinks()
         {
@@ -1732,6 +1794,11 @@ namespace evidence_timeline.ViewModels
                 return true;
             }
 
+            if (!AttachmentsMatch(current.Attachments, snapshot.Attachments))
+            {
+                return true;
+            }
+
             return false;
         }
 
@@ -1744,6 +1811,21 @@ namespace evidence_timeline.ViewModels
 
             return current.OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
                 .SequenceEqual(snapshot.OrderBy(x => x, StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static bool AttachmentsMatch(IList<AttachmentInfo> current, IList<AttachmentInfo> snapshot)
+        {
+            if (current.Count != snapshot.Count)
+            {
+                return false;
+            }
+
+            var currentKeys = current.Select(a => $"{a.RelativePath}|{a.FileName}")
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
+            var snapshotKeys = snapshot.Select(a => $"{a.RelativePath}|{a.FileName}")
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
+
+            return currentKeys.SequenceEqual(snapshotKeys, StringComparer.OrdinalIgnoreCase);
         }
 
         private void AddPersonOption(string id, string name)
