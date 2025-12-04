@@ -722,9 +722,11 @@ namespace evidence_timeline.ViewModels
             vm.EvidenceSaved += OnExternalEvidenceSaved;
             vm.NotesSaved += OnExternalNotesSaved;
 
+            var ownerWindow = WpfApp.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                ?? WpfApp.Current?.MainWindow;
             var window = new EvidenceWindow
             {
-                Owner = WpfApp.Current?.MainWindow,
+                Owner = ownerWindow,
                 DataContext = vm
             };
 
@@ -865,9 +867,11 @@ namespace evidence_timeline.ViewModels
         {
             _appSettings ??= new AppSettings();
             var vm = new PreferencesViewModel(_appSettings);
+            var ownerWindow = WpfApp.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                ?? WpfApp.Current?.MainWindow;
             var window = new PreferencesWindow
             {
-                Owner = WpfApp.Current?.MainWindow,
+                Owner = ownerWindow,
                 DataContext = vm
             };
 
@@ -915,9 +919,11 @@ namespace evidence_timeline.ViewModels
             var originalPeople = People.ToList();
 
             var vm = new CaseSettingsViewModel(_caseSettings, originalTypes, originalPeople);
+            var ownerWindow = WpfApp.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                ?? WpfApp.Current?.MainWindow;
             var window = new CaseSettingsWindow
             {
-                Owner = WpfApp.Current?.MainWindow,
+                Owner = ownerWindow,
                 DataContext = vm
             };
 
@@ -1251,7 +1257,20 @@ namespace evidence_timeline.ViewModels
                 Multiselect = true
             };
 
-            var result = dialog.ShowDialog();
+            var ownerWindow = WpfApp.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                ?? WpfApp.Current?.MainWindow;
+
+            WinForms.DialogResult result;
+            if (ownerWindow != null)
+            {
+                var win32Owner = new Utilities.Wpf32Window(ownerWindow);
+                result = dialog.ShowDialog(win32Owner);
+            }
+            else
+            {
+                result = dialog.ShowDialog();
+            }
+
             if (result != WinForms.DialogResult.OK || dialog.FileNames.Length == 0)
             {
                 return;
@@ -1463,9 +1482,11 @@ namespace evidence_timeline.ViewModels
             }
 
             var available = _allEvidenceSummaries.Where(e => !string.Equals(e.Id, SelectedEvidenceDetail.Id, StringComparison.OrdinalIgnoreCase)).ToList();
+            var ownerWindow = WpfApp.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                ?? WpfApp.Current?.MainWindow;
             var dialog = new LinkEvidenceDialog(available, SelectedEvidenceDetail.LinkedEvidenceIds)
             {
-                Owner = WpfApp.Current?.MainWindow
+                Owner = ownerWindow
             };
 
             var result = dialog.ShowDialog();
@@ -1493,7 +1514,8 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
-            var name = UIHelpers.PromptForText("Add Type", "Enter type name:");
+            var owner = UIHelpers.GetActiveWindow();
+            var name = UIHelpers.PromptForText("Add Type", "Enter type name:", string.Empty, owner);
             if (string.IsNullOrWhiteSpace(name))
             {
                 return;
@@ -1513,7 +1535,8 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
-            var newName = UIHelpers.PromptForText("Rename Type", "Enter new type name:", SelectedType.Name);
+            var owner = UIHelpers.GetActiveWindow();
+            var newName = UIHelpers.PromptForText("Rename Type", "Enter new type name:", SelectedType.Name, owner);
             if (string.IsNullOrWhiteSpace(newName))
             {
                 return;
@@ -1557,7 +1580,8 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
-            var name = UIHelpers.PromptForText("Add Person", "Enter person name:");
+            var owner = UIHelpers.GetActiveWindow();
+            var name = UIHelpers.PromptForText("Add Person", "Enter person name:", string.Empty, owner);
             if (string.IsNullOrWhiteSpace(name))
             {
                 return;
@@ -1578,7 +1602,8 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
-            var newName = UIHelpers.PromptForText("Rename Person", "Enter new person name:", SelectedPerson.Name);
+            var owner = UIHelpers.GetActiveWindow();
+            var newName = UIHelpers.PromptForText("Rename Person", "Enter new person name:", SelectedPerson.Name, owner);
             if (string.IsNullOrWhiteSpace(newName))
             {
                 return;
@@ -2163,6 +2188,9 @@ namespace evidence_timeline.ViewModels
             {
                 return;
             }
+
+            owner ??= WpfApp.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                ?? WpfApp.Current?.MainWindow;
 
             var vm = new EvidenceWindowViewModel(CurrentCase, evidence, _evidenceStorage, _referenceData);
             vm.EvidenceSaved += OnExternalEvidenceSaved;

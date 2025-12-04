@@ -74,7 +74,8 @@ namespace evidence_timeline.ViewModels
 
         private void AddAlias()
         {
-            var alias = UIHelpers.PromptForText("Add Alias", "Enter alias:");
+            var owner = UIHelpers.GetActiveWindow();
+            var alias = UIHelpers.PromptForText("Add Alias", "Enter alias:", string.Empty, owner);
             if (string.IsNullOrWhiteSpace(alias))
             {
                 return;

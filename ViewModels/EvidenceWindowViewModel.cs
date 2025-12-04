@@ -434,7 +434,20 @@ namespace evidence_timeline.ViewModels
                 Multiselect = true
             };
 
-            var result = dialog.ShowDialog();
+            var ownerWindow = System.Windows.Application.Current?.Windows.OfType<System.Windows.Window>()
+                .FirstOrDefault(w => w.IsActive) ?? System.Windows.Application.Current?.MainWindow;
+
+            System.Windows.Forms.DialogResult result;
+            if (ownerWindow != null)
+            {
+                var win32Owner = new Utilities.Wpf32Window(ownerWindow);
+                result = dialog.ShowDialog(win32Owner);
+            }
+            else
+            {
+                result = dialog.ShowDialog();
+            }
+
             if (result != System.Windows.Forms.DialogResult.OK || dialog.FileNames.Length == 0)
             {
                 return;

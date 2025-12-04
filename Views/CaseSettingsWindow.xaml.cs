@@ -35,7 +35,8 @@ namespace evidence_timeline.Views
             var entry = new ViewModels.PersonEntry(Guid.NewGuid().ToString("N"), string.Empty, string.Empty, Array.Empty<string>());
             var dialog = new PersonDialog
             {
-                Owner = Owner,
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 DataContext = entry
             };
 
@@ -80,7 +81,8 @@ namespace evidence_timeline.Views
 
             var dialog = new PersonDialog
             {
-                Owner = Owner,
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 DataContext = working
             };
 
