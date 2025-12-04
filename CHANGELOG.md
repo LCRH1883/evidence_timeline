@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.5] - 2025-12-04
+
+### Fixed
+- Attachments can now be re-added to restore missing copies without creating duplicates
+- Evidence loading is case-insensitive to prevent attachment metadata from being dropped when casing differs
+
 ## [1.1.4] - 2025-12-03
 
 ### Fixed
@@ -88,10 +94,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version Tracking
 
-**Current Version:** 1.1.4
+**Current Version:** 1.1.5
 **Repository:** https://github.com/LCRH1883/evidence_timeline
 
 ### Version History
+- **1.1.5** - Attachment restoration and tolerant evidence loading
 - **1.1.4** - Date editing reliability hotfix
 - **1.1.3** - People manager, evidence create window, dialog fixes, and attachment improvements
 - **1.1.2** - Attachment improvements and evidence type reliability
@@ -117,6 +124,7 @@ When releasing a new version:
 4. Update the "Current Version" in the Version Tracking section
 5. Commit the changelog with the version bump
 
+[1.1.5]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.5
 [1.1.4]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.4
 [1.1.3]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.3
 [1.1.2]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.2
