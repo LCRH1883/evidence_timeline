@@ -1136,15 +1136,21 @@ namespace evidence_timeline.ViewModels
 
         private static DateOnly ResolveSortDate(EvidenceDateInfo dateInfo)
         {
+            var resolvedDate = dateInfo.ExactDate
+                ?? dateInfo.StartDate
+                ?? dateInfo.EndDate;
+
+            if (resolvedDate != null)
+            {
+                return resolvedDate.Value;
+            }
+
             if (dateInfo.SortDate != default)
             {
                 return dateInfo.SortDate;
             }
 
-            return dateInfo.ExactDate
-                ?? dateInfo.StartDate
-                ?? dateInfo.EndDate
-                ?? DateOnly.FromDateTime(DateTime.UtcNow);
+            return DateOnly.FromDateTime(DateTime.UtcNow);
         }
 
         private void OpenEvidenceWindow()

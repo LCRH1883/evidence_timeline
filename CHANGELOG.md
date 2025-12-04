@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] - 2025-12-03
+
+### Fixed
+- Date edits in the Evidence window now save correctly for both existing and newly created evidence
+- Evidence sorting now reflects updated dates instead of retaining stale sort dates
+- People lists in metadata panes only toggle when clicking the checkbox (not the surrounding row)
+
 ## [1.1.3] - 2025-12-02
 
 ### Added
@@ -81,10 +88,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version Tracking
 
-**Current Version:** 1.1.3
+**Current Version:** 1.1.4
 **Repository:** https://github.com/LCRH1883/evidence_timeline
 
 ### Version History
+- **1.1.4** - Date editing reliability hotfix
 - **1.1.3** - People manager, evidence create window, dialog fixes, and attachment improvements
 - **1.1.2** - Attachment improvements and evidence type reliability
 - **1.1.1** - Enhanced update system with changelog integration
@@ -109,6 +117,7 @@ When releasing a new version:
 4. Update the "Current Version" in the Version Tracking section
 5. Commit the changelog with the version bump
 
+[1.1.4]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.4
 [1.1.3]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.3
 [1.1.2]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.2
 [1.1.1]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.1
