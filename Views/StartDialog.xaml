@@ -8,7 +8,7 @@
                      Icon="/assets/intagri icon.png"
                      Width="640"
                      Height="550"
-                     WindowStartupLocation="CenterScreen"
+                     WindowStartupLocation="CenterOwner"
                      ResizeMode="NoResize">
     <adonis:AdonisWindow.Resources>
         <local:NullToBoolConverter x:Key="NullToBoolConverter" />

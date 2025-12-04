@@ -124,7 +124,8 @@ namespace evidence_timeline.ViewModels
 
         private void AddType()
         {
-            var name = UIHelpers.PromptForText("Add Type", "Enter type name:");
+            var owner = UIHelpers.GetActiveWindow();
+            var name = UIHelpers.PromptForText("Add Type", "Enter type name:", string.Empty, owner);
             if (string.IsNullOrWhiteSpace(name))
             {
                 return;
@@ -150,7 +151,8 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
-            var newName = UIHelpers.PromptForText("Rename Type", "Enter new type name:", SelectedType.Name);
+            var owner = UIHelpers.GetActiveWindow();
+            var newName = UIHelpers.PromptForText("Rename Type", "Enter new type name:", SelectedType.Name, owner);
             if (string.IsNullOrWhiteSpace(newName))
             {
                 return;
@@ -189,7 +191,8 @@ namespace evidence_timeline.ViewModels
 
         private void AddPerson()
         {
-            var name = UIHelpers.PromptForText("Add Person", "Enter person name:");
+            var owner = UIHelpers.GetActiveWindow();
+            var name = UIHelpers.PromptForText("Add Person", "Enter person name:", string.Empty, owner);
             if (string.IsNullOrWhiteSpace(name))
             {
                 return;

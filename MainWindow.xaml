@@ -50,6 +50,8 @@
                     <MenuItem Header="_Add Person" Command="{Binding AddPersonCommand}" />
                     <MenuItem Header="_Rename Person" Command="{Binding RenamePersonCommand}" />
                     <MenuItem Header="_Delete Person" Command="{Binding DeletePersonCommand}" />
+                    <Separator />
+                    <MenuItem Header="_Manage People..." Command="{Binding ManagePeopleCommand}" />
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_View">

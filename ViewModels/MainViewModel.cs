@@ -80,6 +80,7 @@ namespace evidence_timeline.ViewModels
             AddPersonCommand = new AsyncRelayCommand(AddPersonAsync, () => CurrentCase != null);
             RenamePersonCommand = new AsyncRelayCommand(RenamePersonAsync, () => CurrentCase != null && SelectedPerson != null);
             DeletePersonCommand = new AsyncRelayCommand(DeletePersonAsync, () => CurrentCase != null && SelectedPerson != null);
+            ManagePeopleCommand = new RelayCommand(ManagePeople, () => CurrentCase != null);
             OpenPreferencesCommand = new RelayCommand(OpenPreferences);
             OpenCaseSettingsCommand = new AsyncRelayCommand(OpenCaseSettingsAsync, () => CurrentCase != null);
             SetZoomCommand = new RelayCommand<object>(SetZoom);
@@ -433,6 +434,7 @@ namespace evidence_timeline.ViewModels
         public ICommand AddPersonCommand { get; }
         public ICommand RenamePersonCommand { get; }
         public ICommand DeletePersonCommand { get; }
+        public ICommand ManagePeopleCommand { get; }
         public ICommand OpenPreferencesCommand { get; }
         public ICommand OpenCaseSettingsCommand { get; }
         public ICommand SetZoomCommand { get; }
@@ -700,28 +702,42 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
-            var dialog = new NewEvidenceDialog(EvidenceTypes)
+            var newEvidence = new Evidence
             {
-                Owner = WpfApp.Current?.MainWindow
+                Title = "New Evidence",
+                EvidenceNumber = CurrentCase.NextEvidenceNumber,
+                TypeId = EvidenceTypes.FirstOrDefault()?.Id ?? string.Empty,
+                DateInfo = new EvidenceDateInfo
+                {
+                    Mode = EvidenceDateMode.Exact,
+                    SortDate = DateOnly.FromDateTime(DateTime.UtcNow)
+                },
+                Attachments = new List<AttachmentInfo>(),
+                PersonIds = new List<string>(),
+                LinkedEvidenceIds = new List<string>(),
+                NoteFile = "note.md"
             };
 
-            var result = dialog.ShowDialog();
-            if (result != true || dialog.Result == null)
+            var vm = new EvidenceWindowViewModel(CurrentCase, newEvidence, _evidenceStorage, _referenceData, isNew: true);
+            vm.EvidenceSaved += OnExternalEvidenceSaved;
+            vm.NotesSaved += OnExternalNotesSaved;
+
+            var ownerWindow = WpfApp.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                ?? WpfApp.Current?.MainWindow;
+            var window = new EvidenceWindow
             {
-                return;
-            }
+                Owner = ownerWindow,
+                DataContext = vm
+            };
 
-            var evidence = dialog.Result;
-            evidence.TypeId = string.IsNullOrWhiteSpace(evidence.TypeId)
-                ? EvidenceTypes.FirstOrDefault()?.Id ?? string.Empty
-                : evidence.TypeId;
+            window.Closed += (_, _) =>
+            {
+                vm.EvidenceSaved -= OnExternalEvidenceSaved;
+                vm.NotesSaved -= OnExternalNotesSaved;
+            };
 
-            evidence = await _evidenceStorage.CreateEvidenceAsync(CurrentCase, evidence);
-            _evidenceById[evidence.Id] = evidence;
-            var summary = BuildSummary(evidence);
-            _allEvidenceSummaries.Add(summary);
-            ApplyFilters();
-            SelectedSummary = EvidenceList.FirstOrDefault(s => s.Id == summary.Id);
+            _ = vm.LoadAsync();
+            window.Show();
         }
 
         private async Task LoadSelectedEvidenceAsync(EvidenceSummary? summary)
@@ -851,9 +867,11 @@ namespace evidence_timeline.ViewModels
         {
             _appSettings ??= new AppSettings();
             var vm = new PreferencesViewModel(_appSettings);
+            var ownerWindow = WpfApp.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                ?? WpfApp.Current?.MainWindow;
             var window = new PreferencesWindow
             {
-                Owner = WpfApp.Current?.MainWindow,
+                Owner = ownerWindow,
                 DataContext = vm
             };
 
@@ -901,9 +919,11 @@ namespace evidence_timeline.ViewModels
             var originalPeople = People.ToList();
 
             var vm = new CaseSettingsViewModel(_caseSettings, originalTypes, originalPeople);
+            var ownerWindow = WpfApp.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                ?? WpfApp.Current?.MainWindow;
             var window = new CaseSettingsWindow
             {
-                Owner = WpfApp.Current?.MainWindow,
+                Owner = ownerWindow,
                 DataContext = vm
             };
 
@@ -1221,6 +1241,7 @@ namespace evidence_timeline.ViewModels
             if (RenamePersonCommand is AsyncRelayCommand asyncRenamePerson) asyncRenamePerson.RaiseCanExecuteChanged();
             if (DeletePersonCommand is AsyncRelayCommand asyncDeletePerson) asyncDeletePerson.RaiseCanExecuteChanged();
             if (OpenCaseSettingsCommand is AsyncRelayCommand asyncCaseSettings) asyncCaseSettings.RaiseCanExecuteChanged();
+            if (ManagePeopleCommand is RelayCommand managePeople) managePeople.RaiseCanExecuteChanged();
         }
 
         private async Task AddAttachmentAsync()
@@ -1236,7 +1257,20 @@ namespace evidence_timeline.ViewModels
                 Multiselect = true
             };
 
-            var result = dialog.ShowDialog();
+            var ownerWindow = WpfApp.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                ?? WpfApp.Current?.MainWindow;
+
+            WinForms.DialogResult result;
+            if (ownerWindow != null)
+            {
+                var win32Owner = new Utilities.Wpf32Window(ownerWindow);
+                result = dialog.ShowDialog(win32Owner);
+            }
+            else
+            {
+                result = dialog.ShowDialog();
+            }
+
             if (result != WinForms.DialogResult.OK || dialog.FileNames.Length == 0)
             {
                 return;
@@ -1252,49 +1286,7 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
-            var files = filePaths
-                .Where(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
-
-            if (files.Count == 0)
-            {
-                return;
-            }
-
-            var targetFolder = await _evidenceStorage.GetEvidenceFolderPathAsync(CurrentCase, SelectedEvidenceDetail);
-            var filesFolder = Path.Combine(targetFolder, "files");
-            Directory.CreateDirectory(filesFolder);
-
-            var added = false;
-            foreach (var file in files)
-            {
-                var fileName = Path.GetFileName(file);
-                var targetPath = Path.Combine(filesFolder, fileName);
-                targetPath = EnsureUniqueFilePath(targetPath);
-                File.Copy(file, targetPath, true);
-
-                var relative = Path.Combine("files", Path.GetFileName(targetPath));
-                if (SelectedEvidenceDetail.Attachments.All(a => !string.Equals(a.RelativePath, relative, StringComparison.OrdinalIgnoreCase)))
-                {
-                    SelectedEvidenceDetail.Attachments.Add(new AttachmentInfo
-                    {
-                        FileName = Path.GetFileName(targetPath),
-                        RelativePath = relative
-                    });
-                    added = true;
-                }
-            }
-
-            if (!added)
-            {
-                return;
-            }
-
-            await _evidenceStorage.SaveEvidenceAsync(CurrentCase, SelectedEvidenceDetail);
-            var updatedSummary = BuildSummary(SelectedEvidenceDetail);
-            UpdateSummaryLists(updatedSummary);
-            _loadedEvidenceSnapshot = CloneEvidence(SelectedEvidenceDetail);
+            await AddAttachmentsToEvidenceAsync(CurrentCase, SelectedEvidenceDetail, filePaths);
         }
 
         private async Task OpenAttachmentAsync(AttachmentInfo? attachment)
@@ -1431,6 +1423,57 @@ namespace evidence_timeline.ViewModels
             ".mhtml"
         };
 
+        private async Task AddAttachmentsToEvidenceAsync(CaseInfo caseInfo, Evidence evidence, IEnumerable<string> filePaths)
+        {
+            var files = filePaths
+                .Where(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (files.Count == 0)
+            {
+                return;
+            }
+
+            var targetFolder = await _evidenceStorage.GetEvidenceFolderPathAsync(caseInfo, evidence);
+            var filesFolder = Path.Combine(targetFolder, "files");
+            Directory.CreateDirectory(filesFolder);
+
+            var added = false;
+            foreach (var file in files)
+            {
+                var fileName = Path.GetFileName(file);
+                var targetPath = Path.Combine(filesFolder, fileName);
+                targetPath = EnsureUniqueFilePath(targetPath);
+                File.Copy(file, targetPath, true);
+
+                var relative = Path.Combine("files", Path.GetFileName(targetPath));
+                if (evidence.Attachments.All(a => !string.Equals(a.RelativePath, relative, StringComparison.OrdinalIgnoreCase)))
+                {
+                    evidence.Attachments.Add(new AttachmentInfo
+                    {
+                        FileName = Path.GetFileName(targetPath),
+                        RelativePath = relative
+                    });
+                    added = true;
+                }
+            }
+
+            if (!added)
+            {
+                return;
+            }
+
+            await _evidenceStorage.SaveEvidenceAsync(caseInfo, evidence);
+            var updatedSummary = BuildSummary(evidence);
+            UpdateSummaryLists(updatedSummary, evidence.Id);
+
+            if (SelectedEvidenceDetail != null && string.Equals(SelectedEvidenceDetail.Id, evidence.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                _loadedEvidenceSnapshot = CloneEvidence(SelectedEvidenceDetail);
+            }
+        }
+
         private void ManageLinks()
         {
             if (CurrentCase == null || SelectedEvidenceDetail == null)
@@ -1439,9 +1482,11 @@ namespace evidence_timeline.ViewModels
             }
 
             var available = _allEvidenceSummaries.Where(e => !string.Equals(e.Id, SelectedEvidenceDetail.Id, StringComparison.OrdinalIgnoreCase)).ToList();
+            var ownerWindow = WpfApp.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                ?? WpfApp.Current?.MainWindow;
             var dialog = new LinkEvidenceDialog(available, SelectedEvidenceDetail.LinkedEvidenceIds)
             {
-                Owner = WpfApp.Current?.MainWindow
+                Owner = ownerWindow
             };
 
             var result = dialog.ShowDialog();
@@ -1469,7 +1514,8 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
-            var name = UIHelpers.PromptForText("Add Type", "Enter type name:");
+            var owner = UIHelpers.GetActiveWindow();
+            var name = UIHelpers.PromptForText("Add Type", "Enter type name:", string.Empty, owner);
             if (string.IsNullOrWhiteSpace(name))
             {
                 return;
@@ -1489,7 +1535,8 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
-            var newName = UIHelpers.PromptForText("Rename Type", "Enter new type name:", SelectedType.Name);
+            var owner = UIHelpers.GetActiveWindow();
+            var newName = UIHelpers.PromptForText("Rename Type", "Enter new type name:", SelectedType.Name, owner);
             if (string.IsNullOrWhiteSpace(newName))
             {
                 return;
@@ -1533,7 +1580,8 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
-            var name = UIHelpers.PromptForText("Add Person", "Enter person name:");
+            var owner = UIHelpers.GetActiveWindow();
+            var name = UIHelpers.PromptForText("Add Person", "Enter person name:", string.Empty, owner);
             if (string.IsNullOrWhiteSpace(name))
             {
                 return;
@@ -1554,7 +1602,8 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
-            var newName = UIHelpers.PromptForText("Rename Person", "Enter new person name:", SelectedPerson.Name);
+            var owner = UIHelpers.GetActiveWindow();
+            var newName = UIHelpers.PromptForText("Rename Person", "Enter new person name:", SelectedPerson.Name, owner);
             if (string.IsNullOrWhiteSpace(newName))
             {
                 return;
@@ -1686,6 +1735,28 @@ namespace evidence_timeline.ViewModels
             SelectedPerson = People.FirstOrDefault(p => string.Equals(p.Id, previousSelectedPersonId, StringComparison.OrdinalIgnoreCase));
             RebuildSummaries();
             SyncSelectionOptions(SelectedEvidenceDetail);
+        }
+
+        private void ManagePeople()
+        {
+            if (CurrentCase == null)
+            {
+                return;
+            }
+
+            var originalPeople = People.ToList();
+            var vm = new PeopleManagerViewModel(originalPeople);
+            var window = new PeopleManagerWindow
+            {
+                Owner = WpfApp.Current?.MainWindow,
+                DataContext = vm
+            };
+
+            var result = window.ShowDialog();
+            if (result == true)
+            {
+                _ = ApplyPeopleChangesAsync(vm.ToPeople(), originalPeople);
+            }
         }
 
         private void RebuildPersonOptions()
@@ -1992,45 +2063,62 @@ namespace evidence_timeline.ViewModels
 
             try
             {
-                var isSelected = SelectedEvidenceDetail != null
-                    && string.Equals(SelectedEvidenceDetail.Id, updated.Id, StringComparison.OrdinalIgnoreCase);
-                var hasLocalChanges = isSelected
-                    && _loadedEvidenceSnapshot != null
-                    && HasMetadataChanges(SelectedEvidenceDetail!, _loadedEvidenceSnapshot);
-
-                if (isSelected && hasLocalChanges)
+                if (WpfApp.Current?.Dispatcher.CheckAccess() == true)
                 {
-                    var result = MessageBox.Show(
-                        "This evidence was updated in another window. Reload their changes and discard your unsaved edits?",
-                        "Evidence Updated",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning);
-
-                    if (result != MessageBoxResult.Yes)
-                    {
-                        return;
-                    }
+                    HandleExternalEvidenceSave(updated);
                 }
-
-                UpdateSortDate(updated);
-                _evidenceById[updated.Id] = updated;
-
-                if (isSelected)
+                else
                 {
-                    SelectedEvidenceDetail = updated;
-                    SyncSelectionOptions(updated);
-                    _loadedEvidenceSnapshot = CloneEvidence(updated);
-                    LinkedEvidenceText = string.Join(", ", updated.LinkedEvidenceIds);
+                    await WpfApp.Current!.Dispatcher.InvokeAsync(() => HandleExternalEvidenceSave(updated));
                 }
-
-                var updatedSummary = BuildSummary(updated);
-                var preferredSelectionId = SelectedSummary?.Id;
-                UpdateSummaryLists(updatedSummary, preferredSelectionId);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Unable to refresh evidence after external save: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void HandleExternalEvidenceSave(Evidence updated)
+        {
+            var isSelected = SelectedEvidenceDetail != null
+                && string.Equals(SelectedEvidenceDetail.Id, updated.Id, StringComparison.OrdinalIgnoreCase);
+            var hasLocalChanges = isSelected
+                && _loadedEvidenceSnapshot != null
+                && HasMetadataChanges(SelectedEvidenceDetail!, _loadedEvidenceSnapshot);
+
+            if (isSelected && hasLocalChanges)
+            {
+                var result = MessageBox.Show(
+                    "This evidence was updated in another window. Reload their changes and discard your unsaved edits?",
+                    "Evidence Updated",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+            }
+
+            UpdateSortDate(updated);
+            _evidenceById[updated.Id] = updated;
+
+            if (CurrentCase != null)
+            {
+                CurrentCase.NextEvidenceNumber = Math.Max(CurrentCase.NextEvidenceNumber, updated.EvidenceNumber + 1);
+            }
+
+            if (isSelected)
+            {
+                SelectedEvidenceDetail = updated;
+                SyncSelectionOptions(updated);
+                _loadedEvidenceSnapshot = CloneEvidence(updated);
+                LinkedEvidenceText = string.Join(", ", updated.LinkedEvidenceIds);
+            }
+
+            RebuildSummaries();
+            SelectedSummary = EvidenceList.FirstOrDefault(s => string.Equals(s.Id, updated.Id, StringComparison.OrdinalIgnoreCase))
+                ?? SelectedSummary;
         }
 
         private async void OnExternalNotesSaved(object? sender, string evidenceId)
@@ -2062,11 +2150,35 @@ namespace evidence_timeline.ViewModels
 
             try
             {
-                await LoadNotesAsync(SelectedEvidenceDetail);
+                if (WpfApp.Current?.Dispatcher.CheckAccess() == true)
+                {
+                    _ = ReloadNotesAsync();
+                }
+                else
+                {
+                    await WpfApp.Current!.Dispatcher.InvokeAsync(() => _ = ReloadNotesAsync());
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Unable to refresh notes after external save: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task ReloadNotesAsync()
+        {
+            if (CurrentCase == null || SelectedEvidenceDetail == null)
+            {
+                return;
+            }
+
+            try
+            {
+                await LoadNotesAsync(SelectedEvidenceDetail);
+            }
+            finally
+            {
+                _loadedNotesSnapshot = NotesText;
             }
         }
 
@@ -2076,6 +2188,9 @@ namespace evidence_timeline.ViewModels
             {
                 return;
             }
+
+            owner ??= WpfApp.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                ?? WpfApp.Current?.MainWindow;
 
             var vm = new EvidenceWindowViewModel(CurrentCase, evidence, _evidenceStorage, _referenceData);
             vm.EvidenceSaved += OnExternalEvidenceSaved;

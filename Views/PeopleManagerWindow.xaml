@@ -1,0 +1,121 @@
+<adonis:AdonisWindow x:Class="evidence_timeline.Views.PeopleManagerWindow"
+                     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                     xmlns:adonis="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+                     Title="People"
+                     Height="520"
+                     Width="720"
+                     MinHeight="420"
+                     MinWidth="620"
+                     WindowStartupLocation="CenterOwner"
+                     ResizeMode="CanResizeWithGrip">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Manage People"
+                   FontSize="16"
+                   FontWeight="SemiBold"
+                   Margin="12 8 12 4" />
+
+        <Grid Grid.Row="1" Margin="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    Background="{DynamicResource SurfaceBackground}">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top"
+                                Orientation="Horizontal"
+                                Margin="8">
+                        <Button Content="Add"
+                                Width="70"
+                                Margin="0 0 6 0"
+                                Command="{Binding AddPersonCommand}" />
+                        <Button Content="Delete"
+                                Width="70"
+                                Command="{Binding DeletePersonCommand}" />
+                    </StackPanel>
+
+                    <ListBox ItemsSource="{Binding People}"
+                             SelectedItem="{Binding SelectedPerson, Mode=TwoWay}"
+                             BorderThickness="0"
+                             Margin="0 0 0 8">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <Border Grid.Column="2"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    Background="{DynamicResource SurfaceBackground}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="8">
+                        <TextBlock Text="Name" FontWeight="SemiBold" />
+                        <TextBox Text="{Binding SelectedPerson.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0 0 0 8" />
+
+                        <TextBlock Text="Notes" FontWeight="SemiBold" />
+                        <TextBox Text="{Binding SelectedPerson.Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 AcceptsReturn="True"
+                                 Height="100"
+                                 VerticalScrollBarVisibility="Auto"
+                                 VerticalContentAlignment="Top"
+                                 Margin="0 0 0 8" />
+
+                        <TextBlock Text="Aliases" FontWeight="SemiBold" />
+                        <ItemsControl ItemsSource="{Binding SelectedPerson.Aliases}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel Margin="0 0 0 4">
+                                        <Button Content="Remove"
+                                                DockPanel.Dock="Right"
+                                                Padding="6 2"
+                                                Command="{Binding DataContext.SelectedPerson.RemoveAliasCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}" />
+                                        <TextBlock Text="{Binding}" VerticalAlignment="Center" />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="Add alias"
+                                Width="90"
+                                Margin="0 4 0 0"
+                                Command="{Binding SelectedPerson.AddAliasCommand}" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="12 8">
+            <TextBlock Text="{Binding HasChanges, StringFormat='Changes pending: {0}'}"
+                       VerticalAlignment="Center"
+                       Margin="0 0 12 0"
+                       Foreground="{DynamicResource TextSecondary}" />
+            <Button Content="Save"
+                    Width="80"
+                    Margin="0 0 6 0"
+                    Click="OnSaveClicked"
+                    IsDefault="True" />
+            <Button Content="Cancel"
+                    Width="80"
+                    Click="OnCancelClicked"
+                    IsCancel="True" />
+        </StackPanel>
+    </Grid>
+</adonis:AdonisWindow>

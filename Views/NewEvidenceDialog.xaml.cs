@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,19 +10,25 @@ using evidence_timeline.Models;
 using MessageBox = System.Windows.MessageBox;
 using MessageBoxButton = System.Windows.MessageBoxButton;
 using MessageBoxImage = System.Windows.MessageBoxImage;
+using WinForms = System.Windows.Forms;
 
 namespace evidence_timeline.Views
 {
     public partial class NewEvidenceDialog : AdonisWindow
     {
+        private readonly ObservableCollection<AttachmentSelection> _attachments = new();
+
         public NewEvidenceDialog(IEnumerable<EvidenceType> types)
         {
             InitializeComponent();
+            DataContext = this;
             TypeBox.ItemsSource = types.ToList();
             DateModeBox.SelectedIndex = 0;
         }
 
         public Evidence? Result { get; private set; }
+        public ObservableCollection<AttachmentSelection> Attachments => _attachments;
+        public IReadOnlyList<string> AttachmentPaths => _attachments.Select(a => a.FullPath).ToList();
 
         private void OnCreateClicked(object sender, RoutedEventArgs e)
         {
@@ -67,6 +75,46 @@ namespace evidence_timeline.Views
             DialogResult = false;
         }
 
+        private void OnAddAttachmentsClicked(object sender, RoutedEventArgs e)
+        {
+            using var dialog = new WinForms.OpenFileDialog
+            {
+                Title = "Select attachment(s)",
+                Multiselect = true
+            };
+
+            var result = dialog.ShowDialog();
+            if (result != WinForms.DialogResult.OK || dialog.FileNames.Length == 0)
+            {
+                return;
+            }
+
+            foreach (var path in dialog.FileNames)
+            {
+                if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+                {
+                    continue;
+                }
+
+                if (_attachments.Any(a => string.Equals(a.FullPath, path, StringComparison.OrdinalIgnoreCase)))
+                {
+                    continue;
+                }
+
+                _attachments.Add(new AttachmentSelection(path));
+            }
+        }
+
+        private void OnRemoveAttachmentClicked(object sender, RoutedEventArgs e)
+        {
+            if (sender is not System.Windows.Controls.Button { DataContext: AttachmentSelection selection })
+            {
+                return;
+            }
+
+            _attachments.Remove(selection);
+        }
+
         private string GetAroundUnit()
         {
             if (AroundUnitBox.SelectedItem is ComboBoxItem item && item.Content is string text)
@@ -83,6 +131,18 @@ namespace evidence_timeline.Views
                 ?? dateInfo.StartDate
                 ?? dateInfo.EndDate
                 ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        }
+
+        public class AttachmentSelection
+        {
+            public AttachmentSelection(string fullPath)
+            {
+                FullPath = fullPath;
+                FileName = Path.GetFileName(fullPath);
+            }
+
+            public string FullPath { get; }
+            public string FileName { get; }
         }
     }
 }
