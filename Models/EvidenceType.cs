@@ -5,5 +5,10 @@ namespace evidence_timeline.Models
         public string Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
+
+        public override string ToString()
+        {
+            return string.IsNullOrWhiteSpace(Name) ? base.ToString() ?? nameof(EvidenceType) : Name;
+        }
     }
 }

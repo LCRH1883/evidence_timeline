@@ -17,7 +17,7 @@ namespace evidence_timeline.ViewModels
         private bool _showRightPane;
         private bool _showBottomPane;
         private bool _sortNewestFirst;
-        private EvidenceType? _selectedType;
+        private EvidenceTypeEntry? _selectedType;
         private PersonEntry? _selectedPerson;
 
         public CaseSettingsViewModel(CaseSettings settings, IEnumerable<EvidenceType> types, IEnumerable<Person> people)
@@ -27,11 +27,7 @@ namespace evidence_timeline.ViewModels
             _showBottomPane = settings.ShowBottomPane;
             _sortNewestFirst = settings.SortNewestFirst;
 
-            EvidenceTypes = new ObservableCollection<EvidenceType>(types.Select(t => new EvidenceType
-            {
-                Id = t.Id,
-                Name = t.Name
-            }));
+            EvidenceTypes = new ObservableCollection<EvidenceTypeEntry>(types.Select(t => new EvidenceTypeEntry(t.Id, t.Name, t.Description)));
 
             People = new ObservableCollection<PersonEntry>(people.Select(p =>
                 new PersonEntry(p.Id, p.Name, p.Notes, p.Aliases)));
@@ -43,14 +39,19 @@ namespace evidence_timeline.ViewModels
             AddPersonCommand = new RelayCommand(AddPerson);
             DeletePersonCommand = new RelayCommand<PersonEntry?>(DeletePerson, p => p != null);
 
+            EvidenceTypes.CollectionChanged += OnTypesCollectionChanged;
             People.CollectionChanged += OnPeopleCollectionChanged;
             foreach (var person in People)
             {
                 HookPerson(person);
             }
+            foreach (var type in EvidenceTypes)
+            {
+                HookType(type);
+            }
         }
 
-        public ObservableCollection<EvidenceType> EvidenceTypes { get; }
+        public ObservableCollection<EvidenceTypeEntry> EvidenceTypes { get; }
         public ObservableCollection<PersonEntry> People { get; }
 
         public bool ShowLeftPane
@@ -77,7 +78,7 @@ namespace evidence_timeline.ViewModels
             set => SetProperty(ref _sortNewestFirst, value);
         }
 
-        public EvidenceType? SelectedType
+        public EvidenceTypeEntry? SelectedType
         {
             get => _selectedType;
             set
@@ -135,7 +136,7 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
-            var type = new EvidenceType { Id = Guid.NewGuid().ToString("N"), Name = name.Trim() };
+            var type = new EvidenceTypeEntry(Guid.NewGuid().ToString("N"), name.Trim());
             EvidenceTypes.Add(type);
             SelectedType = type;
             HasTypeChanges = true;
@@ -237,10 +238,46 @@ namespace evidence_timeline.ViewModels
             if (DeletePersonCommand is RelayCommand<PersonEntry?> delete) delete.RaiseCanExecuteChanged();
         }
 
+        private void HookType(EvidenceTypeEntry type)
+        {
+            type.PropertyChanged += OnTypePropertyChanged;
+        }
+
+        private void UnhookType(EvidenceTypeEntry type)
+        {
+            type.PropertyChanged -= OnTypePropertyChanged;
+        }
+
+        private void OnTypePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            HasTypeChanges = true;
+        }
+
         private void HookPerson(PersonEntry person)
         {
             person.PropertyChanged += (_, _) => HasPeopleChanges = true;
             person.Aliases.CollectionChanged += (_, _) => HasPeopleChanges = true;
+        }
+
+        private void OnTypesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            HasTypeChanges = true;
+
+            if (e.NewItems != null)
+            {
+                foreach (var type in e.NewItems.OfType<EvidenceTypeEntry>())
+                {
+                    HookType(type);
+                }
+            }
+
+            if (e.OldItems != null)
+            {
+                foreach (var type in e.OldItems.OfType<EvidenceTypeEntry>())
+                {
+                    UnhookType(type);
+                }
+            }
         }
 
         private void OnPeopleCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

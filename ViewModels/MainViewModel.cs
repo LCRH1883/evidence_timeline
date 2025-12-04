@@ -924,17 +924,24 @@ namespace evidence_timeline.ViewModels
                     _isLoadingCaseSettings = false;
                 }
 
-                if (vm.HasTypeChanges)
+                try
                 {
-                    await ApplyTypeChangesAsync(vm.EvidenceTypes.ToList(), originalTypes);
-                }
+                    if (vm.HasTypeChanges)
+                    {
+                        await ApplyTypeChangesAsync(vm.EvidenceTypes.Select(t => t.ToEvidenceType()).ToList(), originalTypes);
+                    }
 
-                if (vm.HasPeopleChanges)
+                    if (vm.HasPeopleChanges)
+                    {
+                        await ApplyPeopleChangesAsync(vm.People.Select(p => p.ToPerson()).ToList(), originalPeople);
+                    }
+
+                    _ = SaveCaseSettingsAsync();
+                }
+                catch (Exception ex)
                 {
-                    await ApplyPeopleChangesAsync(vm.People.Select(p => p.ToPerson()).ToList(), originalPeople);
+                    MessageBox.Show($"Unable to save case settings: {ex.Message}", "Case Settings", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-
-                _ = SaveCaseSettingsAsync();
             }
         }
 
@@ -1307,11 +1314,7 @@ namespace evidence_timeline.ViewModels
 
             try
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = fullPath,
-                    UseShellExecute = true
-                });
+                OpenWithDefaultApp(fullPath);
             }
             catch (Exception ex)
             {
@@ -1376,6 +1379,27 @@ namespace evidence_timeline.ViewModels
             _loadedEvidenceSnapshot = CloneEvidence(SelectedEvidenceDetail);
         }
 
+        private static void OpenWithDefaultApp(string path)
+        {
+            var extension = Path.GetExtension(path);
+            var startInfo = new ProcessStartInfo
+            {
+                UseShellExecute = true,
+                Verb = "open"
+            };
+
+            if (!string.IsNullOrWhiteSpace(extension) && HtmlExtensions.Contains(extension))
+            {
+                startInfo.FileName = new Uri(path).AbsoluteUri;
+            }
+            else
+            {
+                startInfo.FileName = path;
+            }
+
+            Process.Start(startInfo);
+        }
+
         private static string EnsureUniqueFilePath(string basePath)
         {
             if (!File.Exists(basePath))
@@ -1397,6 +1421,15 @@ namespace evidence_timeline.ViewModels
 
             return candidate;
         }
+
+        private static readonly HashSet<string> HtmlExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".html",
+            ".htm",
+            ".xhtml",
+            ".mht",
+            ".mhtml"
+        };
 
         private void ManageLinks()
         {
