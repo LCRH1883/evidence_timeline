@@ -2,7 +2,7 @@
 ; Created for Intagri Technologies LLC
 
 #define MyAppName "Evidence Timeline"
-#define MyAppVersion "1.1.3"
+#define MyAppVersion "1.1.4"
 #define MyAppPublisher "Intagri Technologies LLC"
 #define MyAppURL "https://github.com/LCRH1883/evidence_timeline"
 #define MyAppExeName "evidence_timeline.exe"

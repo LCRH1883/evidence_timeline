@@ -72,6 +72,81 @@ namespace evidence_timeline.ViewModels
         public ObservableCollection<SelectableItem> PersonOptions { get; }
         public ObservableCollection<string> LinkedEvidence { get; }
 
+        public EvidenceDateMode SelectedDateMode
+        {
+            get => Evidence.DateInfo?.Mode ?? EvidenceDateMode.Exact;
+            set
+            {
+                EnsureDateInfo();
+                if (Evidence.DateInfo.Mode != value)
+                {
+                    Evidence.DateInfo.Mode = value;
+                    OnPropertyChanged();
+                    RequestMetadataAutoSave();
+                }
+            }
+        }
+
+        public DateTime? ExactDate
+        {
+            get => Evidence.DateInfo?.ExactDate?.ToDateTime(TimeOnly.MinValue);
+            set
+            {
+                EnsureDateInfo();
+                Evidence.DateInfo.ExactDate = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+                OnPropertyChanged();
+                RequestMetadataAutoSave();
+            }
+        }
+
+        public DateTime? StartDate
+        {
+            get => Evidence.DateInfo?.StartDate?.ToDateTime(TimeOnly.MinValue);
+            set
+            {
+                EnsureDateInfo();
+                Evidence.DateInfo.StartDate = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+                OnPropertyChanged();
+                RequestMetadataAutoSave();
+            }
+        }
+
+        public DateTime? EndDate
+        {
+            get => Evidence.DateInfo?.EndDate?.ToDateTime(TimeOnly.MinValue);
+            set
+            {
+                EnsureDateInfo();
+                Evidence.DateInfo.EndDate = value.HasValue ? DateOnly.FromDateTime(value.Value) : null;
+                OnPropertyChanged();
+                RequestMetadataAutoSave();
+            }
+        }
+
+        public int? AroundAmount
+        {
+            get => Evidence.DateInfo?.AroundAmount;
+            set
+            {
+                EnsureDateInfo();
+                Evidence.DateInfo.AroundAmount = value;
+                OnPropertyChanged();
+                RequestMetadataAutoSave();
+            }
+        }
+
+        public string? AroundUnit
+        {
+            get => Evidence.DateInfo?.AroundUnit;
+            set
+            {
+                EnsureDateInfo();
+                Evidence.DateInfo.AroundUnit = value;
+                OnPropertyChanged();
+                RequestMetadataAutoSave();
+            }
+        }
+
         public string NotesText
         {
             get => _notesText;
@@ -407,6 +482,11 @@ namespace evidence_timeline.ViewModels
             }
         }
 
+        private void EnsureDateInfo()
+        {
+            Evidence.DateInfo ??= new EvidenceDateInfo();
+        }
+
         private static void UpdateSortDate(Evidence evidence)
         {
             evidence.DateInfo ??= new EvidenceDateInfo();
@@ -415,15 +495,21 @@ namespace evidence_timeline.ViewModels
 
         private static DateOnly ResolveSortDate(EvidenceDateInfo dateInfo)
         {
+            var resolvedDate = dateInfo.ExactDate
+                ?? dateInfo.StartDate
+                ?? dateInfo.EndDate;
+
+            if (resolvedDate != null)
+            {
+                return resolvedDate.Value;
+            }
+
             if (dateInfo.SortDate != default)
             {
                 return dateInfo.SortDate;
             }
 
-            return dateInfo.ExactDate
-                ?? dateInfo.StartDate
-                ?? dateInfo.EndDate
-                ?? DateOnly.FromDateTime(DateTime.UtcNow);
+            return DateOnly.FromDateTime(DateTime.UtcNow);
         }
 
         private async Task AddAttachmentAsync()
