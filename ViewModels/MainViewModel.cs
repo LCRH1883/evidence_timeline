@@ -722,6 +722,11 @@ namespace evidence_timeline.ViewModels
             _allEvidenceSummaries.Add(summary);
             ApplyFilters();
             SelectedSummary = EvidenceList.FirstOrDefault(s => s.Id == summary.Id);
+
+            if (dialog.AttachmentPaths.Any())
+            {
+                await AddAttachmentsToEvidenceAsync(CurrentCase, evidence, dialog.AttachmentPaths);
+            }
         }
 
         private async Task LoadSelectedEvidenceAsync(EvidenceSummary? summary)
@@ -1252,49 +1257,7 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
-            var files = filePaths
-                .Where(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
-
-            if (files.Count == 0)
-            {
-                return;
-            }
-
-            var targetFolder = await _evidenceStorage.GetEvidenceFolderPathAsync(CurrentCase, SelectedEvidenceDetail);
-            var filesFolder = Path.Combine(targetFolder, "files");
-            Directory.CreateDirectory(filesFolder);
-
-            var added = false;
-            foreach (var file in files)
-            {
-                var fileName = Path.GetFileName(file);
-                var targetPath = Path.Combine(filesFolder, fileName);
-                targetPath = EnsureUniqueFilePath(targetPath);
-                File.Copy(file, targetPath, true);
-
-                var relative = Path.Combine("files", Path.GetFileName(targetPath));
-                if (SelectedEvidenceDetail.Attachments.All(a => !string.Equals(a.RelativePath, relative, StringComparison.OrdinalIgnoreCase)))
-                {
-                    SelectedEvidenceDetail.Attachments.Add(new AttachmentInfo
-                    {
-                        FileName = Path.GetFileName(targetPath),
-                        RelativePath = relative
-                    });
-                    added = true;
-                }
-            }
-
-            if (!added)
-            {
-                return;
-            }
-
-            await _evidenceStorage.SaveEvidenceAsync(CurrentCase, SelectedEvidenceDetail);
-            var updatedSummary = BuildSummary(SelectedEvidenceDetail);
-            UpdateSummaryLists(updatedSummary);
-            _loadedEvidenceSnapshot = CloneEvidence(SelectedEvidenceDetail);
+            await AddAttachmentsToEvidenceAsync(CurrentCase, SelectedEvidenceDetail, filePaths);
         }
 
         private async Task OpenAttachmentAsync(AttachmentInfo? attachment)
@@ -1430,6 +1393,57 @@ namespace evidence_timeline.ViewModels
             ".mht",
             ".mhtml"
         };
+
+        private async Task AddAttachmentsToEvidenceAsync(CaseInfo caseInfo, Evidence evidence, IEnumerable<string> filePaths)
+        {
+            var files = filePaths
+                .Where(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (files.Count == 0)
+            {
+                return;
+            }
+
+            var targetFolder = await _evidenceStorage.GetEvidenceFolderPathAsync(caseInfo, evidence);
+            var filesFolder = Path.Combine(targetFolder, "files");
+            Directory.CreateDirectory(filesFolder);
+
+            var added = false;
+            foreach (var file in files)
+            {
+                var fileName = Path.GetFileName(file);
+                var targetPath = Path.Combine(filesFolder, fileName);
+                targetPath = EnsureUniqueFilePath(targetPath);
+                File.Copy(file, targetPath, true);
+
+                var relative = Path.Combine("files", Path.GetFileName(targetPath));
+                if (evidence.Attachments.All(a => !string.Equals(a.RelativePath, relative, StringComparison.OrdinalIgnoreCase)))
+                {
+                    evidence.Attachments.Add(new AttachmentInfo
+                    {
+                        FileName = Path.GetFileName(targetPath),
+                        RelativePath = relative
+                    });
+                    added = true;
+                }
+            }
+
+            if (!added)
+            {
+                return;
+            }
+
+            await _evidenceStorage.SaveEvidenceAsync(caseInfo, evidence);
+            var updatedSummary = BuildSummary(evidence);
+            UpdateSummaryLists(updatedSummary, evidence.Id);
+
+            if (SelectedEvidenceDetail != null && string.Equals(SelectedEvidenceDetail.Id, evidence.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                _loadedEvidenceSnapshot = CloneEvidence(SelectedEvidenceDetail);
+            }
+        }
 
         private void ManageLinks()
         {
