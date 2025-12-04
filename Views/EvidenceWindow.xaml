@@ -367,7 +367,7 @@
 
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel Margin="8">
-                            <ItemsControl ItemsSource="{Binding Evidence.Attachments}">
+                            <ItemsControl ItemsSource="{Binding AttachmentItems}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border BorderBrush="{DynamicResource BorderBrush}"

@@ -22,6 +22,8 @@ namespace evidence_timeline.ViewModels
         private readonly IReferenceDataService _referenceData;
         private readonly CaseInfo _caseInfo;
         private readonly Evidence _sourceEvidence;
+        private readonly bool _isNew;
+        private bool _isCreated;
         private string _notesText = string.Empty;
         private string _loadedNotesSnapshot = string.Empty;
         private Evidence? _loadedEvidenceSnapshot;
@@ -35,14 +37,21 @@ namespace evidence_timeline.ViewModels
         public event EventHandler<Evidence>? EvidenceSaved;
         public event EventHandler<string>? NotesSaved;
 
-        public EvidenceWindowViewModel(CaseInfo caseInfo, Evidence evidence, IEvidenceStorageService evidenceStorage, IReferenceDataService referenceData)
+        public EvidenceWindowViewModel(CaseInfo caseInfo, Evidence evidence, IEvidenceStorageService evidenceStorage, IReferenceDataService referenceData, bool isNew = false)
         {
             _caseInfo = caseInfo;
             _sourceEvidence = evidence;
             _evidenceStorage = evidenceStorage;
             _referenceData = referenceData;
+            _isNew = isNew;
+            _isCreated = !isNew;
 
             Evidence = CloneEvidence(evidence);
+            AttachmentItems = new ObservableCollection<AttachmentInfo>(Evidence.Attachments.Select(a => new AttachmentInfo
+            {
+                FileName = a.FileName,
+                RelativePath = a.RelativePath
+            }));
             SaveCommand = new AsyncRelayCommand(SaveAsync);
             SaveNotesCommand = new AsyncRelayCommand(SaveNotesAsync);
             AddAttachmentCommand = new AsyncRelayCommand(AddAttachmentAsync);
@@ -59,6 +68,7 @@ namespace evidence_timeline.ViewModels
 
         public Evidence Evidence { get; }
         public ObservableCollection<EvidenceType> Types { get; } = new();
+        public ObservableCollection<AttachmentInfo> AttachmentItems { get; }
         public ObservableCollection<SelectableItem> PersonOptions { get; }
         public ObservableCollection<string> LinkedEvidence { get; }
 
@@ -100,8 +110,15 @@ namespace evidence_timeline.ViewModels
                     PersonOptions.Add(new SelectableItem(person.Id, person.Name, Evidence.PersonIds.Contains(person.Id)));
                 }
 
-                await LoadNotesAsync();
-                _loadedEvidenceSnapshot = CloneEvidence(Evidence);
+                if (_isCreated)
+                {
+                    await LoadNotesAsync();
+                    _loadedEvidenceSnapshot = CloneEvidence(Evidence);
+                }
+                else
+                {
+                    _loadedNotesSnapshot = string.Empty;
+                }
             }
             finally
             {
@@ -130,15 +147,17 @@ namespace evidence_timeline.ViewModels
 
         private async Task SaveAsync()
         {
+            SyncAttachmentsToEvidence();
             Evidence.PersonIds = PersonOptions.Where(p => p.IsSelected).Select(p => p.Id).ToList();
             Evidence.LinkedEvidenceIds = LinkedEvidence.ToList();
             UpdateSortDate(Evidence);
 
-            if (_loadedEvidenceSnapshot != null && !HasMetadataChanges(Evidence, _loadedEvidenceSnapshot))
+            if (_loadedEvidenceSnapshot != null && _isCreated && !HasMetadataChanges(Evidence, _loadedEvidenceSnapshot))
             {
                 return;
             }
 
+            await EnsureCreatedAsync();
             await _evidenceStorage.SaveEvidenceAsync(_caseInfo, Evidence);
             _loadedEvidenceSnapshot = CloneEvidence(Evidence);
             EvidenceSaved?.Invoke(this, CloneEvidence(Evidence));
@@ -146,6 +165,8 @@ namespace evidence_timeline.ViewModels
 
         private async Task SaveNotesAsync()
         {
+            await EnsureCreatedAsync();
+
             var folder = await _evidenceStorage.GetEvidenceFolderPathAsync(_caseInfo, Evidence);
             var noteFile = Evidence.NoteFile ?? "note.md";
             var notePath = System.IO.Path.Combine(folder, noteFile);
@@ -434,6 +455,8 @@ namespace evidence_timeline.ViewModels
                 return;
             }
 
+            await EnsureCreatedAsync();
+
             var targetFolder = await _evidenceStorage.GetEvidenceFolderPathAsync(_caseInfo, Evidence);
             var filesFolder = Path.Combine(targetFolder, "files");
             Directory.CreateDirectory(filesFolder);
@@ -447,9 +470,9 @@ namespace evidence_timeline.ViewModels
                 File.Copy(file, targetPath, true);
 
                 var relative = Path.Combine("files", Path.GetFileName(targetPath));
-                if (Evidence.Attachments.All(a => !string.Equals(a.RelativePath, relative, StringComparison.OrdinalIgnoreCase)))
+                if (AttachmentItems.All(a => !string.Equals(a.RelativePath, relative, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Evidence.Attachments.Add(new AttachmentInfo
+                    AttachmentItems.Add(new AttachmentInfo
                     {
                         FileName = Path.GetFileName(targetPath),
                         RelativePath = relative
@@ -521,7 +544,7 @@ namespace evidence_timeline.ViewModels
 
         private async Task RemoveAttachmentAsync(AttachmentInfo? attachment)
         {
-            var target = attachment ?? Evidence.Attachments.LastOrDefault();
+            var target = attachment ?? AttachmentItems.LastOrDefault();
             if (target == null)
             {
                 return;
@@ -534,7 +557,7 @@ namespace evidence_timeline.ViewModels
                 File.Delete(fullPath);
             }
 
-            Evidence.Attachments.Remove(target);
+            AttachmentItems.Remove(target);
             await SaveAsync();
         }
 
@@ -590,5 +613,27 @@ namespace evidence_timeline.ViewModels
             ".mht",
             ".mhtml"
         };
+
+        private async Task EnsureCreatedAsync()
+        {
+            if (_isCreated)
+            {
+                return;
+            }
+
+            var created = await _evidenceStorage.CreateEvidenceAsync(_caseInfo, Evidence);
+            Evidence.Id = created.Id;
+            Evidence.EvidenceNumber = created.EvidenceNumber;
+            Evidence.CreatedAt = created.CreatedAt;
+            Evidence.LastModifiedAt = created.LastModifiedAt;
+            Evidence.NoteFile = string.IsNullOrWhiteSpace(created.NoteFile) ? Evidence.NoteFile : created.NoteFile;
+            _isCreated = true;
+            _loadedEvidenceSnapshot = CloneEvidence(Evidence);
+        }
+
+        private void SyncAttachmentsToEvidence()
+        {
+            Evidence.Attachments = AttachmentItems.ToList();
+        }
     }
 }
