@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2025-12-02
+
+### Added
+- Drag-and-drop support for adding attachments directly into evidence
+- New cases start with default evidence types (Document(s), Contract, Letter, Email, Message(s), Photograph, Receipt, Audio, Video)
+
+### Fixed
+- Attachments now open with the correct default application (HTML in browser, media in associated players)
+- Evidence type rename flows correctly update and save without crashes
+
 ## [1.1.1] - 2025-12-01
 
 ### Added
@@ -59,10 +69,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version Tracking
 
-**Current Version:** 1.1.1
+**Current Version:** 1.1.2
 **Repository:** https://github.com/LCRH1883/evidence_timeline
 
 ### Version History
+- **1.1.2** - Attachment improvements and evidence type reliability
 - **1.1.1** - Enhanced update system with changelog integration
 - **1.0.1** - Auto-update and installer release
 - **1.0.0** - Initial public release
@@ -85,6 +96,7 @@ When releasing a new version:
 4. Update the "Current Version" in the Version Tracking section
 5. Commit the changelog with the version bump
 
+[1.1.2]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.2
 [1.1.1]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.1.1
 [1.0.1]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.0.1
 [1.0.0]: https://github.com/LCRH1883/evidence_timeline/releases/tag/v1.0.0
