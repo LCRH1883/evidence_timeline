@@ -9,6 +9,7 @@ namespace evidence_timeline.Utilities
         public static JsonSerializerOptions DefaultOptions { get; } = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
             WriteIndented = true
         };
 
