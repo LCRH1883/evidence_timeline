@@ -26,7 +26,9 @@ namespace evidence_timeline.Utilities
         public static string? PromptForText(string title, string prompt, string defaultValue = "")
         {
             var dialog = new InputDialog(title, prompt, defaultValue);
-            var owner = System.Windows.Application.Current?.MainWindow;
+            var owner = System.Windows.Application.Current?.Windows?.OfType<System.Windows.Window>()
+                .FirstOrDefault(w => w.IsActive) ?? System.Windows.Application.Current?.MainWindow;
+
             if (owner != null)
             {
                 dialog.Owner = owner;

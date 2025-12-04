@@ -80,6 +80,7 @@ namespace evidence_timeline.ViewModels
             AddPersonCommand = new AsyncRelayCommand(AddPersonAsync, () => CurrentCase != null);
             RenamePersonCommand = new AsyncRelayCommand(RenamePersonAsync, () => CurrentCase != null && SelectedPerson != null);
             DeletePersonCommand = new AsyncRelayCommand(DeletePersonAsync, () => CurrentCase != null && SelectedPerson != null);
+            ManagePeopleCommand = new RelayCommand(ManagePeople, () => CurrentCase != null);
             OpenPreferencesCommand = new RelayCommand(OpenPreferences);
             OpenCaseSettingsCommand = new AsyncRelayCommand(OpenCaseSettingsAsync, () => CurrentCase != null);
             SetZoomCommand = new RelayCommand<object>(SetZoom);
@@ -433,6 +434,7 @@ namespace evidence_timeline.ViewModels
         public ICommand AddPersonCommand { get; }
         public ICommand RenamePersonCommand { get; }
         public ICommand DeletePersonCommand { get; }
+        public ICommand ManagePeopleCommand { get; }
         public ICommand OpenPreferencesCommand { get; }
         public ICommand OpenCaseSettingsCommand { get; }
         public ICommand SetZoomCommand { get; }
@@ -1233,6 +1235,7 @@ namespace evidence_timeline.ViewModels
             if (RenamePersonCommand is AsyncRelayCommand asyncRenamePerson) asyncRenamePerson.RaiseCanExecuteChanged();
             if (DeletePersonCommand is AsyncRelayCommand asyncDeletePerson) asyncDeletePerson.RaiseCanExecuteChanged();
             if (OpenCaseSettingsCommand is AsyncRelayCommand asyncCaseSettings) asyncCaseSettings.RaiseCanExecuteChanged();
+            if (ManagePeopleCommand is RelayCommand managePeople) managePeople.RaiseCanExecuteChanged();
         }
 
         private async Task AddAttachmentAsync()
@@ -1707,6 +1710,28 @@ namespace evidence_timeline.ViewModels
             SelectedPerson = People.FirstOrDefault(p => string.Equals(p.Id, previousSelectedPersonId, StringComparison.OrdinalIgnoreCase));
             RebuildSummaries();
             SyncSelectionOptions(SelectedEvidenceDetail);
+        }
+
+        private void ManagePeople()
+        {
+            if (CurrentCase == null)
+            {
+                return;
+            }
+
+            var originalPeople = People.ToList();
+            var vm = new PeopleManagerViewModel(originalPeople);
+            var window = new PeopleManagerWindow
+            {
+                Owner = WpfApp.Current?.MainWindow,
+                DataContext = vm
+            };
+
+            var result = window.ShowDialog();
+            if (result == true)
+            {
+                _ = ApplyPeopleChangesAsync(vm.ToPeople(), originalPeople);
+            }
         }
 
         private void RebuildPersonOptions()
